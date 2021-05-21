@@ -1,0 +1,162 @@
+<!doctype html><html><head>
+  <meta charset=utf8>
+  <title>suggereix</title>
+  <link rel="stylesheet" href="css.css">
+  <!--
+    development version
+      <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    production version
+      <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+  <!--backend-->
+  <script src="backend.js"></script>
+</head><body>
+<h2>SAD SUGGEREIX (esbós inicial)</h2>
+
+<div id=app>
+  <details class=seccio open>
+    <summary class=seccio>1. Definició aigua</summary>
+    <div>
+      <table border=1>
+        <tr>
+          <th colspan=2 rowspan=2>Paràmetre
+          <th>Qualitat actual
+          <th>Qualitat desitjada
+          <th rowspan=2>Unitat
+        </tr>
+
+        <tr>
+          <td>
+            Selecciona origen (opcional)<br>
+            <select v-model="usuari.corrent.qualitat" style="max-width:250px">
+              <option v-for="obj,key in Usuari.info_tractaments" :value="obj.qualitat">
+                {{obj.nom}}
+                [{{key}}]
+              </option>
+            </select>
+          </td>
+          <td>
+            Selecciona qualitat desitjada (opcional)<br>
+            <select v-model="usuari.corrent_objectiu.qualitat" style="max-width:250px">
+              <option v-for="obj,key in Usuari.info_usos" :value="obj.qualitat">
+                {{obj.nom}}
+                [{{key}}]
+              </option>
+            </select>
+          </td>
+        </tr>
+        <tr v-for="val,id in usuari.corrent.qualitat">
+          <td style="font-family:monospace">
+            {{id}}
+          </td>
+          <td>
+            {{Corrent.info_qualitat[id].nom}}
+          </td>
+          <td>
+            <input type=number v-model.number="usuari.corrent.qualitat[id]">
+          </td>
+          <td>
+            <input type=number v-model.number="usuari.corrent_objectiu.qualitat[id]">
+          </td>
+          <td>
+            {{Corrent.info_qualitat[id].unitat}}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </details>
+
+  <details class=seccio open>
+    <summary class=seccio>2. Aplicació tractaments</summary>
+    <div>
+      <b>(de moment ho fem funcionar amb un sol tractament)</b><br>
+
+      <div style="padding:10px 0">
+        Eficàcia eliminació:
+        <label> <input type=radio v-model="eficacia_tractament" value="min"> Mínima</label>
+        <label> <input type=radio v-model="eficacia_tractament" value="max"> Màxima</label>
+      </div>
+
+      <div>
+        <table border=1>
+          <tr>
+            <th>Tractament</th>
+            <th>Pretractament</th>
+            <th
+              v-for="obj,id in Corrent.info_qualitat"
+              :title="`${obj.nom} ${obj.unitat}`"
+            >
+              <div style="font-family:monospace">{{id}}</div>
+              <div style="font-size:10px">{{obj.nom.substring(0,8)}}</div>
+              <div style="font-size:8px">({{obj.unitat}})</div>
+            </th>
+          </tr>
+          <tbody v-for="tra,nom_tra in Tractaments">
+            <tr>
+              <td :rowspan="1+Object.keys(tra).length">
+                {{nom_tra}}
+              </td>
+            </tr>
+            <tr v-for="pre,nom_pre in tra">
+              <td>
+                {{nom_pre}}
+                <details>
+                  <summary>editar</summary>
+                  <div>
+                    Edita els valors d'eliminació
+
+                    <table border=1>
+                      <tr>
+                        <th colspan=2>id</th>
+                        <th>min(%)</th>
+                        <th>max(%)</th>
+                      </tr>
+                      <tr v-for="obj,id in pre">
+                        <td style="font-family:monospace">{{id}}</td>
+                        <td>{{Corrent.info_qualitat[id].nom.substring(0,20)}}</td>
+                        <td><input type=number v-model.number="obj.min" min=0 max=100></td>
+                        <td><input type=number v-model.number="obj.max" min=0 max=100></td>
+                      </tr>
+                    </table>
+                  </div>
+                </details>
+              </td>
+              <td
+                v-for="valor,id in usuari.corrent.aplica_tren_tractaments([pre])[eficacia_tractament].qualitat"
+                :style="{background:valor<=usuari.corrent_objectiu.qualitat[id]?'lightgreen':'red'}"
+              >
+                <span v-if="valor==0 || valor>1000">{{ valor.toFixed(0) }}</span>
+                <span v-else-if="valor>100" >{{ valor.toFixed(1) }}</span>
+                <span v-else-if="valor>10"  >{{ valor.toFixed(2) }}</span>
+                <span v-else-if="valor>1"   >{{ valor.toFixed(3) }}</span>
+                <span v-else                >{{ valor.toFixed(4) }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+</div>
+
+<script>
+  let app = new Vue({
+    el:"#app",
+    data:{
+      usuari:new Usuari(), //objecte
+
+      eficacia_tractament:"min", //min o max
+
+      //backend
+      Usuari,      //classe
+      Corrent,     //classe
+      Tractaments, //diccionari
+    },
+
+    methods:{
+      //
+    },
+  });
+</script>

@@ -1,0 +1,24 @@
+table{
+  border-collapse:collapse;
+}
+th{
+  text-align:left;
+}
+details summary:hover{
+  cursor:pointer;
+  text-decoration:underline;
+}
+details.seccio {
+  margin-bottom:1em;
+}
+details.seccio > summary{
+  font-weight:bold;
+  font-size:larger;
+}
+details.seccio > div {
+  padding:1em;
+  background:#eff5fb;
+}
+input[type=number]{
+  text-align:right;
+}
