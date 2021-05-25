@@ -27,6 +27,7 @@ class Corrent{
       "I19":{nom:"E. coli",                             unitat:"CFU/mL"},
       "I20":{nom:"Colífags",                            unitat:"PFU/mL"},
       "I21":{nom:"Clostridium perfringens",             unitat:"espores/100mL"},
+
     };
   }
 
@@ -80,6 +81,16 @@ class Usuari{
     this.corrent = new Corrent(); //qualitat actual
     this.corrent_objectiu = new Corrent(); //qualitat desitjada
   }
+
+  //Retorna diccionari amb els trens que es poden aplicar en un ús concret
+  filter_train_by_use(use_id){
+    let trains_filtered = {}
+    Usuari.info_usos[use_id].trens_acceptats.forEach(id => {
+      trains_filtered[id] = Trens[id]
+    })
+    return trains_filtered
+  }
+
   static get info_tractaments(){
     return{
       "FAC_DS0":{tipus:"secundari", nom:"Origen no definit",
@@ -260,6 +271,8 @@ class Usuari{
           I20 : 0,
           I21 : 0,
         },
+        trens_acceptats:[1,2,3] //Acceptar tots els trens?
+
       },
       "U1":{nom:"Ús inventat 1 (canviar per definició real)",
         qualitat:{
@@ -285,6 +298,8 @@ class Usuari{
           I20 : 1,
           I21 : 1,
         },
+        trens_acceptats:[1,2] //Cas inventat
+
       },
       "U2":{nom:"Ús inventat 2 (canviar per definició real)",
         qualitat:{
@@ -310,6 +325,8 @@ class Usuari{
           I20 : 10,
           I21 : 10,
         },
+        trens_acceptats:[2,3] //Cas inventat
+
       },
     };
   }
@@ -383,5 +400,29 @@ let Tractaments={
       I20 : {min:45 , max:90},
       I21 : {min:48 , max:93},
     },
+  },
+  "Cl2":{
+    //Falta completar
+  },
+  "Cl2O":{
+    //Falta completar
+  },
+  "Cloramines":{
+    //Falta completar
+  },
+};
+
+let Trens  = {
+  1 :{
+    nom:"FQ_D_FS_Cl2",
+    tractaments: ["FQ_D", "FS", "Cl2"]
+  },
+  2 : {
+    nom:"FQ_D_FS_Cl2O",
+    tractaments: ["FQ_D", "FS", "Cl2O"]
+  },
+  3 :{
+    nom:"FQ_D_FS_Cloramines",
+    tractaments: ["FQ_D", "FS", "Cloramines"]
   },
 };
