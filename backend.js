@@ -27,6 +27,7 @@ class Corrent{
       "I19":{nom:"E. coli",                             unitat:"CFU/mL"},
       "I20":{nom:"Colífags",                            unitat:"PFU/mL"},
       "I21":{nom:"Clostridium perfringens",             unitat:"espores/100mL"},
+      "I22":{nom:"N-Nitrosodimetilamina (NDMA)",        unitat:"μg/L"},
     };
   }
 
