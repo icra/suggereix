@@ -76,59 +76,9 @@
       </div>
     </details>
 
-    <details class=seccio close>
-      <summary class=seccio>2. Modificació dels tractaments</summary>
-      <div>
-        <div>
-          <table border=1>
-            <tr>
-              <th>Tractament</th>
-              <th>Pretractament</th>
-              <th>Editar tractament</th>
-            </tr>
-            <tbody v-for="(tra,nom_tra) in this.Tractaments" :key="nom_tra">
-            <tr>
-              <td :rowspan="1+Object.keys(tra).length">
-                {{nom_tra}}
-              </td>
-            </tr>
-            <tr v-for="(pre,nom_pre) in tra">
-              <td>
-                {{nom_pre}}
-              </td>
-              <td>
-                <details>
-                  <summary>editar</summary>
-                  <div>
-                    Edita els valors d'eliminació
-
-                    <table border=1>
-                      <tr>
-                        <th colspan=2>id</th>
-                        <th>min(%)</th>
-                        <th>max(%)</th>
-                      </tr>
-                      <tr v-for="(obj,id) in pre">
-                        <td style="font-family:monospace">{{id}}</td>
-                        <td>{{Corrent.info_qualitat[id].nom.substring(0,20)}}</td>
-                        <td><input type=number v-model.number="obj.min" min=0 max=100></td>
-                        <td><input type=number v-model.number="obj.max" min=0 max=100></td>
-                      </tr>
-                    </table>
-                  </div>
-                </details>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-
-
     <details class=seccio open>
-      <summary class=seccio>3. Avaluació trens</summary>
-      <div>
+      <summary class=seccio>2. Avaluació trens de tractament</summary>
+      <div style="text-align: left">
         <button @click="avaluacio_trens">Avaluació trens</button>
         <button @click="eliminar_avaluacio">Esborrar avaluació</button>
       </div>
@@ -145,15 +95,13 @@
             <tr>
               <th v-for="(val, key) in Corrent.info_qualitat"
                   :key="key"
-                  style="font-family:monospace; text-align: left; padding: 0px 5px 0px 5px"
+                  style="font-family:monospace; text-align: left; padding: 0px 5px 0px 3px"
                   v-if="key !== 'I1'">
 
                 <div class="tooltip" style="color: inherit">{{key}}
-                  <span class="tooltiptext" style="font-size: 10px">{{mostrar_info_indicador(key)}}</span>
+                  <span class="tooltiptext_ind" style="font-size: 10px">{{val.nom}}</span>
                 </div>
-                <!---<div style="font-family:monospace">{{key}}</div>
-                <div style="font-size:10px">{{val.nom.substring(0,8)}}</div>
-                <div style="font-size:8px">({{val.unitat}})</div>-->
+                <div style="font-size: 10px; font-family: monospace">({{val.unitat}})</div>
               </th>
             </tr>
 
@@ -162,7 +110,7 @@
                 <td rowspan="2" style="font-family:monospace">{{id + 1}}</td>
                 <td rowspan="2" style="text-align: right; padding: 0px 10px 0px 10px">{{Trens[tren.id].nom}}</td>
                 <td rowspan="2" style="text-align: left; padding: 0px 10px 0px 10px">{{tren.id}}</td>
-                <td rowspan="2">{{tren.puntuacio}}</td>
+                <td rowspan="2" style="text-align: center">{{tren.puntuacio}}</td>
                 <td style="text-align: right; padding: 0px 5px 0px 5px">min:</td>
                 <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1'">
                   <td
@@ -257,6 +205,55 @@
       </div>
     </details>
 
+    <details class=seccio close>
+      <summary class=seccio>Modificació dels tractaments (opcional)</summary>
+      <div>
+        <div>
+          <table border=1>
+            <tr>
+              <th>Tractament</th>
+              <th>Pretractament</th>
+              <th>Editar tractament</th>
+            </tr>
+            <tbody v-for="(tra,nom_tra) in this.Tractaments" :key="nom_tra">
+            <tr>
+              <td :rowspan="1+Object.keys(tra).length">
+                {{nom_tra}}
+              </td>
+            </tr>
+            <tr v-for="(pre,nom_pre) in tra">
+              <td>
+                {{nom_pre}}
+              </td>
+              <td>
+                <details>
+                  <summary>editar</summary>
+                  <div>
+                    Edita els valors d'eliminació
+
+                    <table border=1>
+                      <tr>
+                        <th colspan=2>id</th>
+                        <th>min(%)</th>
+                        <th>max(%)</th>
+                      </tr>
+                      <tr v-for="(obj,id) in pre">
+                        <td style="font-family:monospace">{{id}}</td>
+                        <td>{{Corrent.info_qualitat[id].nom.substring(0,20)}}</td>
+                        <td><input type=number v-model.number="obj.min" min=0 max=100></td>
+                        <td><input type=number v-model.number="obj.max" min=0 max=100></td>
+                      </tr>
+                    </table>
+                  </div>
+                </details>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
   </div>
 
 </template>
@@ -277,7 +274,7 @@ export default {
       user: new Usuari(),       //objecte
       us_seleccionat: "",       //ús seleccionat per l'usuari
       tractament_secundari: "", //tractament secundari infraestructura
-      eficacia_tractament:"min",//min o max
+      //eficacia_tractament:"min",//min o max
       ranquing_trens: [],       //array de trens ordenats per compliments
 
       //backend
@@ -286,97 +283,6 @@ export default {
       Tractaments: {},          //diccionari tots els tractaments
       Trens: undefined,         //diccionari tots els trens
       Usos: {}                  //diccionari tots els usos
-      /*Tractaments2: {//diccionari
-        "BRM":{
-          "DP":{
-            I1 : {min : 7.5 , max : 8.5   },
-            I3 : {min : 99  , max : 100   },
-            I4 : {min : 99  , max : 100   },
-            I5 : {min : 50  , max : 74    },
-            I6 : {min : 90  , max : 96    },
-            I8 : {min : 0   , max : 60.8  },
-            I9 : {min : 0   , max : 55.2  },
-            I10: {min : 2   , max : 32    },
-            I11: {min : 53  , max : 91    },
-            I12: {min : 6   , max : 94    },
-            I13: {min : 15  , max : 25    },
-            I14: {min : 0   , max : 20    },
-            I15: {min : 0   , max : 20    },
-            I16: {min : 85  , max : 100   },
-            I18: {min : 0   , max : 10    },
-            I19: {min : 0   , max : 99.99 },
-            I20: {min : 0   , max : 96.84 },
-            I21: {min : 0   , max : 99    },
-          },
-        },
-        "FQ_D":{
-          "FAC_DS":{
-            I1 : {min : 7.5 , max : 8.5   },
-            I3 : {min : 99  , max : 100   },
-            I4 : {min : 99  , max : 100   },
-            I5 : {min : 50  , max : 74    },
-            I6 : {min : 90  , max : 96    },
-            I8 : {min : 0   , max : 60.8  },
-            I9 : {min : 0   , max : 55.2  },
-            I10: {min : 2   , max : 32    },
-            I11: {min : 53  , max : 91    },
-            I12: {min : 6   , max : 94    },
-            I13: {min : 15  , max : 25    },
-            I14: {min : 0   , max : 20    },
-            I15: {min : 0   , max : 20    },
-            I16: {min : 85  , max : 100   },
-            I18: {min : 0   , max : 10    },
-            I19: {min : 0   , max : 99.99 },
-            I20: {min : 0   , max : 96.84 },
-            I21: {min : 0   , max : 99    },
-          },
-        },
-        "FS":{
-          "FAC_DS":{
-            I3  :{min:30 , max:50   },
-            I4  :{min:60 , max:80   },
-            I5  :{min:0  , max:30.2 },
-            I8  :{min:71 , max:87   },
-            I9  :{min:18 , max:23   },
-            I19 :{min:0  , max:90   },
-            I20 :{min:45 , max:90   },
-            I21 :{min:48 , max:93   },
-          },
-          "FQ_D":{
-            I3  : {min:30 , max:50},
-            I4  : {min:60 , max:80},
-            I5  : {min:0  , max:30.2},
-            I8  : {min:71 , max:87},
-            I9  : {min:18 , max:23},
-            I19 : {min:0  , max:90},
-            I20 : {min:45 , max:90},
-            I21 : {min:48 , max:93},
-          },
-        },
-        "Cl2":{
-          //Falta completar
-        },
-        "Cl2O":{
-          //Falta completar
-        },
-        "Cloramines":{
-          //Falta completar
-        },
-      },
-      Trens2: {      //diccionari
-        1 :{
-          nom:"FQ_D_FS_Cl2",
-          tractaments: ["FQ_D", "FS", "Cl2"]
-        },
-        2 : {
-          nom:"FQ_D_FS_Cl2O",
-          tractaments: ["FQ_D", "FS", "Cl2O"]
-        },
-        3 :{
-          nom:"FQ_D_FS_Cloramines",
-          tractaments: ["FQ_D", "FS", "Cloramines"]
-        },
-      },*/
     }
   },
   created: async function() {
@@ -618,6 +524,9 @@ table{
 th{
   text-align:center;
 }
+details summary{
+  text-align: left;
+}
 details summary:hover{
   cursor:pointer;
   text-decoration:underline;
@@ -660,9 +569,22 @@ input[type=number]{
   position: absolute;
   z-index: 1;
 }
+.tooltip .tooltiptext_ind {
+  visibility: hidden;
+  width: auto;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
 
 /* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext {
+.tooltip:hover .tooltiptext, .tooltip:hover .tooltiptext_ind {
   visibility: visible;
 }
 
