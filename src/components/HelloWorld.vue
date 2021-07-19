@@ -18,8 +18,8 @@
             <th colspan=2 rowspan="2">Indicadors de qualitat</th>
             <td colspan=2>
               Selecciona tractament secundari<br>
-              <select v-model="user.corrent.qualitat" style="max-width:350px">
-                <option v-for="(obj, key) in Usuari.info_tractaments" :value="obj.qualitat" :key="key">
+              <select v-model="tractament_secundari" style="max-width:350px">
+                <option v-for="(obj, key) in Usuari.info_tractaments" :value="key" :key="key">
                   {{obj.nom}}
                   [{{key}}]
                 </option>
@@ -57,8 +57,14 @@
               <input type="number" v-model.number="user.corrent.qualitat[key].max">
             </td>
             <td style="text-align: right">
-              <div v-if="key === 'I1' && mostrar_nota" class="tooltip">*
+              <div v-if="key === 'I1' && mostrar_nota_ph" class="tooltip">*
                 <span class="tooltiptext">rang: 6-9</span>
+              </div>
+              <div v-else-if="key === 'I8' && us_seleccionat !== ''" class="tooltip">*
+                <span class="tooltiptext">rang: 30-500</span>
+              </div>
+              <div v-else-if="key === 'I9' && us_seleccionat !== ''" class="tooltip">*
+                <span class="tooltiptext">rang: 4-20</span>
               </div>
               <input type="number" v-model.number="user.corrent_objectiu.qualitat[key]">
             </td>
@@ -70,8 +76,7 @@
       </div>
     </details>
 
-
-    <details class=seccio open>
+    <details class=seccio close>
       <summary class=seccio>2. Modificació dels tractaments</summary>
       <div>
         <div>
@@ -122,14 +127,65 @@
 
 
     <details class=seccio open>
-      <summary class=seccio>3. Aplicació trens</summary>
+      <summary class=seccio>3. Avaluació trens</summary>
       <div>
-        <div>
+        <button @click="avaluacio_trens">Avaluació trens</button>
+        <button @click="eliminar_avaluacio">Esborrar avaluació</button>
+      </div>
+      <div>
+        <div v-if="this.ranquing_trens.length !== 0">
           <table border=1>
-            <tr v-for="(tren,id) in trens_acceptats" :key="id">
-              <td style="font-family:monospace">{{id}}</td>
-              <td>{{tren.nom.substring(0,20)}}</td>
+            <tr>
+              <th colspan="2" rowspan="2">Tren</th>
+              <th rowspan="2">id</th>
+              <th rowspan="2" colspan="2">Compliment (%)</th>
+              <th colspan="21">Indicadors</th>
             </tr>
+
+            <tr>
+              <th v-for="(val, key) in Corrent.info_qualitat"
+                  :key="key"
+                  style="font-family:monospace; text-align: left; padding: 0px 5px 0px 5px"
+                  v-if="key !== 'I1'">
+
+                <div class="tooltip" style="color: inherit">{{key}}
+                  <span class="tooltiptext" style="font-size: 10px">{{mostrar_info_indicador(key)}}</span>
+                </div>
+                <!---<div style="font-family:monospace">{{key}}</div>
+                <div style="font-size:10px">{{val.nom.substring(0,8)}}</div>
+                <div style="font-size:8px">({{val.unitat}})</div>-->
+              </th>
+            </tr>
+
+            <template v-for="(tren,id) in this.ranquing_trens">
+              <tr>
+                <td rowspan="2" style="font-family:monospace">{{id + 1}}</td>
+                <td rowspan="2" style="text-align: right; padding: 0px 10px 0px 10px">{{Trens[tren.id].nom}}</td>
+                <td rowspan="2" style="text-align: left; padding: 0px 10px 0px 10px">{{tren.id}}</td>
+                <td rowspan="2">{{tren.puntuacio}}</td>
+                <td style="text-align: right; padding: 0px 5px 0px 5px">min:</td>
+                <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1'">
+                  <td
+                      :style="{background: tren.compliments.includes(key) ? 'lightgreen' : 'LightCoral'}"
+                      style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
+                  >
+                    {{tren.concentracio.min.qualitat[key]}}
+                  </td>
+                </template>
+              </tr>
+              <tr>
+                <td style="text-align: right; padding: 0px 5px 0px 5px">max:</td>
+                <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1'">
+                  <td
+                      :style="{background: tren.compliments.includes(key) ? 'lightgreen' : 'LightCoral'}"
+                      style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
+                  >
+                    {{tren.concentracio.max.qualitat[key]}}
+                  </td>
+                </template>
+              </tr>
+            </template>
+
           </table>
         </div>
         <!--
@@ -218,17 +274,18 @@ export default {
   },
   data: function(){
     return {
-      user: new Usuari(), //objecte
-      us_seleccionat: "", //ús seleccionat per l'usuari
-      eficacia_tractament:"min", //min o max
-      //trens_acceptats: {}, //diccionari amb trens que compleixen
+      user: new Usuari(),       //objecte
+      us_seleccionat: "",       //ús seleccionat per l'usuari
+      tractament_secundari: "", //tractament secundari infraestructura
+      eficacia_tractament:"min",//min o max
+      ranquing_trens: [],       //array de trens ordenats per compliments
 
       //backend
-      Usuari,       //classe
-      Corrent,      //classe
-      Tractaments: {}, //diccionari tots els tractaments
-      Trens: undefined,    //diccionari tots els trens
-      Usos: {}      //diccionari tots els usos
+      Usuari,                   //classe
+      Corrent,                  //classe
+      Tractaments: {},          //diccionari tots els tractaments
+      Trens: undefined,         //diccionari tots els trens
+      Usos: {}                  //diccionari tots els usos
       /*Tractaments2: {//diccionari
         "BRM":{
           "DP":{
@@ -323,14 +380,13 @@ export default {
     }
   },
   created: async function() {
-
     // read 'tractaments' excel
     this.read_file('/20210513_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
 
     // read 'trens' excel
     this.read_file('/20210513_SUGGEREIX_PT4_Trens.xlsx', 'trens');
 
-    this.trens_acceptats;
+    //this.trens_acceptats;
 
   },
   methods:{
@@ -359,44 +415,44 @@ export default {
       return workbook.xlsx.load(binaryData).then(wb => {
         let worksheet = wb.worksheets[0];
 
-        let rowNumber = 4; //ignore first 3 columns (headers)
+        let startingRow = 4; //ignore first 3 columns (headers)
         let maxRows = worksheet.rowCount
         let trains = {}
         const header = worksheet.getRow(3).values; //values of header (third row)
 
-        for (rowNumber; rowNumber <= maxRows; rowNumber++){
+        worksheet.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
+          if(rowNumber >= startingRow){
+            const row = rowData.values;
+            let trainId = row[3];
+            let trainName = row[1];
+            let trainTreatments = [];
+            let trainUsosES = [];
+            let trainUsosEU = [];
 
-          const row = worksheet.getRow(rowNumber).values;
-          let trainId = row[3];
-          let trainName = row[1];
-          let trainTreatments = [];
-          let trainUsosES = [];
-          let trainUsosEU = [];
+            //read treatments in order (from column D(4) to I(9) = 6 in total)
+            for (let i=4; i<10; i++){
+              if (row[i] !== undefined) trainTreatments.push(row[i].replaceAll(" ",""));
+            }
 
-          //read treatments in order (from column D(4) to I(9) = 6 in total)
-          for (let i=4; i<10; i++){
-            if (row[i] !== undefined) trainTreatments.push(row[i]);
+            //read uses according to 'RD 1620/2007' in order (from column J(10) to V(22) = 13 in total)
+            for (let i=10; i<23; i++){
+              if (row[i] === 1) trainUsosES.push(header[i]);
+            }
+
+            //read uses according to 'EU 2020/741' in order (from column W(23) to Z(26) = 4 in total)
+            for (let i=23; i<27; i++){
+              if (row[i] === 1) trainUsosEU.push(header[i]);
+            }
+
+            trains[trainId] = {
+              nom: trainName,
+              codi: trainId,
+              array_tractaments: trainTreatments,
+              usos_es: trainUsosES,
+              usos_eu: trainUsosEU
+            };
           }
-
-          //read uses according to 'RD 1620/2007' in order (from column J(10) to V(22) = 13 in total)
-          for (let i=10; i<23; i++){
-            if (row[i] == 1) trainUsosES.push(header[i]);
-          }
-
-          //read uses according to 'EU 2020/741' in order (from column W(23) to Z(26) = 4 in total)
-          for (let i=23; i<27; i++){
-            if (row[i] == 1) trainUsosEU.push(header[i]);
-          }
-
-          let newTrain = {
-            nom: trainName,
-            tractaments: trainTreatments,
-            usos_es: trainUsosES,
-            usos_eu: trainUsosEU
-          }
-          trains[trainId] = newTrain;
-
-        }
+        });
         _this.Trens = trains;
       });
     },
@@ -423,10 +479,27 @@ export default {
             let key = worksheet.getCell('D'+i.toString()).value;  //'I'+j.toString();
             let min = worksheet.getCell('E'+i.toString()).value;
             let max = worksheet.getCell('F'+i.toString()).value;
-            if (typeof min === 'object') min = min.result;  // formula in excel cell
-            if (min === 'ne' || min === 'na') min = 0;      // parse 'ne' or 'na' values to 0
-            if (typeof max === 'object') max = max.result;  // formula in excel cell
-            if (max === 'ne' || max === 'na') max = 0;      // parse 'ne' or 'na' values to 0
+            //if (typeof min === 'object') min = min.result;  // formula in excel cell
+            //if (min === 'ne' || min === 'na') min = 0;      // parse 'ne' or 'na' values to 0
+            //if (typeof max === 'object') max = max.result;  // formula in excel cell
+            //console.log(i, min, typeof min)
+            if (typeof min === 'string' && typeof max === 'string'){ // parse 'ne' or 'na' values to 0
+              min = 0;
+              max = 0;
+            }
+            else if (typeof min === 'string' && typeof max !== 'string'){
+              if (typeof max === 'object') max = max.result;
+              min = max;
+            }
+            else if (typeof max === 'string' && typeof min !== 'string'){
+              if (typeof min === 'object') min = min.result;
+              max = min;
+            }
+            else {
+              if (typeof max === 'object') max = max.result;
+              if (typeof min === 'object') min = min.result;
+            }
+            //if (max === 'ne' || max === 'na') max = 0;      // parse 'ne' or 'na' values to 0
             treatments[name][pretreatment][key] = {
               'min': min,
               'max': max
@@ -437,6 +510,56 @@ export default {
         _this.Tractaments = treatments;
       });
     },
+    //retorna un array amb els tots els trens ordenats de menys incompliment, a més incompliment.
+    avaluacio_trens: function (){
+
+      let _this = this;
+      let dict_tractaments = _this.Tractaments;
+      let efluent_secundari = _this.tractament_secundari;
+      let dict_trens = _this.Trens;
+      let avaluacio_trens = [];
+
+
+      if(_this.Trens !== undefined && _this.us_seleccionat !== "" && _this.tractament_secundari !== ""){
+        let i = 1;
+        for (const [key, tren] of Object.entries(dict_trens)) {
+          //console.log('dins for');
+          let array_tractaments = tren['array_tractaments'];
+          let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, efluent_secundari);
+
+          //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
+          let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu);
+          let puntuacio = Math.round((((avaluacio_compliments.length / 21) * 100) + Number.EPSILON) * 100) / 100;
+          console.log('avaluacio ', tren,': ', avaluacio_compliments.length, puntuacio)
+          // console.log(min_max);
+          let new_train = {
+            id: key,
+            concentracio: min_max,
+            compliments: avaluacio_compliments,
+            puntuacio: puntuacio,
+          }
+
+          //avaluacio_trens[key] = new_train;
+          avaluacio_trens.push(new_train);
+          //let min_max = _this.aplica_tren(array_tractaments);
+          //console.log(i);
+          i += 1;
+        }
+      }
+      console.log('abans',avaluacio_trens);
+      avaluacio_trens.sort((a, b) => b.puntuacio - a.puntuacio);
+      console.log('després', avaluacio_trens);
+      _this.ranquing_trens = avaluacio_trens;
+
+      //return avaluacio_trens;
+    },
+    eliminar_avaluacio(){
+      this.ranquing_trens = [];
+    },
+    mostrar_info_indicador(id){
+
+      return Corrent.info_qualitat[id].nom + ' (' + Corrent.info_qualitat[id].unitat + ')';
+    }
   },
   computed: {
     trens_acceptats: function (){
@@ -446,7 +569,7 @@ export default {
         return _this.user.filter_train_by_use(_this.us_seleccionat, _this.Trens);
       }
     },
-    mostrar_nota: function (){
+    mostrar_nota_ph: function (){
       let _this = this;
       const usos_nota = ['D1', 'D3', 'D5', 'D6', 'D7', 'D8', 'D11', 'D12', 'D13', 'D14'];
       if (_this.us_seleccionat !== ""){
@@ -462,10 +585,12 @@ export default {
   watch: {
     us_seleccionat: function(newUse, oldUse) {
       let _this = this;
-      //console.log(newUse);
-      //console.log(this.user)
       _this.user.corrent_objectiu.qualitat = Usuari.info_usos[newUse].qualitat;
     },
+    tractament_secundari: function (newUse, oldUse){
+      let _this = this;
+      _this.user.corrent.qualitat = Usuari.info_tractaments[newUse].qualitat;
+    }
   }
 }
 </script>
@@ -491,7 +616,7 @@ table{
   border-collapse:collapse;
 }
 th{
-  text-align:left;
+  text-align:center;
 }
 details summary:hover{
   cursor:pointer;
