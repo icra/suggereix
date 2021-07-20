@@ -11,8 +11,8 @@ export default class Corrent{
       "I3" :{nom:"Terbolesa",                           unitat:"NTU"},
       "I4" :{nom:"SST",                                 unitat:"mg/L"},
       "I5" :{nom:"COT",                                 unitat:"mg/L"},
-      "I6" :{nom:"NH4+",                                unitat:"mg/L"},
-      "I7" :{nom:"NO3-",                                unitat:"mg/L"},
+      "I6" :{nom:"NH4+",                                unitat:"μg/L"},
+      "I7" :{nom:"NO3-",                                unitat:"μg/L"},
       "I8" :{nom:"Zn",                                  unitat:"μg/L"},
       "I9" :{nom:"Ni",                                  unitat:"μg/L"},
       "I10":{nom:"Carbamazepina",                       unitat:"μg/L"},
@@ -112,7 +112,6 @@ export default class Corrent{
         array_tractaments.forEach(tractament=>{
           //console.log('hola: ', tractament, pretractament, id, tractaments_dict)
           if(!tractaments_dict[tractament][pretractament][id]) {
-            console.log('no existeix')
             return;
           }
           //console.log('dins array tractaments:', tractaments_dict[tractament][pretractament][id]);

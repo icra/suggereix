@@ -17,7 +17,8 @@
           <tr>
             <th colspan=2 rowspan="2">Indicadors de qualitat</th>
             <td colspan=2>
-              Selecciona tractament secundari<br>
+              Selecciona tractament secundari:
+              <br>
               <select v-model="tractament_secundari" style="max-width:350px">
                 <option v-for="(obj, key) in Usuari.info_tractaments" :value="key" :key="key">
                   {{obj.nom}}
@@ -27,13 +28,13 @@
             </td>
 
             <td>
-              Selecciona l'ús d'aigua regenerada<br>
-              <select v-model="us_seleccionat" style="max-width:250px">
-                <option v-for="(obj,key) in Usuari.info_usos" :value="key" :key="key">
-                  {{obj.nom}}
-                  [{{key}}]
-                </option>
-              </select>
+              Selecciona l'ús (o usos) d'aigua regenerada:
+              <br>
+              <template v-for="(obj,key) in Usuari.info_usos">
+                <input type="checkbox" :id="key" :value="key" v-model="usos_seleccionats">
+                <label :for="key">{{obj.nom}}</label>
+                <br>
+              </template>
             </td>
           </tr>
 
@@ -56,15 +57,9 @@
             <td>
               <input type="number" v-model.number="user.corrent.qualitat[key].max">
             </td>
-            <td style="text-align: right">
-              <div v-if="key === 'I1' && mostrar_nota_ph" class="tooltip">*
-                <span class="tooltiptext">rang: 6-9</span>
-              </div>
-              <div v-else-if="key === 'I8' && us_seleccionat !== ''" class="tooltip">*
-                <span class="tooltiptext">rang: 30-500</span>
-              </div>
-              <div v-else-if="key === 'I9' && us_seleccionat !== ''" class="tooltip">*
-                <span class="tooltiptext">rang: 4-20</span>
+            <td id="hola" style="text-align: right">
+              <div v-if="mostrar_nota_vp(key)" class="tooltip">*
+                <span class="tooltiptext">{{nota_rang_vp(key)}}</span>
               </div>
               <input type="number" v-model.number="user.corrent_objectiu.qualitat[key]">
             </td>
@@ -133,75 +128,8 @@
                 </template>
               </tr>
             </template>
-
           </table>
         </div>
-        <!--
-        <div style="padding:10px 0">
-          Eficàcia eliminació:
-          <label> <input type=radio v-model="eficacia_tractament" value="min"> Mínima</label>
-          <label> <input type=radio v-model="eficacia_tractament" value="max"> Màxima</label>
-        </div>
-
-        <div>
-          <table border=1>
-            <tr>
-              <th>Tractament</th>
-              <th>Pretractament</th>
-              <th
-                      v-for="obj,id in Corrent.info_qualitat"
-                      :title="`${obj.nom} ${obj.unitat}`"
-              >
-                <div style="font-family:monospace">{{id}}</div>
-                <div style="font-size:10px">{{obj.nom.substring(0,8)}}</div>
-                <div style="font-size:8px">({{obj.unitat}})</div>
-              </th>
-            </tr>
-            <tbody v-for="tra,nom_tra in Tractaments">
-            <tr>
-              <td :rowspan="1+Object.keys(tra).length">
-                {{nom_tra}}
-              </td>
-            </tr>
-            <tr v-for="pre,nom_pre in tra">
-              <td>
-                {{nom_pre}}
-                <details>
-                  <summary>editar</summary>
-                  <div>
-                    Edita els valors d'eliminació
-
-                    <table border=1>
-                      <tr>
-                        <th colspan=2>id</th>
-                        <th>min(%)</th>
-                        <th>max(%)</th>
-                      </tr>
-                      <tr v-for="obj,id in pre">
-                        <td style="font-family:monospace">{{id}}</td>
-                        <td>{{Corrent.info_qualitat[id].nom.substring(0,20)}}</td>
-                        <td><input type=number v-model.number="obj.min" min=0 max=100></td>
-                        <td><input type=number v-model.number="obj.max" min=0 max=100></td>
-                      </tr>
-                    </table>
-                  </div>
-                </details>
-              </td>
-              <td
-                      v-for="valor,id in user.corrent.aplica_tren_tractaments([pre])[eficacia_tractament].qualitat"
-                      :style="{background:valor<=user.corrent_objectiu.qualitat[id]?'lightgreen':'red'}"
-              >
-                <span v-if="valor==0 || valor>1000">{{ valor.toFixed(0) }}</span>
-                <span v-else-if="valor>100" >{{ valor.toFixed(1) }}</span>
-                <span v-else-if="valor>10"  >{{ valor.toFixed(2) }}</span>
-                <span v-else-if="valor>1"   >{{ valor.toFixed(3) }}</span>
-                <span v-else                >{{ valor.toFixed(4) }}</span>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>-->
-
       </div>
     </details>
 
@@ -266,16 +194,14 @@ import ExcelJS from 'exceljs';
 
 export default {
   name: 'HelloWorld',
-  props: {
-    msg: String
-  },
+  props: {},
   data: function(){
     return {
       user: new Usuari(),       //objecte
-      us_seleccionat: "",       //ús seleccionat per l'usuari
       tractament_secundari: "", //tractament secundari infraestructura
       //eficacia_tractament:"min",//min o max
       ranquing_trens: [],       //array de trens ordenats per compliments
+      usos_seleccionats: [],    //ús o usos seleccionats per l'usuari
 
       //backend
       Usuari,                   //classe
@@ -292,7 +218,6 @@ export default {
     // read 'trens' excel
     this.read_file('/20210513_SUGGEREIX_PT4_Trens.xlsx', 'trens');
 
-    //this.trens_acceptats;
 
   },
   methods:{
@@ -416,7 +341,7 @@ export default {
         _this.Tractaments = treatments;
       });
     },
-    //retorna un array amb els tots els trens ordenats de menys incompliment, a més incompliment.
+    //actualitza  l'array amb el rànquing de trens, ordenats de més grau de compliment, a menys.
     avaluacio_trens: function (){
 
       let _this = this;
@@ -426,7 +351,7 @@ export default {
       let avaluacio_trens = [];
 
 
-      if(_this.Trens !== undefined && _this.us_seleccionat !== "" && _this.tractament_secundari !== ""){
+      if(_this.Trens !== undefined && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
         let i = 1;
         for (const [key, tren] of Object.entries(dict_trens)) {
           //console.log('dins for');
@@ -436,7 +361,7 @@ export default {
           //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
           let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu);
           let puntuacio = Math.round((((avaluacio_compliments.length / 21) * 100) + Number.EPSILON) * 100) / 100;
-          console.log('avaluacio ', tren,': ', avaluacio_compliments.length, puntuacio)
+          console.log('avaluacio ', tren,': ', avaluacio_compliments, min_max.max, puntuacio)
           // console.log(min_max);
           let new_train = {
             id: key,
@@ -451,13 +376,15 @@ export default {
           //console.log(i);
           i += 1;
         }
+        console.log('abans',avaluacio_trens);
+        avaluacio_trens.sort((a, b) => b.puntuacio - a.puntuacio);
+        console.log('després', avaluacio_trens);
+        _this.ranquing_trens = avaluacio_trens;
       }
-      console.log('abans',avaluacio_trens);
-      avaluacio_trens.sort((a, b) => b.puntuacio - a.puntuacio);
-      console.log('després', avaluacio_trens);
-      _this.ranquing_trens = avaluacio_trens;
+      else{
+        alert("Falta definir l'efluent secundari o seleccionar l'ús (o usos) d'aigua regenerada.");
+      }
 
-      //return avaluacio_trens;
     },
     eliminar_avaluacio(){
       this.ranquing_trens = [];
@@ -465,33 +392,54 @@ export default {
     mostrar_info_indicador(id){
 
       return Corrent.info_qualitat[id].nom + ' (' + Corrent.info_qualitat[id].unitat + ')';
+    },
+    //retorna cert si cal mostrar nota de rang del valor protector amb 'id', fals altrament
+    mostrar_nota_vp: function (id){
+      let _this = this;
+      //const usos_nota = ['D1', 'D3', 'D5', 'D6', 'D7', 'D8', 'D11', 'D12', 'D13', 'D14'];
+      const ids_nota = ['I1', 'I8', 'I9'];
+      return _this.usos_seleccionats.length !== 0 && ids_nota.includes(id) && _this.user.corrent_objectiu.qualitat[id] !== 'nd';
+    },
+    //retorna l'string amb el rang de valors a mostrar pel valor protector de l'indicador 'id'.
+    nota_rang_vp: function (id){
+      if (id === 'I1') //pH
+        return 'rang: 6-9';
+
+      else if (id === 'I8')
+        return 'rang: 30-500';
+
+      else if (id === 'I9')
+        return 'rang: 4-20';
     }
   },
   computed: {
-    trens_acceptats: function (){
-      let _this = this;
-      if(_this.Trens !== undefined && _this.us_seleccionat !== "") {
-        //console.log('trens', _this.user.filter_train_by_use(_this.us_seleccionat, _this.Trens));
-        return _this.user.filter_train_by_use(_this.us_seleccionat, _this.Trens);
-      }
-    },
-    mostrar_nota_ph: function (){
-      let _this = this;
-      const usos_nota = ['D1', 'D3', 'D5', 'D6', 'D7', 'D8', 'D11', 'D12', 'D13', 'D14'];
-      if (_this.us_seleccionat !== ""){
-        if (usos_nota.includes(_this.us_seleccionat)) {
-          return true;
-        }
-        else return false;
-      }
-      else
-        return false;
-    }
+
   },
   watch: {
-    us_seleccionat: function(newUse, oldUse) {
+    usos_seleccionats: function (newUse, oldUse){
       let _this = this;
-      _this.user.corrent_objectiu.qualitat = Usuari.info_usos[newUse].qualitat;
+      if (_this.usos_seleccionats.length > 0){
+
+        //assignem a l'usuari la qualitat objectiva del primer ús seleccionat.
+        _this.user.corrent_objectiu.qualitat = Usuari.info_usos[newUse[0]].qualitat;
+        const n_usos = _this.usos_seleccionats.length;
+
+        //si hi ha més d'un ús seleccionat, actualitzem els indicadors de qualitat amb els valors protectors mínims.
+        for (let i=1; i<n_usos; i++){
+          const us = _this.usos_seleccionats[i];
+          let qualitat_us = Usuari.info_usos[us].qualitat;
+          //console.log('us:', us, qualitat_us);
+
+          // actualitzem qualitat final amb els valors més baixos protectors dels usos seleccionats, per cada indicador.
+          for (const [key, value] of Object.entries(qualitat_us)) {
+            if (value !== 'nd'){
+              const valor_actual = _this.user.corrent_objectiu.qualitat[key];
+              if (valor_actual === 'nd' || value < valor_actual)
+                _this.user.corrent_objectiu.qualitat[key] = value;
+            }
+          }
+        }
+      }
     },
     tractament_secundari: function (newUse, oldUse){
       let _this = this;
