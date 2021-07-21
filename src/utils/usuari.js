@@ -7,15 +7,6 @@ export default class Usuari{
     this.corrent_objectiu = new Corrent(); //qualitat desitjada
   }
 
-  //Retorna diccionari amb els trens que es poden aplicar en un ús concret
-  filter_train_by_use(use_id,Trens){
-    let trains_filtered = {}
-    Usuari.info_usos[use_id].trens_acceptats.forEach(id => {
-      trains_filtered[id] = Trens[id]
-    })
-    return trains_filtered
-  }
-
   static get info_tractaments(){
     return{
       "DP":{tipus:"primari", nom:"Només decantació primària. Sense tractament secundari",

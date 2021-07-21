@@ -42,32 +42,8 @@ export default class Corrent{
     });
   }
 
-  //aplica un carro de tecnologies
+  //aplica un carro de tecnologies/tractaments
   //genera 2 nous corrents "min" i "max"
-  aplica_tren_tractaments2(array_tractaments){
-    //retorna dos corrents nous
-    let min = new Corrent(); //eliminació mínima
-    let max = new Corrent(); //eliminació màxima
-
-    //copia el cabal actual al cabal dels nous corrents
-    min.Q = this.Q;
-    max.Q = this.Q;
-
-    //calcula qualitat dels nous corrents aplicant eliminació
-    Object.keys(this.qualitat).forEach(id=>{
-      min.qualitat[id] = this.qualitat[id];
-      max.qualitat[id] = this.qualitat[id];
-
-      array_tractaments.forEach(tractament=>{
-        if(!tractament[id]) return;
-        min.qualitat[id] *= 1-tractament[id].min/100;
-        max.qualitat[id] *= 1-tractament[id].max/100;
-      });
-    });
-
-    return {min, max};
-  }
-
   aplica_tren_tractaments(array_tractaments, tractaments_dict, tractament_secundari){
 
     //retorna dos corrents nous

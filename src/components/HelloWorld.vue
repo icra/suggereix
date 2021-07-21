@@ -212,12 +212,17 @@ export default {
     }
   },
   created: async function() {
-    // read 'tractaments' excel
+    // llegur excel 'tractaments'
     this.read_file('/20210513_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
 
-    // read 'trens' excel
+    // llegir excel 'trens'
     this.read_file('/20210513_SUGGEREIX_PT4_Trens.xlsx', 'trens');
 
+    // llegir excel 'efluent secundari' (característiques infraestructura existent)
+    //this.read_file('/20210716_SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
+
+    // llegir excel 'valors protectors usos'
+    this.read_file('/20210708_SUGGEREIX_PT3_Taulest.xlsx', 'usos');
 
   },
   methods:{
@@ -233,13 +238,50 @@ export default {
         let buffer =  oReq.response;
         let binaryData = new Uint8Array(buffer);
         if (type === 'tractaments')
-          await _this.read_treatments_sheet(binaryData);
+          await _this.llegir_tractaments(binaryData);
         else if (type === 'trens')
-          await _this.read_trains_sheet(binaryData);
+          await _this.llegir_trens(binaryData);
+        else if (type === 'efluent')
+          await _this.llegir_caract_efluent_secundari(binaryData);
+        else if (type === 'usos')
+          await _this.llegir_vp_usos(binaryData);
       }
 
     },
-    read_trains_sheet: function(binaryData){
+    // llegeix excel de valors de sortida dels diferents efluents secundaris (infraestructura existent).
+    llegir_caract_efluent_secundari: function(binaryData){
+
+    },
+    // llegeix excel que conté els valors protectors (VP) dels diferents usos.
+    // si per un ús hi ha més d'una tipologia de VP, es guarda el que té valor mínim (més restrictiu).
+    llegir_vp_usos: function(binaryData){
+      let _this = this;
+      let workbook = new ExcelJS.Workbook();
+
+      return workbook.xlsx.load(binaryData).then(wb => {
+        //1a pestanya amb nom i codi dels usos
+        let worksheet_codes = wb.worksheets[0];
+        let startingRow = 4; //ignore first 3 columns (headers)
+        let uses = {};
+
+        worksheet_codes.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
+          if(rowNumber >= startingRow){
+            const row = rowData.values;
+            let useId = row[2];
+            let useName = row[1];
+
+            uses[useId] = {
+              nom: useName,
+              codi: useId,
+              qualitat: {}
+            };
+          }
+        });
+        _this.Usos = uses;
+      });
+    },
+    // llegeix excel de trens de tractament i guarda les dades.
+    llegir_trens: function(binaryData){
 
       let _this = this;
       let workbook = new ExcelJS.Workbook();
@@ -287,7 +329,8 @@ export default {
         _this.Trens = trains;
       });
     },
-    read_treatments_sheet: function(binaryData){
+    // llegeix excel de tractaments i guarda les dades.
+    llegir_tractaments: function(binaryData){
 
       let _this = this;
       let workbook = new ExcelJS.Workbook();
