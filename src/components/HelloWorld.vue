@@ -273,11 +273,54 @@ export default {
             uses[useId] = {
               nom: useName,
               codi: useId,
-              qualitat: {}
+              qualitat: {} //valors protectors
             };
           }
         });
+
+        //2a pestanya amb valors protectors (VP) per cada indicador i ús.
+        let worksheet_vp = wb.worksheets[1];
+        startingRow = 2; //ignore first 2 columns (headers)
+        let maxRows = worksheet_vp.rowCount
+        console.log('llegir usos:', maxRows)
+
+        for (let i=startingRow; i<= maxRows; i++){
+          let name = worksheet_vp.getCell('A'+i.toString());
+          //console.log(i, name)
+        }
+        let i = 0;
+        worksheet_vp.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
+          //console.log(i);
+          if(rowNumber >= startingRow){
+            const row = rowData.values;
+            let useId = row[2]; //codi d'ús: columna 'B'
+            let indId = row[4]; //codi indicador: columna 'D'
+            let valorVp = row[6];    //valor protector: columna 'F'
+            let tipusVp= row[5];//tipus de valor protector (1,2 o 3): columna 'E'
+            let refVp = row[8]; //referència del valor protector
+
+            if (uses[useId].qualitat[indId] === undefined){ //no hi ha definit encara cap valor protector
+              uses[useId].qualitat[indId] = {
+                vp: valorVp,
+                tipus: tipusVp,
+                ref: refVp
+              }
+            }
+            else{ //ja hi ha definit algun valor protector. Comprovem si el següent és inferior o 'nd', per actualitzar-lo
+              if (uses[useId].qualitat[indId].vp === 'nd' || uses[useId].qualitat[indId].vp > valorVp)
+                uses[useId].qualitat[indId] = {
+                  vp: valorVp,
+                  tipus: tipusVp,
+                  ref: refVp
+                }
+            }
+            i += 1;
+          }
+
+        });
         _this.Usos = uses;
+        console.log('us 1:', uses['Dummy1']);
+        console.log('us 2:', uses['Dummy2']);
       });
     },
     // llegeix excel de trens de tractament i guarda les dades.
@@ -290,6 +333,7 @@ export default {
 
         let startingRow = 4; //ignore first 3 columns (headers)
         let maxRows = worksheet.rowCount
+        console.log('llegir trens:', maxRows)
         let trains = {}
         const header = worksheet.getRow(3).values; //values of header (third row)
 
@@ -338,9 +382,9 @@ export default {
 
         let worksheet = wb.worksheets[0];
         let rowNumber = 2; //ignore first column (header)
-        let maxRows = worksheet.rowCount
-        let treatments = {}
-
+        let maxRows = worksheet.rowCount;
+        let treatments = {};
+        console.log('llegir tractament:', maxRows)
         for (rowNumber; rowNumber < maxRows; rowNumber+=22){
           let i = rowNumber;
           let name = worksheet.getCell('A'+i.toString());
