@@ -293,11 +293,13 @@ export default {
           //console.log(i);
           if(rowNumber >= startingRow){
             const row = rowData.values;
-            let useId = row[2]; //codi d'ús: columna 'B'
-            let indId = row[4]; //codi indicador: columna 'D'
-            let valorVp = row[6];    //valor protector: columna 'F'
-            let tipusVp= row[5];//tipus de valor protector (1,2 o 3): columna 'E'
-            let refVp = row[8]; //referència del valor protector
+            let useId = row[2];   //codi d'ús: columna 'B'
+            let indId = row[4];   //codi indicador: columna 'D'
+            let tipusVp= row[5];  //tipus de valor protector (1,2 o 3): columna 'E'
+            let refVp = row[8];   //referència del valor protector
+            let valorVp = row[6]; //valor protector: columna 'F'
+            if (typeof valorVp === 'object') //de tipus formula (té result i formula, ens guardem només result).
+              valorVp = valorVp.result;
 
             if (uses[useId].qualitat[indId] === undefined){ //no hi ha definit encara cap valor protector
               uses[useId].qualitat[indId] = {
@@ -319,8 +321,8 @@ export default {
 
         });
         _this.Usos = uses;
-        console.log('us 1:', uses['Dummy1']);
-        console.log('us 2:', uses['Dummy2']);
+        //console.log('us 1:', uses['Dummy1']);
+        //console.log('us 2:', uses['Dummy2']);
       });
     },
     // llegeix excel de trens de tractament i guarda les dades.
@@ -406,7 +408,7 @@ export default {
               max = 0;
             }
             else if (typeof min === 'string' && typeof max !== 'string'){
-              if (typeof max === 'object') max = max.result;
+              if (typeof max === 'object') max = max.result; // type object when cell contains a formula and result.
               min = max;
             }
             else if (typeof max === 'string' && typeof min !== 'string'){
