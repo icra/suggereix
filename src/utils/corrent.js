@@ -54,7 +54,7 @@ export default class Corrent{
     //copia el cabal actual al cabal dels nous corrents
     min.Q = _this.Q;
     max.Q = _this.Q;
-    console.log(array_tractaments);
+    //console.log(array_tractaments);
 
     let n = array_tractaments.length; // número de tractaments aplicats en el tren
     let efluent_secundari = tractament_secundari;
@@ -63,17 +63,17 @@ export default class Corrent{
     if (efluent_secundari.includes("FAC_DS"))
       efluent_secundari = "FAC_DS";
 
-    // si efluent secundari és 'BRM' i el primer tractament també, no s'ha de tenir en compte, l'eliminem
+    // si efluent secundari és 'BRM' i el primer tractament també, no s'ha de tenir en compte, l'eliminem de l'array.
     if (efluent_secundari.includes('BRM') && array_tractaments[0] === 'BRM') {
       efluent_secundari = 'BRM';
-      array_tractaments = array_tractaments.splice(0, 1);
-      //console.log('modificat array', array_tractaments);
-    }
+      let array_modificat = [];
 
-    // si el primer tractament és 'BRM' i l'efluent secundari no és 'BRM', el guardem com a 'DP' perquè és l'únic
-    // pretractament possible.
-    if (!efluent_secundari.includes('BRM') && array_tractaments[0] === 'BRM')
-      efluent_secundari = 'DP';
+      for (let i = 1; i < array_tractaments.length; i++)
+        array_modificat.push(array_tractaments[i]);
+
+      array_tractaments = array_modificat;
+      //array_tractaments = array_tractaments.splice(0, 1);
+    }
 
     //calcula qualitat dels nous corrents aplicant eliminació
     Object.keys(_this.qualitat).forEach(id=>{

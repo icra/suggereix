@@ -167,7 +167,7 @@ export default class Usuari{
       },
     };
   }
-  static get info_usos(){
+  /*static get info_usos(){
     return{
       // Valors protectors (tipus 1 o 2 o 3 segons indicador)
       "D1":{nom:"Urbà residencial: reg de jardins privats", codi:"Dummy1",
@@ -256,5 +256,5 @@ export default class Usuari{
 
       },
     };
-  }
+  }*/
 }
