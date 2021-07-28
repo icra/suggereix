@@ -103,7 +103,7 @@
             <template v-for="(tren,id) in this.ranquing_trens">
               <tr>
                 <td rowspan="2" style="font-family:monospace">{{id + 1}}</td>
-                <td rowspan="2" style="text-align: right; padding: 0px 10px 0px 10px">{{Trens[tren.id].nom}}</td>
+                <td rowspan="2" style="text-align: right; padding: 0px 10px 0px 10px">{{Trens_info[tren.id].nom}}</td>
                 <td rowspan="2" style="text-align: left; padding: 0px 10px 0px 10px">{{tren.id}}</td>
                 <td rowspan="2" style="text-align: center">{{tren.puntuacio}}</td>
                 <td style="text-align: right; padding: 0px 5px 0px 5px">min:</td>
@@ -143,7 +143,7 @@
               <th>Pretractament</th>
               <th>Editar tractament</th>
             </tr>
-            <tbody v-for="(tra,nom_tra) in this.Tractaments" :key="nom_tra">
+            <tbody v-for="(tra,nom_tra) in this.Tractaments_info" :key="nom_tra">
             <tr>
               <td :rowspan="1+Object.keys(tra).length">
                 {{nom_tra}}
@@ -205,9 +205,9 @@ export default {
       //backend
       Usuari,                   //classe
       Corrent,                  //classe
-      Tractaments: {},          //diccionari tots els tractaments
-      Trens: undefined,         //diccionari tots els trens
-      Usos_info: {}                  //diccionari tots els usos
+      Tractaments_info: {},          //diccionari tots els tractaments
+      Trens_info: {},           //diccionari tots els trens
+      Usos_info: {}             //diccionari tots els usos
     }
   },
   created: async function() {
@@ -358,7 +358,7 @@ export default {
             };
           }
         });
-        _this.Trens = trains;
+        _this.Trens_info = trains;
       });
     },
     // llegeix excel de tractaments i guarda les dades.
@@ -413,20 +413,20 @@ export default {
             i++;
           }
         }
-        _this.Tractaments = treatments;
+        _this.Tractaments_info = treatments;
       });
     },
     //actualitza  l'array amb el rànquing de trens, ordenats de més grau de compliment, a menys.
     avaluacio_trens: function (){
 
       let _this = this;
-      let dict_tractaments = _this.Tractaments;
+      let dict_tractaments = _this.Tractaments_info;
       let efluent_secundari = _this.tractament_secundari;
-      let dict_trens = _this.Trens;
+      let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
 
 
-      if(_this.Trens !== undefined && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
+      if(Object.keys(_this.Trens_info).length !== 0 && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
         for (const [key, tren] of Object.entries(dict_trens)) {
           let array_tractaments = tren['array_tractaments'];
           let primer_tractament = array_tractaments[0];
