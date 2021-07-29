@@ -205,13 +205,14 @@ export default {
       //backend
       Usuari,                   //classe
       Corrent,                  //classe
-      Tractaments_info: {},          //diccionari tots els tractaments
+      Tractaments_info: {},     //diccionari tots els tractaments
       Trens_info: {},           //diccionari tots els trens
-      Usos_info: {}             //diccionari tots els usos
+      Usos_info: {},            //diccionari tots els usos
+      Efluents_info: {}         //diccionari efluents (primari/secundari) de l'infraestructura existent
     }
   },
   created: async function() {
-    // llegur excel 'tractaments'
+    // llegir excel 'tractaments'
     this.read_file('/20210723_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
 
     // llegir excel 'trens'
@@ -295,6 +296,10 @@ export default {
             let valorVp = row[6]; //valor protector: columna 'F'
             if (typeof valorVp === 'object') { //de tipus formula (té result i formula, ens guardem només result).
               valorVp = Math.round((valorVp.result + Number.EPSILON) * 1000000) / 1000000; //arrodonit a 7 decimals
+            }
+            if (typeof valorVp === 'string' && valorVp !== 'nd') {
+              valorVp = valorVp.replace(',','.'); //canviem la coma de l'string (per si és número decimal) per punt.
+              valorVp = parseFloat(valorVp.replace(/[^\d.-]/g,'')); //eliminar tot el que no siguin números i separador decimal.
             }
 
             if (uses[useId].qualitat[indId] === undefined){ //no hi ha definit encara cap valor protector

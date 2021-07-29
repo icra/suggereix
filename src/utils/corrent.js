@@ -123,11 +123,11 @@ export default class Corrent{
 
         else {
           if (id === 'I8')
-            return this.qualitat[id] < 500;
+            return this.qualitat[id] <= 500;
           else if (id === 'I9')
-            return this.qualitat[id] < 20;
+            return this.qualitat[id] <= 20;
           else
-            return this.qualitat[id] < corrent.qualitat[id];
+            return this.qualitat[id] <= corrent.qualitat[id];
         }
       }
     });
