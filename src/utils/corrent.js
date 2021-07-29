@@ -42,32 +42,8 @@ export default class Corrent{
     });
   }
 
-  //aplica un carro de tecnologies
+  //aplica un carro de tecnologies/tractaments
   //genera 2 nous corrents "min" i "max"
-  aplica_tren_tractaments2(array_tractaments){
-    //retorna dos corrents nous
-    let min = new Corrent(); //eliminació mínima
-    let max = new Corrent(); //eliminació màxima
-
-    //copia el cabal actual al cabal dels nous corrents
-    min.Q = this.Q;
-    max.Q = this.Q;
-
-    //calcula qualitat dels nous corrents aplicant eliminació
-    Object.keys(this.qualitat).forEach(id=>{
-      min.qualitat[id] = this.qualitat[id];
-      max.qualitat[id] = this.qualitat[id];
-
-      array_tractaments.forEach(tractament=>{
-        if(!tractament[id]) return;
-        min.qualitat[id] *= 1-tractament[id].min/100;
-        max.qualitat[id] *= 1-tractament[id].max/100;
-      });
-    });
-
-    return {min, max};
-  }
-
   aplica_tren_tractaments(array_tractaments, tractaments_dict, tractament_secundari){
 
     //retorna dos corrents nous
@@ -78,7 +54,6 @@ export default class Corrent{
     //copia el cabal actual al cabal dels nous corrents
     min.Q = _this.Q;
     max.Q = _this.Q;
-    console.log(array_tractaments);
 
     let n = array_tractaments.length; // número de tractaments aplicats en el tren
     let efluent_secundari = tractament_secundari;
@@ -87,17 +62,16 @@ export default class Corrent{
     if (efluent_secundari.includes("FAC_DS"))
       efluent_secundari = "FAC_DS";
 
-    // si efluent secundari és 'BRM' i el primer tractament també, no s'ha de tenir en compte, l'eliminem
+    // si efluent secundari és 'BRM' i el primer tractament també, no s'ha de tenir en compte, l'eliminem de l'array.
     if (efluent_secundari.includes('BRM') && array_tractaments[0] === 'BRM') {
       efluent_secundari = 'BRM';
-      array_tractaments = array_tractaments.splice(0, 1);
-      //console.log('modificat array', array_tractaments);
-    }
+      let array_modificat = [];
 
-    // si el primer tractament és 'BRM' i l'efluent secundari no és 'BRM', el guardem com a 'DP' perquè és l'únic
-    // pretractament possible.
-    if (!efluent_secundari.includes('BRM') && array_tractaments[0] === 'BRM')
-      efluent_secundari = 'DP';
+      for (let i = 1; i < array_tractaments.length; i++)
+        array_modificat.push(array_tractaments[i]);
+
+      array_tractaments = array_modificat;
+    }
 
     //calcula qualitat dels nous corrents aplicant eliminació
     Object.keys(_this.qualitat).forEach(id=>{
@@ -108,25 +82,23 @@ export default class Corrent{
         let pretractament = efluent_secundari;
         let r_min = 1;
         let r_max = 1;
-        //console.log('dins for each:',id, pretractament);
+
         array_tractaments.forEach(tractament=>{
-          //console.log('hola: ', tractament, pretractament, id, tractaments_dict)
           if(!tractaments_dict[tractament][pretractament][id]) {
             return;
           }
-          //console.log('dins array tractaments:', tractaments_dict[tractament][pretractament][id]);
+
           r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);
           r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);
           pretractament = tractament;
         });
-        //r_min = Math.round(((1.0 - (r_min / Math.pow(100, n))) + Number.EPSILON) * 10000) / 10000;
+
         r_min = 1.0 - (r_min / Math.pow(100, n));
         r_max = 1.0 - (r_max / Math.pow(100, n));
 
         min.qualitat[id] = Math.round(((_this.qualitat[id].min * (1 - r_max)) + Number.EPSILON) * 10000) / 10000; //arrodonit a 5 decimals
         max.qualitat[id] = Math.round(((_this.qualitat[id].max * (1 - r_min)) + Number.EPSILON) * 10000) / 10000;
 
-        //console.log(id, r_min, max.qualitat[id]);
       }
     });
 
@@ -134,7 +106,7 @@ export default class Corrent{
 
   }
 
-  //detecta els compliments
+  //detecta els compliments i retorna un array amb els ids dels indicadors que compleixen.
   n_compliments(corrent){
     return Object.keys(corrent.qualitat).filter(id=>{
       let indicadors_microbiologics = ['I19', 'I20', 'I21'];
@@ -147,11 +119,11 @@ export default class Corrent{
 
         else {
           if (id === 'I8')
-            return this.qualitat[id] < 500;
+            return this.qualitat[id] <= 500;
           else if (id === 'I9')
-            return this.qualitat[id] < 20;
+            return this.qualitat[id] <= 20;
           else
-            return this.qualitat[id] < corrent.qualitat[id];
+            return this.qualitat[id] <= corrent.qualitat[id];
         }
       }
     });

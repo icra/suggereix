@@ -20,7 +20,7 @@
               Selecciona tractament secundari:
               <br>
               <select v-model="tractament_secundari" style="max-width:350px">
-                <option v-for="(obj, key) in Usuari.info_tractaments" :value="key" :key="key">
+                <option v-for="(obj, key) in Usuari.info_tractaments_secundaris" :value="key" :key="key">
                   {{obj.nom}}
                   [{{key}}]
                 </option>
@@ -28,9 +28,9 @@
             </td>
 
             <td>
-              Selecciona l'ús (o usos) d'aigua regenerada:
+              <b>Selecciona l'ús (o usos) d'aigua regenerada:</b>
               <br>
-              <template v-for="(obj,key) in Usuari.info_usos">
+              <template v-for="(obj,key) in Usos_info">
                 <input type="checkbox" :id="key" :value="key" v-model="usos_seleccionats">
                 <label :for="key">{{obj.nom}}</label>
                 <br>
@@ -57,7 +57,7 @@
             <td>
               <input type="number" v-model.number="user.corrent.qualitat[key].max">
             </td>
-            <td id="hola" style="text-align: right">
+            <td style="text-align: right">
               <div v-if="mostrar_nota_vp(key)" class="tooltip">*
                 <span class="tooltiptext">{{nota_rang_vp(key)}}</span>
               </div>
@@ -103,7 +103,7 @@
             <template v-for="(tren,id) in this.ranquing_trens">
               <tr>
                 <td rowspan="2" style="font-family:monospace">{{id + 1}}</td>
-                <td rowspan="2" style="text-align: right; padding: 0px 10px 0px 10px">{{Trens[tren.id].nom}}</td>
+                <td rowspan="2" style="text-align: right; padding: 0px 10px 0px 10px">{{Trens_info[tren.id].nom}}</td>
                 <td rowspan="2" style="text-align: left; padding: 0px 10px 0px 10px">{{tren.id}}</td>
                 <td rowspan="2" style="text-align: center">{{tren.puntuacio}}</td>
                 <td style="text-align: right; padding: 0px 5px 0px 5px">min:</td>
@@ -143,7 +143,7 @@
               <th>Pretractament</th>
               <th>Editar tractament</th>
             </tr>
-            <tbody v-for="(tra,nom_tra) in this.Tractaments" :key="nom_tra">
+            <tbody v-for="(tra,nom_tra) in this.Tractaments_info" :key="nom_tra">
             <tr>
               <td :rowspan="1+Object.keys(tra).length">
                 {{nom_tra}}
@@ -190,34 +190,38 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import ExcelJS from 'exceljs';
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari} from "../utils/llegir_excels";
 
 export default {
-  name: 'HelloWorld',
-  props: {},
+  name: 'Sad',
   data: function(){
     return {
       user: new Usuari(),       //objecte
       tractament_secundari: "", //tractament secundari infraestructura
-      //eficacia_tractament:"min",//min o max
       ranquing_trens: [],       //array de trens ordenats per compliments
       usos_seleccionats: [],    //ús o usos seleccionats per l'usuari
 
       //backend
       Usuari,                   //classe
       Corrent,                  //classe
-      Tractaments: {},          //diccionari tots els tractaments
-      Trens: undefined,         //diccionari tots els trens
-      Usos: {}                  //diccionari tots els usos
+      Tractaments_info: {},     //diccionari tots els tractaments
+      Trens_info: {},           //diccionari tots els trens
+      Usos_info: {},            //diccionari tots els usos
+      Efluents_info: {}         //diccionari efluents (primari/secundari) de l'infraestructura existent
     }
   },
   created: async function() {
-    // read 'tractaments' excel
-    this.read_file('/20210513_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
+    // llegir excel 'tractaments'
+    this.read_file('/20210723_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
 
-    // read 'trens' excel
-    this.read_file('/20210513_SUGGEREIX_PT4_Trens.xlsx', 'trens');
+    // llegir excel 'trens'
+    this.read_file('/20210723_SUGGEREIX_PT4_Trens.xlsx', 'trens');
 
+    // llegir excel 'efluent secundari' (característiques infraestructura existent)
+    //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
+
+    // llegir excel 'valors protectors usos'
+    this.read_file('/SUGGEREIX_PT3_Taulest.xlsx', 'usos');
 
   },
   methods:{
@@ -233,152 +237,52 @@ export default {
         let buffer =  oReq.response;
         let binaryData = new Uint8Array(buffer);
         if (type === 'tractaments')
-          await _this.read_treatments_sheet(binaryData);
+          _this.Tractaments_info = await llegir_tractaments(binaryData);
         else if (type === 'trens')
-          await _this.read_trains_sheet(binaryData);
+          _this.Trens_info = await llegir_trens(binaryData);
+        else if (type === 'efluent')
+          _this.Efluents_info = await llegir_caract_efluent_secundari(binaryData);
+        else if (type === 'usos')
+          _this.Usos_info = await llegir_vp_usos(binaryData);
       }
 
     },
-    read_trains_sheet: function(binaryData){
 
-      let _this = this;
-      let workbook = new ExcelJS.Workbook();
-      return workbook.xlsx.load(binaryData).then(wb => {
-        let worksheet = wb.worksheets[0];
-
-        let startingRow = 4; //ignore first 3 columns (headers)
-        let maxRows = worksheet.rowCount
-        let trains = {}
-        const header = worksheet.getRow(3).values; //values of header (third row)
-
-        worksheet.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
-          if(rowNumber >= startingRow){
-            const row = rowData.values;
-            let trainId = row[3];
-            let trainName = row[1];
-            let trainTreatments = [];
-            let trainUsosES = [];
-            let trainUsosEU = [];
-
-            //read treatments in order (from column D(4) to I(9) = 6 in total)
-            for (let i=4; i<10; i++){
-              if (row[i] !== undefined) trainTreatments.push(row[i].replaceAll(" ",""));
-            }
-
-            //read uses according to 'RD 1620/2007' in order (from column J(10) to V(22) = 13 in total)
-            for (let i=10; i<23; i++){
-              if (row[i] === 1) trainUsosES.push(header[i]);
-            }
-
-            //read uses according to 'EU 2020/741' in order (from column W(23) to Z(26) = 4 in total)
-            for (let i=23; i<27; i++){
-              if (row[i] === 1) trainUsosEU.push(header[i]);
-            }
-
-            trains[trainId] = {
-              nom: trainName,
-              codi: trainId,
-              array_tractaments: trainTreatments,
-              usos_es: trainUsosES,
-              usos_eu: trainUsosEU
-            };
-          }
-        });
-        _this.Trens = trains;
-      });
-    },
-    read_treatments_sheet: function(binaryData){
-
-      let _this = this;
-      let workbook = new ExcelJS.Workbook();
-      return workbook.xlsx.load(binaryData).then(wb => {
-
-        let worksheet = wb.worksheets[0];
-        let rowNumber = 2; //ignore first column (header)
-        let maxRows = worksheet.rowCount
-        let treatments = {}
-
-        for (rowNumber; rowNumber < maxRows; rowNumber+=22){
-          let i = rowNumber;
-          let name = worksheet.getCell('A'+i.toString());
-          let pretreatment =  worksheet.getCell('B'+i.toString());
-          if (treatments[name] === undefined){
-            treatments[name] = {};
-          }
-          treatments[name][pretreatment] = {};
-          for (let j=1; j<=22; j++){
-            let key = worksheet.getCell('D'+i.toString()).value;  //'I'+j.toString();
-            let min = worksheet.getCell('E'+i.toString()).value;
-            let max = worksheet.getCell('F'+i.toString()).value;
-            //if (typeof min === 'object') min = min.result;  // formula in excel cell
-            //if (min === 'ne' || min === 'na') min = 0;      // parse 'ne' or 'na' values to 0
-            //if (typeof max === 'object') max = max.result;  // formula in excel cell
-            //console.log(i, min, typeof min)
-            if (typeof min === 'string' && typeof max === 'string'){ // parse 'ne' or 'na' values to 0
-              min = 0;
-              max = 0;
-            }
-            else if (typeof min === 'string' && typeof max !== 'string'){
-              if (typeof max === 'object') max = max.result;
-              min = max;
-            }
-            else if (typeof max === 'string' && typeof min !== 'string'){
-              if (typeof min === 'object') min = min.result;
-              max = min;
-            }
-            else {
-              if (typeof max === 'object') max = max.result;
-              if (typeof min === 'object') min = min.result;
-            }
-            //if (max === 'ne' || max === 'na') max = 0;      // parse 'ne' or 'na' values to 0
-            treatments[name][pretreatment][key] = {
-              'min': min,
-              'max': max
-            }
-            i++;
-          }
-        }
-        _this.Tractaments = treatments;
-      });
-    },
     //actualitza  l'array amb el rànquing de trens, ordenats de més grau de compliment, a menys.
     avaluacio_trens: function (){
 
       let _this = this;
-      let dict_tractaments = _this.Tractaments;
+      let dict_tractaments = _this.Tractaments_info;
       let efluent_secundari = _this.tractament_secundari;
-      let dict_trens = _this.Trens;
+      let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
 
-
-      if(_this.Trens !== undefined && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
-        let i = 1;
+      if(Object.keys(_this.Trens_info).length !== 0 && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
         for (const [key, tren] of Object.entries(dict_trens)) {
-          //console.log('dins for');
           let array_tractaments = tren['array_tractaments'];
-          let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, efluent_secundari);
+          let primer_tractament = array_tractaments[0];
+          let tren_aplicable = (efluent_secundari.includes('FAC_DS') && primer_tractament !== 'BRM') ||
+              (efluent_secundari.includes('BRM') && primer_tractament === 'BRM') ||
+              (efluent_secundari.includes('DP') && primer_tractament === 'BRM');
+          if(tren_aplicable){
+            let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, efluent_secundari);
 
-          //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
-          let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu);
-          let puntuacio = Math.round((((avaluacio_compliments.length / 21) * 100) + Number.EPSILON) * 100) / 100;
-          console.log('avaluacio ', tren,': ', avaluacio_compliments, min_max.max, puntuacio)
-          // console.log(min_max);
-          let new_train = {
-            id: key,
-            concentracio: min_max,
-            compliments: avaluacio_compliments,
-            puntuacio: puntuacio,
+            //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
+            let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu);
+            let puntuacio = Math.round((((avaluacio_compliments.length / 21) * 100) + Number.EPSILON) * 100) / 100;
+            // console.log('avaluacio ', tren,': ', avaluacio_compliments, min_max.max, puntuacio)
+            // console.log(min_max);
+            let new_train = {
+              id: key,
+              concentracio: min_max,
+              compliments: avaluacio_compliments,
+              puntuacio: puntuacio,
+            }
+
+            avaluacio_trens.push(new_train);
           }
-
-          //avaluacio_trens[key] = new_train;
-          avaluacio_trens.push(new_train);
-          //let min_max = _this.aplica_tren(array_tractaments);
-          //console.log(i);
-          i += 1;
         }
-        console.log('abans',avaluacio_trens);
         avaluacio_trens.sort((a, b) => b.puntuacio - a.puntuacio);
-        console.log('després', avaluacio_trens);
         _this.ranquing_trens = avaluacio_trens;
       }
       else{
@@ -386,13 +290,12 @@ export default {
       }
 
     },
+
+    //reseteja el ranquing de trens (array buit)
     eliminar_avaluacio(){
       this.ranquing_trens = [];
     },
-    mostrar_info_indicador(id){
 
-      return Corrent.info_qualitat[id].nom + ' (' + Corrent.info_qualitat[id].unitat + ')';
-    },
     //retorna cert si cal mostrar nota de rang del valor protector amb 'id', fals altrament
     mostrar_nota_vp: function (id){
       let _this = this;
@@ -400,6 +303,7 @@ export default {
       const ids_nota = ['I1', 'I8', 'I9'];
       return _this.usos_seleccionats.length !== 0 && ids_nota.includes(id) && _this.user.corrent_objectiu.qualitat[id] !== 'nd';
     },
+
     //retorna l'string amb el rang de valors a mostrar pel valor protector de l'indicador 'id'.
     nota_rang_vp: function (id){
       if (id === 'I1') //pH
@@ -416,34 +320,39 @@ export default {
 
   },
   watch: {
+    //actualitza la qualitat del corrent_objectiu (usuari), en funció dels vp mínims dels usos seleccionats.
     usos_seleccionats: function (newUse, oldUse){
       let _this = this;
       if (_this.usos_seleccionats.length > 0){
 
         //assignem a l'usuari la qualitat objectiva del primer ús seleccionat.
-        _this.user.corrent_objectiu.qualitat = Usuari.info_usos[newUse[0]].qualitat;
+        //_this.user.corrent_objectiu.qualitat = _this.Usos_info[newUse[0]].qualitat;
+        for (const [key, value] of Object.entries(_this.Usos_info[newUse[0]].qualitat)) {
+          _this.user.corrent_objectiu.qualitat[key] = value.vp;
+        }
         const n_usos = _this.usos_seleccionats.length;
 
         //si hi ha més d'un ús seleccionat, actualitzem els indicadors de qualitat amb els valors protectors mínims.
         for (let i=1; i<n_usos; i++){
           const us = _this.usos_seleccionats[i];
-          let qualitat_us = Usuari.info_usos[us].qualitat;
-          //console.log('us:', us, qualitat_us);
+          let qualitat_us = _this.Usos_info[us].qualitat;
 
           // actualitzem qualitat final amb els valors més baixos protectors dels usos seleccionats, per cada indicador.
           for (const [key, value] of Object.entries(qualitat_us)) {
-            if (value !== 'nd'){
+            if (value.vp !== 'nd'){
               const valor_actual = _this.user.corrent_objectiu.qualitat[key];
-              if (valor_actual === 'nd' || value < valor_actual)
-                _this.user.corrent_objectiu.qualitat[key] = value;
+              if (valor_actual === 'nd' || value.vp < valor_actual)
+                _this.user.corrent_objectiu.qualitat[key] = value.vp;
             }
           }
         }
       }
     },
+
+    //actualitza els valors inicial de qualitat de l'aigua (usuari) en funció de l'efluent secundari seleccionat.
     tractament_secundari: function (newUse, oldUse){
       let _this = this;
-      _this.user.corrent.qualitat = Usuari.info_tractaments[newUse].qualitat;
+      _this.user.corrent.qualitat = Usuari.info_tractaments_secundaris[newUse].qualitat;
     }
   }
 }

@@ -7,41 +7,32 @@ export default class Usuari{
     this.corrent_objectiu = new Corrent(); //qualitat desitjada
   }
 
-  //Retorna diccionari amb els trens que es poden aplicar en un ús concret
-  filter_train_by_use(use_id,Trens){
-    let trains_filtered = {}
-    Usuari.info_usos[use_id].trens_acceptats.forEach(id => {
-      trains_filtered[id] = Trens[id]
-    })
-    return trains_filtered
-  }
-
-  static get info_tractaments(){
+  static get info_tractaments_secundaris(){
     return{
       "DP":{tipus:"primari", nom:"Només decantació primària. Sense tractament secundari",
         qualitat:{
-          I1  : {min: 0, max: 0},
-          I2  : {min: 0, max: 0},
-          I3  : {min: 0, max: 0},
-          I4  : {min: 0, max: 0},
-          I5  : {min: 0, max: 0},
-          I6  : {min: 0, max: 0},
-          I7  : {min: 0, max: 0},
-          I8  : {min: 0, max: 0},
-          I9  : {min: 0, max: 0},
-          I10 : {min: 0, max: 0},
-          I11 : {min: 0, max: 0},
-          I12 : {min: 0, max: 0},
-          I13 : {min: 0, max: 0},
-          I14 : {min: 0, max: 0},
-          I15 : {min: 0, max: 0},
-          I16 : {min: 0, max: 0},
-          I17 : {min: 0, max: 0},
-          I18 : {min: 0, max: 0},
-          I19 : {min: 0, max: 0},
-          I20 : {min: 0, max: 0},
-          I21 : {min: 0, max: 0},
-          I22 : {min: 0, max: 0}
+          I1  : {min: 7,           max: 7.5},
+          I2  : {min: 300,         max: 2000},
+          I3  : {min: 80,          max: 150},
+          I4  : {min: 130,         max: 389},
+          I5  : {min: 109,         max: 328},
+          I6  : {min: 18000,       max: 52714},
+          I7  : {min: 0,           max: 0},
+          I8  : {min: 150,         max: 700},
+          I9  : {min: 7.5,         max: 600},
+          I10 : {min: 65,          max: 81},
+          I11 : {min: 431,         max: 715},
+          I12 : {min: 0.196,       max: 15.8},
+          I13 : {min: 0.2,         max: 6},
+          I14 : {min: 0.3,         max: 3.5},
+          I15 : {min: 159,         max: 272},
+          I16 : {min: 0.058,       max: 61.638},
+          I17 : {min: 0.0122,      max: 2.101},
+          I18 : {min: 37.2,        max: 81},
+          I19 : {min: 707945.784,  max: 39810717.055},
+          I20 : {min: 1096478.196, max: 5623413.252},
+          I21 : {min: 1513.561,    max: 2570395.783},
+          I22 : {min: 0.0015,      max: 0.089}
         },
       },
       "FAC_DS1":{tipus:"secundari", nom:"Llots actius convencionals sense nitrificació",
@@ -67,7 +58,7 @@ export default class Usuari{
           I19 : {min: 1e4,    max: 1e5},
           I20 : {min: 1e5,    max: 1e6},
           I21 : {min: 1e3,    max: 1e4},
-          I22 : {min: 0,      max: 0.19}
+          I22 : {min: 0.0015, max: 0.19}
         },
       },
       "FAC_DS2":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació",
@@ -93,7 +84,7 @@ export default class Usuari{
           I19 : {min: 1e4,    max: 1e5},
           I20 : {min: 1e5,    max: 1e6},
           I21 : {min: 1e3,    max: 1e4},
-          I22 : {min: 0,      max: 0.19}
+          I22 : {min: 0.0015, max: 0.19}
         },
       },
       "FAC_DS3":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació, desnitrificació biològica i eliminació biològica de PO4",
@@ -119,7 +110,7 @@ export default class Usuari{
           I19 : {min: 1e4,    max: 1e5},
           I20 : {min: 1e5,    max: 1e6},
           I21 : {min: 1e3,    max: 1e4},
-          I22 : {min: 0,      max: 0.19}
+          I22 : {min: 0.0015, max: 0.19}
         },
       },
       "BRM1":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació",
@@ -145,7 +136,7 @@ export default class Usuari{
           I19 : {min: 1,      max: 1e2},
           I20 : {min: 10,     max: 1e3},
           I21 : {min: 1,      max: 1e2},
-          I22 : {min: 0,      max: 0.19}
+          I22 : {min: 0.0015, max: 0.19}
         },
       },
       "BRM2":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació, desnitrificació biològica i eliminació biològica de PO4",
@@ -171,12 +162,12 @@ export default class Usuari{
           I19 : {min: 1,      max: 1e2},
           I20 : {min: 10,     max: 1e3},
           I21 : {min: 1,      max: 1e2},
-          I22 : {min: 0,      max: 0.19}
+          I22 : {min: 0.0015, max: 0.19}
         },
       },
     };
   }
-  static get info_usos(){
+  /*static get info_usos(){
     return{
       // Valors protectors (tipus 1 o 2 o 3 segons indicador)
       "D1":{nom:"Urbà residencial: reg de jardins privats", codi:"Dummy1",
@@ -265,5 +256,5 @@ export default class Usuari{
 
       },
     };
-  }
+  }*/
 }
