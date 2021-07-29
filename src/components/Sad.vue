@@ -20,7 +20,7 @@
               Selecciona tractament secundari:
               <br>
               <select v-model="tractament_secundari" style="max-width:350px">
-                <option v-for="(obj, key) in Usuari.info_tractaments" :value="key" :key="key">
+                <option v-for="(obj, key) in Usuari.info_tractaments_secundaris" :value="key" :key="key">
                   {{obj.nom}}
                   [{{key}}]
                 </option>
@@ -190,11 +190,10 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import ExcelJS from 'exceljs';
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari} from "../utils/llegir_excels";
 
 export default {
-  name: 'HelloWorld',
-  props: {},
+  name: 'Sad',
   data: function(){
     return {
       user: new Usuari(),       //objecte
@@ -238,191 +237,17 @@ export default {
         let buffer =  oReq.response;
         let binaryData = new Uint8Array(buffer);
         if (type === 'tractaments')
-          await _this.llegir_tractaments(binaryData);
+          _this.Tractaments_info = await llegir_tractaments(binaryData);
         else if (type === 'trens')
-          await _this.llegir_trens(binaryData);
+          _this.Trens_info = await llegir_trens(binaryData);
         else if (type === 'efluent')
-          await _this.llegir_caract_efluent_secundari(binaryData);
+          _this.Efluents_info = await llegir_caract_efluent_secundari(binaryData);
         else if (type === 'usos')
-          await _this.llegir_vp_usos(binaryData);
+          _this.Usos_info = await llegir_vp_usos(binaryData);
       }
 
     },
-    // llegeix excel de valors de sortida dels diferents efluents secundaris (infraestructura existent).
-    llegir_caract_efluent_secundari: function(binaryData){
 
-    },
-    // llegeix excel que conté els valors protectors (VP) dels diferents usos.
-    // si per un ús hi ha més d'una tipologia de VP, es guarda el que té valor mínim (més restrictiu).
-    llegir_vp_usos: function(binaryData){
-      let _this = this;
-      let workbook = new ExcelJS.Workbook();
-
-      return workbook.xlsx.load(binaryData).then(wb => {
-        //1a pestanya amb nom i codi dels usos
-        let worksheet_codes = wb.worksheets[0];
-        let startingRow = 4; //ignore first 3 columns (headers)
-        let uses = {};
-
-        worksheet_codes.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
-          if(rowNumber >= startingRow){
-            const row = rowData.values;
-            let useId = row[2];
-            let useName = row[1];
-
-            uses[useId] = {
-              nom: useName,
-              codi: useId,
-              qualitat: {} //valors protectors
-            };
-          }
-        });
-
-        //2a pestanya amb valors protectors (VP) per cada indicador i ús.
-        let worksheet_vp = wb.worksheets[1];
-        startingRow = 2; //ignore first 2 columns (headers)
-        let maxRows = worksheet_vp.rowCount
-        console.log('llegir usos:', maxRows)
-
-        worksheet_vp.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
-          if(rowNumber >= startingRow){
-            const row = rowData.values;
-            let useId = row[2];   //codi d'ús: columna 'B'
-            let indId = row[4];   //codi indicador: columna 'D'
-            let tipusVp= row[5];  //tipus de valor protector (1,2 o 3): columna 'E'
-            let valorVp = row[6]; //valor protector: columna 'F'
-            let refVp = row[8];   //referència del valor protector
-            if (refVp === undefined)  //si no hi ha referència, guardem string buida.
-              refVp = "";
-
-            if (typeof valorVp === 'object') { //de tipus formula (la cel·la té objectes 'result' i 'formula', ens guardem només 'result').
-              valorVp = Math.round((valorVp.result + Number.EPSILON) * 1000000) / 1000000; //arrodonit a 7 decimals
-            }
-
-            //valorVp tipus string, i no és 'nd'. exemple: '<1' (pels indicadors microbiològics I19, I20, I21)
-            if (typeof valorVp === 'string' && valorVp !== 'nd') {
-              valorVp = valorVp.replace(',','.'); //canviem la coma de l'string (per si és número decimal) per punt.
-              valorVp = parseFloat(valorVp.replace(/[^\d.-]/g,'')); //eliminar tot el que no siguin números i separador decimal.
-            }
-
-            //no hi ha definit encara cap valor protector, guardem dades obtingudes
-            if (uses[useId].qualitat[indId] === undefined){
-              uses[useId].qualitat[indId] = {
-                vp: valorVp,
-                tipus: tipusVp,
-                ref: refVp
-              }
-            }
-            //ja hi ha definit algun valor protector. Comprovem si el següent és un vp inferior o 'nd' per actualitzar-lo
-            else{
-              if (uses[useId].qualitat[indId].vp === 'nd' || uses[useId].qualitat[indId].vp > valorVp)
-                uses[useId].qualitat[indId] = {
-                  vp: valorVp,
-                  tipus: tipusVp,
-                  ref: refVp
-                }
-            }
-          }
-        });
-        _this.Usos_info = uses;
-      });
-    },
-    // llegeix excel de trens de tractament i guarda les dades.
-    llegir_trens: function(binaryData){
-
-      let _this = this;
-      let workbook = new ExcelJS.Workbook();
-      return workbook.xlsx.load(binaryData).then(wb => {
-        let worksheet = wb.worksheets[0];
-
-        let startingRow = 4; //ignore first 3 columns (headers)
-        let maxRows = worksheet.rowCount
-        console.log('llegir trens:', maxRows)
-        let trains = {}
-
-        worksheet.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
-          if(rowNumber >= startingRow){
-            const row = rowData.values;
-            let trainId = row[3];
-            let trainName = row[1];
-            let trainTreatments = [];
-            let references = [];
-
-            //read treatments in order (from column D(4) to I(9) = 6 in total)
-            for (let i=4; i<10; i++){
-              if (row[i] !== undefined) trainTreatments.push(row[i].replaceAll(" ",""));
-            }
-
-            //read references in order (from column J(10) to W(23) = 14 in total)
-            for (let i=10; i<24; i++){
-              if (row[i] !== undefined) references.push(row[i]);
-            }
-
-            trains[trainId] = {
-              nom: trainName,
-              codi: trainId,
-              array_tractaments: trainTreatments,
-              referencies: references,
-            };
-          }
-        });
-        _this.Trens_info = trains;
-      });
-    },
-    // llegeix excel de tractaments i guarda les dades.
-    llegir_tractaments: function(binaryData){
-
-      let _this = this;
-      let workbook = new ExcelJS.Workbook();
-      return workbook.xlsx.load(binaryData).then(wb => {
-        let worksheet = wb.worksheets[0];
-        let rowNumber = 2; //ignore first column (header)
-        let maxRows = worksheet.rowCount;
-        let treatments = {};
-        console.log('llegir tractament:', maxRows)
-        for (rowNumber; rowNumber < maxRows; rowNumber+=22){
-          let i = rowNumber;
-          let name = worksheet.getCell('A'+i.toString());
-          let pretreatment =  worksheet.getCell('B'+i.toString());
-          if (treatments[name] === undefined){
-            treatments[name] = {};
-          }
-          treatments[name][pretreatment] = {};
-          for (let j=1; j<=22; j++){
-            let key = worksheet.getCell('D'+i.toString()).value;  //'I'+j.toString();
-            let min = worksheet.getCell('E'+i.toString()).value;
-            let max = worksheet.getCell('F'+i.toString()).value;
-            //if (typeof min === 'object') min = min.result;  // formula in excel cell
-            //if (min === 'ne' || min === 'na') min = 0;      // parse 'ne' or 'na' values to 0
-            //if (typeof max === 'object') max = max.result;  // formula in excel cell
-            //console.log(i, min, typeof min)
-            if (typeof min === 'string' && typeof max === 'string'){ // parse 'ne' or 'na' values to 0
-              min = 0;
-              max = 0;
-            }
-            else if (typeof min === 'string' && typeof max !== 'string'){
-              if (typeof max === 'object') max = max.result; // type object when cell contains a formula and result.
-              min = max;
-            }
-            else if (typeof max === 'string' && typeof min !== 'string'){
-              if (typeof min === 'object') min = min.result;
-              max = min;
-            }
-            else {
-              if (typeof max === 'object') max = max.result;
-              if (typeof min === 'object') min = min.result;
-            }
-            //if (max === 'ne' || max === 'na') max = 0;      // parse 'ne' or 'na' values to 0
-            treatments[name][pretreatment][key] = {
-              min: min,
-              max: max
-            }
-            i++;
-          }
-        }
-        _this.Tractaments_info = treatments;
-      });
-    },
     //actualitza  l'array amb el rànquing de trens, ordenats de més grau de compliment, a menys.
     avaluacio_trens: function (){
 
@@ -431,7 +256,6 @@ export default {
       let efluent_secundari = _this.tractament_secundari;
       let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
-
 
       if(Object.keys(_this.Trens_info).length !== 0 && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
         for (const [key, tren] of Object.entries(dict_trens)) {
@@ -446,7 +270,7 @@ export default {
             //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
             let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu);
             let puntuacio = Math.round((((avaluacio_compliments.length / 21) * 100) + Number.EPSILON) * 100) / 100;
-            console.log('avaluacio ', tren,': ', avaluacio_compliments, min_max.max, puntuacio)
+            // console.log('avaluacio ', tren,': ', avaluacio_compliments, min_max.max, puntuacio)
             // console.log(min_max);
             let new_train = {
               id: key,
@@ -458,9 +282,7 @@ export default {
             avaluacio_trens.push(new_train);
           }
         }
-        //console.log('abans',avaluacio_trens);
         avaluacio_trens.sort((a, b) => b.puntuacio - a.puntuacio);
-        //console.log('després', avaluacio_trens);
         _this.ranquing_trens = avaluacio_trens;
       }
       else{
@@ -468,12 +290,12 @@ export default {
       }
 
     },
+
+    //reseteja el ranquing de trens (array buit)
     eliminar_avaluacio(){
       this.ranquing_trens = [];
     },
-    mostrar_valor_tract_secundari: function (id){
 
-    },
     //retorna cert si cal mostrar nota de rang del valor protector amb 'id', fals altrament
     mostrar_nota_vp: function (id){
       let _this = this;
@@ -481,6 +303,7 @@ export default {
       const ids_nota = ['I1', 'I8', 'I9'];
       return _this.usos_seleccionats.length !== 0 && ids_nota.includes(id) && _this.user.corrent_objectiu.qualitat[id] !== 'nd';
     },
+
     //retorna l'string amb el rang de valors a mostrar pel valor protector de l'indicador 'id'.
     nota_rang_vp: function (id){
       if (id === 'I1') //pH
@@ -525,10 +348,11 @@ export default {
         }
       }
     },
+
     //actualitza els valors inicial de qualitat de l'aigua (usuari) en funció de l'efluent secundari seleccionat.
     tractament_secundari: function (newUse, oldUse){
       let _this = this;
-      _this.user.corrent.qualitat = Usuari.info_tractaments[newUse].qualitat;
+      _this.user.corrent.qualitat = Usuari.info_tractaments_secundaris[newUse].qualitat;
     }
   }
 }

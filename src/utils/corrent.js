@@ -54,7 +54,6 @@ export default class Corrent{
     //copia el cabal actual al cabal dels nous corrents
     min.Q = _this.Q;
     max.Q = _this.Q;
-    //console.log(array_tractaments);
 
     let n = array_tractaments.length; // número de tractaments aplicats en el tren
     let efluent_secundari = tractament_secundari;
@@ -72,7 +71,6 @@ export default class Corrent{
         array_modificat.push(array_tractaments[i]);
 
       array_tractaments = array_modificat;
-      //array_tractaments = array_tractaments.splice(0, 1);
     }
 
     //calcula qualitat dels nous corrents aplicant eliminació
@@ -84,25 +82,23 @@ export default class Corrent{
         let pretractament = efluent_secundari;
         let r_min = 1;
         let r_max = 1;
-        //console.log('dins for each:',id, pretractament);
+
         array_tractaments.forEach(tractament=>{
-          //console.log('hola: ', tractament, pretractament, id, tractaments_dict)
           if(!tractaments_dict[tractament][pretractament][id]) {
             return;
           }
-          //console.log('dins array tractaments:', tractaments_dict[tractament][pretractament][id]);
+
           r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);
           r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);
           pretractament = tractament;
         });
-        //r_min = Math.round(((1.0 - (r_min / Math.pow(100, n))) + Number.EPSILON) * 10000) / 10000;
+
         r_min = 1.0 - (r_min / Math.pow(100, n));
         r_max = 1.0 - (r_max / Math.pow(100, n));
 
         min.qualitat[id] = Math.round(((_this.qualitat[id].min * (1 - r_max)) + Number.EPSILON) * 10000) / 10000; //arrodonit a 5 decimals
         max.qualitat[id] = Math.round(((_this.qualitat[id].max * (1 - r_min)) + Number.EPSILON) * 10000) / 10000;
 
-        //console.log(id, r_min, max.qualitat[id]);
       }
     });
 
@@ -110,7 +106,7 @@ export default class Corrent{
 
   }
 
-  //detecta els compliments
+  //detecta els compliments i retorna un array amb els ids dels indicadors que compleixen.
   n_compliments(corrent){
     return Object.keys(corrent.qualitat).filter(id=>{
       let indicadors_microbiologics = ['I19', 'I20', 'I21'];
