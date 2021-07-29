@@ -57,7 +57,7 @@
             <td>
               <input type="number" v-model.number="user.corrent.qualitat[key].max">
             </td>
-            <td id="hola" style="text-align: right">
+            <td style="text-align: right">
               <div v-if="mostrar_nota_vp(key)" class="tooltip">*
                 <span class="tooltiptext">{{nota_rang_vp(key)}}</span>
               </div>
@@ -205,7 +205,7 @@ export default {
       //backend
       Usuari,                   //classe
       Corrent,                  //classe
-      Tractaments_info: {},          //diccionari tots els tractaments
+      Tractaments_info: {},     //diccionari tots els tractaments
       Trens_info: {},           //diccionari tots els trens
       Usos_info: {}             //diccionari tots els usos
     }
@@ -283,28 +283,34 @@ export default {
         let maxRows = worksheet_vp.rowCount
         console.log('llegir usos:', maxRows)
 
-        let i = 0;
         worksheet_vp.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
-          //console.log(i);
           if(rowNumber >= startingRow){
             const row = rowData.values;
             let useId = row[2];   //codi d'ús: columna 'B'
             let indId = row[4];   //codi indicador: columna 'D'
             let tipusVp= row[5];  //tipus de valor protector (1,2 o 3): columna 'E'
-            let refVp = row[8];   //referència del valor protector
             let valorVp = row[6]; //valor protector: columna 'F'
-            if (typeof valorVp === 'object') { //de tipus formula (té result i formula, ens guardem només result).
+            let refVp = row[8];   //referència del valor protector
+            if (refVp === undefined)  //si no hi ha referència, guardem string buida.
+              refVp = "";
+            if (typeof valorVp === 'object') { //de tipus formula (la cel·la té objectes 'result' i 'formula', ens guardem només 'result').
               valorVp = Math.round((valorVp.result + Number.EPSILON) * 1000000) / 1000000; //arrodonit a 7 decimals
             }
+            //valorVp tipus string, i no és 'nd'. exemple: '<1' (pels indicadors microbiològics I19, I20, I21)
+            if (typeof valorVp === 'string' && valorVp !== 'nd') {
+              valorVp = parseFloat(valorVp.substring(1));
+            }
 
-            if (uses[useId].qualitat[indId] === undefined){ //no hi ha definit encara cap valor protector
+            //no hi ha definit encara cap valor protector, guardem dades obtingudes
+            if (uses[useId].qualitat[indId] === undefined){
               uses[useId].qualitat[indId] = {
                 vp: valorVp,
                 tipus: tipusVp,
                 ref: refVp
               }
             }
-            else{ //ja hi ha definit algun valor protector. Comprovem si el següent és inferior o 'nd', per actualitzar-lo
+            //ja hi ha definit algun valor protector. Comprovem si el següent és un vp inferior o 'nd' per actualitzar-lo
+            else{
               if (uses[useId].qualitat[indId].vp === 'nd' || uses[useId].qualitat[indId].vp > valorVp)
                 uses[useId].qualitat[indId] = {
                   vp: valorVp,
@@ -312,9 +318,7 @@ export default {
                   ref: refVp
                 }
             }
-            i += 1;
           }
-
         });
         _this.Usos_info = uses;
       });
@@ -367,7 +371,6 @@ export default {
       let _this = this;
       let workbook = new ExcelJS.Workbook();
       return workbook.xlsx.load(binaryData).then(wb => {
-
         let worksheet = wb.worksheets[0];
         let rowNumber = 2; //ignore first column (header)
         let maxRows = worksheet.rowCount;
@@ -407,8 +410,8 @@ export default {
             }
             //if (max === 'ne' || max === 'na') max = 0;      // parse 'ne' or 'na' values to 0
             treatments[name][pretreatment][key] = {
-              'min': min,
-              'max': max
+              min: min,
+              max: max
             }
             i++;
           }
@@ -463,6 +466,9 @@ export default {
     },
     eliminar_avaluacio(){
       this.ranquing_trens = [];
+    },
+    mostrar_valor_tract_secundari: function (id){
+
     },
     //retorna cert si cal mostrar nota de rang del valor protector amb 'id', fals altrament
     mostrar_nota_vp: function (id){
