@@ -6,7 +6,7 @@
       <div>
         <table border=1>
           <tr>
-            <th colspan="2">Capacitat tractament (m3):
+            <th colspan="2">Capacitat tractament (m3/d):
               <input type="number" v-model.number="user.corrent.Q" style="max-width:75px">
             </th>
             <th colspan=2>Descripció infraestructura existent</th>
@@ -17,7 +17,7 @@
           <tr>
             <th colspan=2 rowspan="2">Indicadors de qualitat</th>
             <td colspan=2>
-              Selecciona tractament secundari:
+              Selecciona la infraestructura existent:
               <br>
               <select v-model="tractament_secundari" style="max-width:350px">
                 <option v-for="(obj, key) in Usuari.info_tractaments_secundaris" :value="key" :key="key">
@@ -51,17 +51,24 @@
             <td style="font-family:monospace">
               {{key}}
             </td>
-            <td>
+            <td v-if="key !== 'I22' && key !== 'I23'">
               <input type="number" v-model.number="user.corrent.qualitat[key].min">
             </td>
-            <td>
+            <td v-if="key !== 'I22' && key !== 'I23'">
               <input type="number" v-model.number="user.corrent.qualitat[key].max">
+            </td>
+            <td v-else-if="key === 'I22'" colspan="2" class="doubletd">
+              L’I22 (N-nitrosodimetilamina) es pot formar en tractaments de desinfecció amb cloramines, amb clor si al medi també hi ha amoni, i en tractaments amb ozó.
+            </td>
+            <td v-else colspan="2" class="doubletd">
+              L’I23 (triclorometà) es pot formar en tractaments de desinfecció amb clor lliure.
             </td>
             <td style="text-align: right">
               <div v-if="mostrar_nota_vp(key)" class="tooltip">*
                 <span class="tooltiptext">{{nota_rang_vp(key)}}</span>
               </div>
-              <input type="number" v-model.number="user.corrent_objectiu.qualitat[key]">
+              <input v-if="!isNaN(user.corrent_objectiu.qualitat[key])" type="number" v-model.number="user.corrent_objectiu.qualitat[key]">
+              <input v-else placeholder="nd" class="nd" disabled>
             </td>
             <td>
               {{Corrent.info_qualitat[key].unitat}}
@@ -91,7 +98,7 @@
               <th v-for="(val, key) in Corrent.info_qualitat"
                   :key="key"
                   style="font-family:monospace; text-align: left; padding: 0px 5px 0px 3px"
-                  v-if="key !== 'I1'">
+                  v-if="key !== 'I1' && key !== 'I22' && key !== 'I23'">
 
                 <div class="tooltip" style="color: inherit">{{key}}
                   <span class="tooltiptext_ind" style="font-size: 10px">{{val.nom}}</span>
@@ -107,7 +114,7 @@
                 <td rowspan="2" style="text-align: left; padding: 0px 10px 0px 10px">{{tren.id}}</td>
                 <td rowspan="2" style="text-align: center">{{tren.puntuacio}}</td>
                 <td style="text-align: right; padding: 0px 5px 0px 5px">min:</td>
-                <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1'">
+                <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1' && key !== 'I22' && key !== 'I23'">
                   <td
                       :style="{background: tren.compliments.includes(key) ? 'lightgreen' : 'LightCoral'}"
                       style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
@@ -118,7 +125,7 @@
               </tr>
               <tr>
                 <td style="text-align: right; padding: 0px 5px 0px 5px">max:</td>
-                <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1'">
+                <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1' && key !== 'I22' && key !== 'I23'">
                   <td
                       :style="{background: tren.compliments.includes(key) ? 'lightgreen' : 'LightCoral'}"
                       style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
@@ -221,7 +228,7 @@ export default {
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
 
     // llegir excel 'valors protectors usos'
-    this.read_file('/SUGGEREIX_PT3_Taulest.xlsx', 'usos');
+    this.read_file('/20211103_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
 
   },
   methods:{
@@ -269,7 +276,7 @@ export default {
 
             //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
             let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu);
-            let puntuacio = Math.round((((avaluacio_compliments.length / 21) * 100) + Number.EPSILON) * 100) / 100;
+            let puntuacio = Math.round((((avaluacio_compliments.length / 20) * 100) + Number.EPSILON) * 100) / 100;
             // console.log('avaluacio ', tren,': ', avaluacio_compliments, min_max.max, puntuacio)
             // console.log(min_max);
             let new_train = {
@@ -299,21 +306,35 @@ export default {
     //retorna cert si cal mostrar nota de rang del valor protector amb 'id', fals altrament
     mostrar_nota_vp: function (id){
       let _this = this;
-      //const usos_nota = ['D1', 'D3', 'D5', 'D6', 'D7', 'D8', 'D11', 'D12', 'D13', 'D14'];
-      const ids_nota = ['I1', 'I8', 'I9'];
-      return _this.usos_seleccionats.length !== 0 && ids_nota.includes(id) && _this.user.corrent_objectiu.qualitat[id] !== 'nd';
+      // Es crea un diccionary per cada indicador quins usos han de mostrar rang.
+      const ids_us_dict = {
+        'I1': [1,2,3,5,6,7,8,11,12,13,14,15],
+        'I6': [1,3,8],
+        'I7': [1,3,8],
+        'I8': [1,3,5,6,7,8,11,12,13,14,15],
+        'I9': [1,3,5,6,7,8,11,12,13,14,15]
+      };
+      if(_this.usos_seleccionats.length !== 0 && ids_us_dict[id] && _this.user.corrent_objectiu.qualitat[id] !== 'nd'){
+        // Es crea un array de numeros basat en l'array de 'DummyX' i es filtren els elements que coincideixen amb el diccionari.
+        const usos_numeros = _this.usos_seleccionats.flatMap(us => ids_us_dict[id].includes(Number(us.substr(-1))) ? [us] : []);
+        return usos_numeros.length !== 0;
+      }
+      else return false;
     },
 
     //retorna l'string amb el rang de valors a mostrar pel valor protector de l'indicador 'id'.
     nota_rang_vp: function (id){
-      if (id === 'I1') //pH
-        return 'rang: 6-9';
-
-      else if (id === 'I8')
-        return 'rang: 30-500';
-
-      else if (id === 'I9')
-        return 'rang: 4-20';
+      let _this = this;
+      // Diccionari de rangs en funció de l'indicador 'id' (en el cas particular del I1 varia en funció de l'ús).
+      const ids_us_dict = {
+        'I1': _this.usos_seleccionats.includes('Dummy15') ? 'rang: 6,5-9,5' : 'rang: 6-9',
+        'I6': 'rang: 2-31',
+        'I7': 'rang: 2-3',
+        'I8': 'rang: 30-500',
+        'I9': 'rang: 4-20'
+      };
+      return ids_us_dict[id];
+      
     }
   },
   computed: {
@@ -377,6 +398,15 @@ a {
 
 table{
   border-collapse:collapse;
+}
+table td {
+  word-wrap:break-word;
+}
+.doubletd {
+  width:120px;
+}
+.nd{
+  text-align:right;
 }
 th{
   text-align:center;

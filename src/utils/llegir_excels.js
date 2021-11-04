@@ -46,7 +46,7 @@ function llegir_vp_usos(binaryData){
 
     //2a pestanya amb valors protectors (VP) per cada indicador i ús.
     let worksheet_vp = wb.worksheets[1];
-    startingRow = 2; //ignore first 2 columns (headers)
+    startingRow = 4; //ignore first 4 rows (headers).
 
     worksheet_vp.eachRow({ includeEmpty: false }, function(rowData, rowNumber) {
       if(rowNumber >= startingRow){

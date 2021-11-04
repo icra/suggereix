@@ -6,15 +6,15 @@ export default class Corrent{
   //info items qualitat
   static get info_qualitat(){
     return {
-      "I1" :{nom:"pH",                                  unitat:"∅"},
+      "I1" :{nom:"(pH): unitats de pH",                 unitat:"∅"},
       "I2" :{nom:"Conductivitat elèctrica",             unitat:"μS/cm"},
       "I3" :{nom:"Terbolesa",                           unitat:"NTU"},
-      "I4" :{nom:"SST",                                 unitat:"mg/L"},
-      "I5" :{nom:"COT",                                 unitat:"mg/L"},
-      "I6" :{nom:"NH4+",                                unitat:"μg/L"},
-      "I7" :{nom:"NO3-",                                unitat:"μg/L"},
-      "I8" :{nom:"Zn",                                  unitat:"μg/L"},
-      "I9" :{nom:"Ni",                                  unitat:"μg/L"},
+      "I4" :{nom:"Sòlids en Suspensió Totals (SST)",    unitat:"mg/L"},
+      "I5" :{nom:"Carboni Orgànic Total (COT)",         unitat:"mg/L"},
+      "I6" :{nom:"Amoni (NH4+)",                        unitat:"mg/L"},
+      "I7" :{nom:"Nitrat (NO3-)",                       unitat:"mg/L"},
+      "I8" :{nom:"Zinc (Zn)",                           unitat:"μg/L"},
+      "I9" :{nom:"Níquel (Ni)",                         unitat:"μg/L"},
       "I10":{nom:"Carbamazepina",                       unitat:"μg/L"},
       "I11":{nom:"Diclofenac",                          unitat:"μg/L"},
       "I12":{nom:"N,N-Dietil-m-toluamida (DEET)",       unitat:"μg/L"},
@@ -26,9 +26,9 @@ export default class Corrent{
       "I18":{nom:"Bis(2-etilhexil) ftalat (DEHP)",      unitat:"μg/L"},
       "I19":{nom:"E. coli",                             unitat:"CFU/100mL"},
       "I20":{nom:"Colífags",                            unitat:"PFU/100mL"},
-      "I21":{nom:"Espores Clostridium perfringens",     unitat:"espores/100mL"},
-      "I22":{nom:"N-nitrosodimethylamine (NDMA)",       unitat:"μg/L"}
-
+      "I21":{nom:"Espores Clostridium perfringens",     unitat:"CFU/100mL"},
+      "I22":{nom:"N-nitrosodimethylamine (NDMA)",       unitat:"μg/L"},
+      "I23":{nom:"Triclorometà",                        unitat:"μg/L"}
     };
   }
 
@@ -75,8 +75,8 @@ export default class Corrent{
 
     //calcula qualitat dels nous corrents aplicant eliminació
     Object.keys(_this.qualitat).forEach(id=>{
-      //calculem l'eliminació de tots els indicadors excepte del pH ('I1').
-      if (id !== 'I1'){
+      //calculem l'eliminació de tots els indicadors excepte del pH ('I1'), I22 i I23.
+      if (id !== 'I1' && id !== 'I22' && id !== 'I23'){
         min.qualitat[id] = _this.qualitat[id];
         max.qualitat[id] = _this.qualitat[id];
         let pretractament = efluent_secundari;
@@ -110,8 +110,8 @@ export default class Corrent{
   n_compliments(corrent){
     return Object.keys(corrent.qualitat).filter(id=>{
       let indicadors_microbiologics = ['I19', 'I20', 'I21'];
-      //mirar tots els indicadors excepte el pH ('I1')
-      if (id !== 'I1'){
+      //mirar tots els indicadors excepte el pH ('I1'), I22 i I23
+      if (id !== 'I1' && id !== 'I22' && id !== 'I23'){
 
         //si el VP és 'nd', es considera que compleix (excepte els microbiològics) --- REPASSAR LO DELS INDICADORS MICROBIOLÒGICS AMB NOVES INDICACIONS MERCÈ...
         if (!indicadors_microbiologics.includes(id) && corrent.qualitat[id] === 'nd')

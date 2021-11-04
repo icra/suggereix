@@ -16,7 +16,7 @@ export default class Usuari{
           I3  : {min: 80,          max: 150},
           I4  : {min: 130,         max: 389},
           I5  : {min: 109,         max: 328},
-          I6  : {min: 18000,       max: 52714},
+          I6  : {min: 14,          max: 41},
           I7  : {min: 0,           max: 0},
           I8  : {min: 150,         max: 700},
           I9  : {min: 7.5,         max: 600},
@@ -32,7 +32,8 @@ export default class Usuari{
           I19 : {min: 707945.784,  max: 39810717.055},
           I20 : {min: 1096478.196, max: 5623413.252},
           I21 : {min: 1513.561,    max: 2570395.783},
-          I22 : {min: 0.0015,      max: 0.089}
+          I22 : {},
+          I23 : {} 
         },
       },
       "FAC_DS1":{tipus:"secundari", nom:"Llots actius convencionals sense nitrificació",
@@ -42,8 +43,8 @@ export default class Usuari{
           I3  : {min: 2,      max: 15},
           I4  : {min: 5,      max: 25},
           I5  : {min: 20,     max: 40},
-          I6  : {min: 23168.6,max: 43762.9},
-          I7  : {min: 0,      max: 3986},
+          I6  : {min: 18,     max: 34},
+          I7  : {min: 0,      max: 0.9},
           I8  : {min: 5,      max: 700},
           I9  : {min: 5,      max: 100},
           I10 : {min: 0.05,   max: 20},
@@ -58,7 +59,8 @@ export default class Usuari{
           I19 : {min: 1e4,    max: 1e5},
           I20 : {min: 1e5,    max: 1e6},
           I21 : {min: 1e3,    max: 1e4},
-          I22 : {min: 0.0015, max: 0.19}
+          I22 : {},
+          I23 : {} 
         },
       },
       "FAC_DS2":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació",
@@ -68,8 +70,8 @@ export default class Usuari{
           I3  : {min: 2,      max: 15},
           I4  : {min: 5,      max: 25},
           I5  : {min: 20,     max: 40},
-          I6  : {min: 1287.1, max: 12871.4},
-          I7  : {min: 22143,  max: 132857},
+          I6  : {min: 1,      max: 10},
+          I7  : {min: 5,      max: 30},
           I8  : {min: 5,      max: 700},
           I9  : {min: 5,      max: 100},
           I10 : {min: 0.05,   max: 20},
@@ -84,7 +86,8 @@ export default class Usuari{
           I19 : {min: 1e4,    max: 1e5},
           I20 : {min: 1e5,    max: 1e6},
           I21 : {min: 1e3,    max: 1e4},
-          I22 : {min: 0.0015, max: 0.19}
+          I22 : {},
+          I23 : {} 
         },
       },
       "FAC_DS3":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació, desnitrificació biològica i eliminació biològica de PO4",
@@ -94,8 +97,8 @@ export default class Usuari{
           I3  : {min: 1,      max: 5},
           I4  : {min: 5,      max: 20},
           I5  : {min: 15,     max: 20},
-          I6  : {min: 514.9,  max: 5148.6},
-          I7  : {min: 8857,   max: 53143},
+          I6  : {min: 0.4,    max: 4},
+          I7  : {min: 2,      max: 12},
           I8  : {min: 5,      max: 700},
           I9  : {min: 5,      max: 100},
           I10 : {min: 0.05,   max: 20},
@@ -110,7 +113,8 @@ export default class Usuari{
           I19 : {min: 1e4,    max: 1e5},
           I20 : {min: 1e5,    max: 1e6},
           I21 : {min: 1e3,    max: 1e4},
-          I22 : {min: 0.0015, max: 0.19}
+          I22 : {},
+          I23 : {} 
         },
       },
       "BRM1":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació",
@@ -120,8 +124,8 @@ export default class Usuari{
           I3  : {min: 0.3,    max: 2},
           I4  : {min: 1,      max: 5},
           I5  : {min: 0.5,    max: 5},
-          I6  : {min: 514.9,  max: 6435.7},
-          I7  : {min: 8857,   max: 53143},
+          I6  : {min: 0.4,    max: 5},
+          I7  : {min: 2,      max: 12},
           I8  : {min: 5,      max: 700},
           I9  : {min: 5,      max: 100},
           I10 : {min: 0.05,   max: 20},
@@ -136,7 +140,8 @@ export default class Usuari{
           I19 : {min: 1,      max: 1e2},
           I20 : {min: 10,     max: 1e3},
           I21 : {min: 1,      max: 1e2},
-          I22 : {min: 0.0015, max: 0.19}
+          I22 : {},
+          I23 : {} 
         },
       },
       "BRM2":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació, desnitrificació biològica i eliminació biològica de PO4",
@@ -146,8 +151,8 @@ export default class Usuari{
           I3  : {min: 0.3,    max: 2},
           I4  : {min: 1,      max: 5},
           I5  : {min: 0.5,    max: 5},
-          I6  : {min: 514.9,  max: 1287.1},
-          I7  : {min: 8857,   max: 53143},
+          I6  : {min: 0.4,    max: 1},
+          I7  : {min: 2,      max: 12},
           I8  : {min: 5,      max: 700},
           I9  : {min: 5,      max: 100},
           I10 : {min: 0.05,   max: 20},
@@ -162,7 +167,8 @@ export default class Usuari{
           I19 : {min: 1,      max: 1e2},
           I20 : {min: 10,     max: 1e3},
           I21 : {min: 1,      max: 1e2},
-          I22 : {min: 0.0015, max: 0.19}
+          I22 : {},
+          I23 : {} 
         },
       },
     };
