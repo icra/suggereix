@@ -200,7 +200,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari} from "../utils/llegir_excels";
 
 export default {
   name: 'Sad',
@@ -216,6 +216,7 @@ export default {
       Usuari,                   //classe
       Corrent,                  //classe
       Tractaments_info: {},     //diccionari tots els tractaments
+	  Tractaments_m_info: {},   //diccionari tractaments amb punt de referència 1 (microbiològics).
       Trens_info: {},           //diccionari tots els trens
       Usos_info: {},            //diccionari tots els usos
       Efluents_info: {}         //diccionari efluents (primari/secundari) de l'infraestructura existent
@@ -224,6 +225,9 @@ export default {
   created: async function() {
     // llegir excel 'tractaments'
     this.read_file('/20210723_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
+
+    // llegir excel 'tractaments' per a punt de referència 1 (indicadors microbiològics).
+    this.read_file('/20211004_SUGGEREIX_Taula_B5.xlsx', 'tractaments_micro');
 
     // llegir excel 'trens'
     this.read_file('/20210723_SUGGEREIX_PT4_Trens.xlsx', 'trens');
@@ -261,6 +265,8 @@ export default {
         let binaryData = new Uint8Array(buffer);
         if (type === 'tractaments')
           _this.Tractaments_info = await llegir_tractaments(binaryData);
+		else if (type === 'tractaments_micro')
+          _this.Tractaments_m_info = await llegir_tractaments_micro(binaryData);
         else if (type === 'trens')
           _this.Trens_info = await llegir_trens(binaryData);
         else if (type === 'efluent')
@@ -276,9 +282,12 @@ export default {
 
       let _this = this;
       let dict_tractaments = _this.Tractaments_info;
+	  let dict_tractaments_m = _this.Tractaments_m_info;
       let efluent_secundari = _this.tractament_secundari;
       let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
+	  console.log(dict_tractaments)
+	  console.log(dict_tractaments_m)
 
       if(Object.keys(_this.Trens_info).length !== 0 && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
         for (const [key, tren] of Object.entries(dict_trens)) {
@@ -288,7 +297,7 @@ export default {
               (efluent_secundari.includes('BRM') && primer_tractament === 'BRM') ||
               (efluent_secundari.includes('DP') && primer_tractament === 'BRM');
           if(tren_aplicable){
-            let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, efluent_secundari);
+            let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari);
 
             //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
             let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu);

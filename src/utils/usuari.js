@@ -8,6 +8,9 @@ export default class Usuari{
   }
 
   static get info_tractaments_secundaris(){
+    const I19 = {min: 1548816.61891249, max: 85113803.8202378};
+    const I20 = {min: 2187761.62394955, max: 89128093.8133748};
+    const I21 = {min: 3019.95172040202, max: 5128613.83991366};
     return{
       "DP":{tipus:"primari", nom:"Només decantació primària. Sense tractament secundari",
         qualitat:{
@@ -29,9 +32,9 @@ export default class Usuari{
           I16 : {min: 0.058,       max: 61.638},
           I17 : {min: 0.0122,      max: 2.101},
           I18 : {min: 37.2,        max: 81},
-          I19 : {min: 707945.784,  max: 39810717.055},
-          I20 : {min: 1096478.196, max: 5623413.252},
-          I21 : {min: 1513.561,    max: 2570395.783},
+          I19 : I19,
+          I20 : I20,
+          I21 : I21,
           I22 : {},
           I23 : {} 
         },
@@ -56,9 +59,9 @@ export default class Usuari{
           I16 : {min: 0.03,   max: 23},
           I17 : {min: 0.0122, max: 2.101},
           I18 : {min: 0.3,    max: 81},
-          I19 : {min: 1e4,    max: 1e5},
-          I20 : {min: 1e5,    max: 1e6},
-          I21 : {min: 1e3,    max: 1e4},
+          I19 : I19,
+          I20 : I20,
+          I21 : I21,
           I22 : {},
           I23 : {} 
         },
@@ -83,9 +86,9 @@ export default class Usuari{
           I16 : {min: 0.03,   max: 23},
           I17 : {min: 0.0122, max: 2.101},
           I18 : {min: 0.3,    max: 81},
-          I19 : {min: 1e4,    max: 1e5},
-          I20 : {min: 1e5,    max: 1e6},
-          I21 : {min: 1e3,    max: 1e4},
+          I19 : I19,
+          I20 : I20,
+          I21 : I21,
           I22 : {},
           I23 : {} 
         },
@@ -110,9 +113,9 @@ export default class Usuari{
           I16 : {min: 0.03,   max: 23},
           I17 : {min: 0.0122, max: 2.101},
           I18 : {min: 0.3,    max: 81},
-          I19 : {min: 1e4,    max: 1e5},
-          I20 : {min: 1e5,    max: 1e6},
-          I21 : {min: 1e3,    max: 1e4},
+          I19 : I19,
+          I20 : I20,
+          I21 : I21,
           I22 : {},
           I23 : {} 
         },
@@ -137,9 +140,9 @@ export default class Usuari{
           I16 : {min: 0.03,   max: 23},
           I17 : {min: 0.0122, max: 2.101},
           I18 : {min: 0.3,    max: 81},
-          I19 : {min: 1,      max: 1e2},
-          I20 : {min: 10,     max: 1e3},
-          I21 : {min: 1,      max: 1e2},
+          I19 : I19,
+          I20 : I20,
+          I21 : I21,
           I22 : {},
           I23 : {} 
         },
@@ -164,9 +167,9 @@ export default class Usuari{
           I16 : {min: 0.03,   max: 23},
           I17 : {min: 0.0122, max: 2.101},
           I18 : {min: 0.3,    max: 81},
-          I19 : {min: 1,      max: 1e2},
-          I20 : {min: 10,     max: 1e3},
-          I21 : {min: 1,      max: 1e2},
+          I19 : I19,
+          I20 : I20,
+          I21 : I21,
           I22 : {},
           I23 : {} 
         },

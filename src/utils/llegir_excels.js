@@ -191,9 +191,63 @@ function llegir_tractaments(binaryData){
   });
 }
 
+// llegeix excel de tractaments pel punt de referència 1 (microbiològics) i guarda les dades.
+function llegir_tractaments_micro(binaryData){
+
+  let _this = this;
+  let workbook = new ExcelJS.Workbook();
+  return workbook.xlsx.load(binaryData).then(wb => {
+    let worksheet = wb.worksheets[0];
+    let rowNumber = 5; //ignore headers
+    let maxRows = worksheet.rowCount;
+    let treatments = {};
+
+    for (rowNumber; rowNumber < maxRows; rowNumber+=3){
+      let i = rowNumber;
+      let name = worksheet.getCell('A'+i.toString());
+      let pretreatment =  worksheet.getCell('B'+i.toString());
+      if (treatments[name] === undefined){
+        treatments[name] = {};
+      }
+      treatments[name][pretreatment] = {};
+      for (let j=1; j<=3; j++){
+        let key = worksheet.getCell('D'+i.toString()).value;  //'I'+j.toString();
+        let min = worksheet.getCell('E'+i.toString()).value;
+        let max = worksheet.getCell('F'+i.toString()).value;
+
+        if (typeof min === 'string' && typeof max === 'string'){ // parse 'ne' or 'na' values to 0
+          min = 0;
+          max = 0;
+        }
+        else if (typeof min === 'string' && typeof max !== 'string'){
+          if (typeof max === 'object') max = max.result; // type object when cell contains a formula and result.
+          min = max;
+        }
+        else if (typeof max === 'string' && typeof min !== 'string'){
+          if (typeof min === 'object') min = min.result;
+          max = min;
+        }
+        else {
+          if (typeof max === 'object') max = max.result;
+          if (typeof min === 'object') min = min.result;
+        }
+
+        treatments[name][pretreatment][key] = {
+          min: min,
+          max: max
+        }
+        i++;
+      }
+    }
+
+    return treatments;
+  });
+}
+
 export {
   llegir_caract_efluent_secundari,
   llegir_tractaments,
+  llegir_tractaments_micro,
   llegir_trens,
   llegir_vp_usos
 }

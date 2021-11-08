@@ -44,7 +44,7 @@ export default class Corrent{
 
   //aplica un carro de tecnologies/tractaments
   //genera 2 nous corrents "min" i "max"
-  aplica_tren_tractaments(array_tractaments, tractaments_dict, tractament_secundari){
+  aplica_tren_tractaments(array_tractaments, tractaments_dict, dict_tractaments_m, tractament_secundari){
 
     //retorna dos corrents nous
     let _this = this;
@@ -79,9 +79,29 @@ export default class Corrent{
       if (id !== 'I1' && id !== 'I22' && id !== 'I23'){
         min.qualitat[id] = _this.qualitat[id];
         max.qualitat[id] = _this.qualitat[id];
-        let pretractament = efluent_secundari;
         let r_min = 1;
         let r_max = 1;
+        let pretractament = efluent_secundari;
+
+        // En cas de tractar-se de indicadors microbiològics, aplicar primer els tractaments primari i secundari (si n'hi ha) fins a arribar al mateix punt de referència dels altres indicadors.
+        if (id === 'I19' || id === 'I20' || id === 'I21'){
+          pretractament = 'na';
+          const array_pretractaments = ['DP'];
+          if(tractament_secundari !== 'DP'){
+            array_pretractaments.push(tractament_secundari);
+          }
+          n+=array_pretractaments.length;
+          array_pretractaments.forEach(tractament=>{
+            if(!dict_tractaments_m[tractament][pretractament][id]) {
+              return;
+            }
+  
+            r_min = r_min * (100 - dict_tractaments_m[tractament][pretractament][id].min);
+            r_max = r_max * (100 - dict_tractaments_m[tractament][pretractament][id].max);
+            pretractament = tractament;
+          });
+          pretractament = efluent_secundari;
+        }
 
         array_tractaments.forEach(tractament=>{
           if(!tractaments_dict[tractament][pretractament][id]) {
@@ -117,14 +137,7 @@ export default class Corrent{
         if (!indicadors_microbiologics.includes(id) && corrent.qualitat[id] === 'nd')
           return true;
 
-        else {
-          if (id === 'I8')
-            return this.qualitat[id] <= 500;
-          else if (id === 'I9')
-            return this.qualitat[id] <= 20;
-          else
-            return this.qualitat[id] <= corrent.qualitat[id];
-        }
+        else return this.qualitat[id] <= corrent.qualitat[id];
       }
     });
   }
