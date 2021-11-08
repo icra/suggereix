@@ -52,10 +52,12 @@
               {{key}}
             </td>
             <td v-if="key !== 'I22' && key !== 'I23'">
-              <input type="number" v-model.number="user.corrent.qualitat[key].min">
+              <input v-if="key !== 'I1' && selected_input !== key+'_min'" type="text" :value="show_sc_not(user.corrent.qualitat[key].min)" :ref="key+'_min'" :id="key+'_min'" class="nd" @focus="focusChanged">
+			  <input v-else type="number" v-model.number="user.corrent.qualitat[key].min" v-on:blur="handleBlur" />
             </td>
             <td v-if="key !== 'I22' && key !== 'I23'">
-              <input type="number" v-model.number="user.corrent.qualitat[key].max">
+              <input v-if="key !== 'I1' && selected_input !== key+'_max'" type="text" :value="show_sc_not(user.corrent.qualitat[key].max)" :ref="key+'_max'" :id="key+'_max'" class="nd" @focus="focusChanged">
+			  <input v-else type="number" v-model.number="user.corrent.qualitat[key].max" v-on:blur="handleBlur" />
             </td>
             <td v-else-if="key === 'I22'" colspan="2" class="doubletd">
               L’I22 (N-nitrosodimetilamina) es pot formar en tractaments de desinfecció amb cloramines, amb clor si al medi també hi ha amoni, i en tractaments amb ozó.
@@ -67,8 +69,9 @@
               <div v-if="mostrar_nota_vp(key)" class="tooltip">*
                 <span class="tooltiptext">{{nota_rang_vp(key)}}</span>
               </div>
-              <input v-if="!isNaN(user.corrent_objectiu.qualitat[key])" type="number" v-model.number="user.corrent_objectiu.qualitat[key]">
-              <input v-else placeholder="nd" class="nd" disabled>
+			  <input v-if="isNaN(user.corrent_objectiu.qualitat[key])" placeholder="nd" class="nd" disabled>
+              <input v-else-if="key !== 'I1' && selected_input !== key+'_vp'" type="text" :value="show_sc_not(user.corrent_objectiu.qualitat[key])" :ref="key+'_vp'" :id="key+'_vp'" class="nd" @focus="focusChanged">
+			  <input v-else type="number" v-model.number="user.corrent_objectiu.qualitat[key]" v-on:blur="handleBlur">
             </td>
             <td>
               {{Corrent.info_qualitat[key].unitat}}
@@ -119,7 +122,7 @@
                       :style="{background: tren.compliments.includes(key) ? 'lightgreen' : 'LightCoral'}"
                       style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
                   >
-                    {{tren.concentracio.min.qualitat[key]}}
+                    {{show_sc_not(tren.concentracio.min.qualitat[key])}}
                   </td>
                 </template>
               </tr>
@@ -130,7 +133,7 @@
                       :style="{background: tren.compliments.includes(key) ? 'lightgreen' : 'LightCoral'}"
                       style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
                   >
-                    {{tren.concentracio.max.qualitat[key]}}
+                    {{show_sc_not(tren.concentracio.max.qualitat[key])}}
                   </td>
                 </template>
               </tr>
@@ -204,6 +207,7 @@ export default {
   data: function(){
     return {
       user: new Usuari(),       //objecte
+      selected_input: "",
       tractament_secundari: "", //tractament secundari infraestructura
       ranquing_trens: [],       //array de trens ordenats per compliments
       usos_seleccionats: [],    //ús o usos seleccionats per l'usuari
@@ -232,6 +236,18 @@ export default {
 
   },
   methods:{
+    focusChanged(event) {
+		let _this = this;
+		_this.selected_input = event.target.id;
+    },
+	handleBlur(event){
+		let _this = this;
+		_this.selected_input = "";
+	},
+	show_sc_not(value){
+		if(value === undefined || isNaN(value)) return '';
+		else return value.toExponential(1);
+	},
     read_file(filename, type){
 
       let oReq = new XMLHttpRequest();
