@@ -127,16 +127,25 @@ export default class Corrent{
   }
 
   //detecta els compliments i retorna un array amb els ids dels indicadors que compleixen.
-  n_compliments(corrent){
+  n_compliments(corrent,qualitat_micro,usos_seleccionats,qualitat_inicial){
     return Object.keys(corrent.qualitat).filter(id=>{
       let indicadors_microbiologics = ['I19', 'I20', 'I21'];
       //mirar tots els indicadors excepte el pH ('I1'), I22 i I23
       if (id !== 'I1' && id !== 'I22' && id !== 'I23'){
 
-        //si el VP és 'nd', es considera que compleix (excepte els microbiològics) --- REPASSAR LO DELS INDICADORS MICROBIOLÒGICS AMB NOVES INDICACIONS MERCÈ...
-        if (!indicadors_microbiologics.includes(id) && corrent.qualitat[id] === 'nd')
-          return true;
-
+        //si el VP és 'nd', es considera que compleix (excepte els microbiològics).
+        if (!indicadors_microbiologics.includes(id) && corrent.qualitat[id] === 'nd') return true;
+        else if(indicadors_microbiologics.includes(id)){
+          if(corrent.qualitat[id] === 'nd' || this.qualitat[id] <= corrent.qualitat[id]){
+            // Ara cal comprovar que s'ha aconseguit un Rmin de, com a mínim, el que s'especifica en la Taula A8 per els usos seleccionats.
+            let reduccio_requerida = 0;
+            for(const usage of usos_seleccionats){
+              if(qualitat_micro[usage][id] > reduccio_requerida) reduccio_requerida = qualitat_micro[usage][id];
+            }
+            return this.qualitat[id] <= (1-reduccio_requerida)*qualitat_inicial[id].max
+          }
+          else return false;
+        }
         else return this.qualitat[id] <= corrent.qualitat[id];
       }
     });

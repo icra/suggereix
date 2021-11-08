@@ -244,10 +244,43 @@ function llegir_tractaments_micro(binaryData){
   });
 }
 
+// llegeix excel de qualitat microbiològica (taula 8, on hi ha els valors de Rmin d'eliminació mínima requreida).
+function llegir_qualitat_micro(binaryData){
+
+  let _this = this;
+  let workbook = new ExcelJS.Workbook();
+  return workbook.xlsx.load(binaryData).then(wb => {
+    let worksheet = wb.worksheets[0];
+    let rowNumber = 5; //ignore headers
+    let maxRows = worksheet.rowCount;
+    let quality_micro = {};
+
+    for (rowNumber; rowNumber < maxRows; rowNumber+=3){
+      let i = rowNumber;
+      let usage_name = worksheet.getCell('B'+i.toString()); // DummyX.
+      if (quality_micro[usage_name] === undefined){
+        quality_micro[usage_name] = {};
+      }
+      for (let j=1; j<=3; j++){
+        let indicador = worksheet.getCell('E'+i.toString()).value;
+        let percent_eliminacio = worksheet.getCell('G'+i.toString()).value;
+        if(typeof percent_eliminacio === 'string') percent_eliminacio = 0;
+        else if(typeof percent_eliminacio === 'object') percent_eliminacio = percent_eliminacio.result;
+
+        quality_micro[usage_name][indicador] = percent_eliminacio
+        i++;
+      }
+    }
+
+    return quality_micro;
+  });
+}
+
 export {
   llegir_caract_efluent_secundari,
   llegir_tractaments,
   llegir_tractaments_micro,
   llegir_trens,
-  llegir_vp_usos
+  llegir_vp_usos,
+  llegir_qualitat_micro
 }

@@ -33,6 +33,9 @@
               <template v-for="(obj,key) in Usos_info">
                 <input type="checkbox" :id="key" :value="key" v-model="usos_seleccionats">
                 <label :for="key">{{obj.nom}}</label>
+				<div v-if="mostrar_nota_dummy(obj.codi)" class="tooltip">*
+					<span class="tooltiptext2">{{nota_dummy(obj.codi)}}</span>
+				</div>
                 <br>
               </template>
             </td>
@@ -41,7 +44,7 @@
           <tr>
             <td style="text-align: right; padding-right: 20px">min</td>
             <td style="text-align: right; padding-right: 20px">max</td>
-            <td style="text-align: right; padding-right: 20px">valors objectius de qualitat</td>
+            <td style="text-align: right; padding-right: 20px">Valors objectius de qualitat (VP)</td>
           </tr>
 
           <tr v-for="(val, key) in user.corrent.qualitat" :key="key">
@@ -77,6 +80,10 @@
               {{Corrent.info_qualitat[key].unitat}}
             </td>
           </tr>
+		  <tr>
+			  <td colspan="5" class="nd"><b>Grau d'informació sobre els VP</b></td>
+			  <td><b>{{grau_informacio}} %</b></td>
+		  </tr>
         </table>
       </div>
     </details>
@@ -192,6 +199,22 @@
       </div>
     </details>
 
+	<details class=seccio close>
+      <summary class=seccio>Modificació de la reducció acumulada mínima requerida al llarg d'un tren (opcional)</summary>
+      <div>
+        <div>
+          <table border=1>
+			  <tr>
+                <th>Ús</th>
+                <th>Indicador</th>
+				<th>Reducció logarítmica</th>
+				<th>Reducció acumulada</th>
+              </tr>
+		  </table>
+		</div>
+	  </div>
+	</details> 
+
   </div>
 
 </template>
@@ -200,7 +223,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro} from "../utils/llegir_excels";
 
 export default {
   name: 'Sad',
@@ -208,6 +231,7 @@ export default {
     return {
       user: new Usuari(),       //objecte
       selected_input: "",
+	  grau_informacio: 0,		// grau d'informació dels VP pels usos seleccionats.
       tractament_secundari: "", //tractament secundari infraestructura
       ranquing_trens: [],       //array de trens ordenats per compliments
       usos_seleccionats: [],    //ús o usos seleccionats per l'usuari
@@ -218,8 +242,9 @@ export default {
       Tractaments_info: {},     //diccionari tots els tractaments
 	  Tractaments_m_info: {},   //diccionari tractaments amb punt de referència 1 (microbiològics).
       Trens_info: {},           //diccionari tots els trens
-      Usos_info: {},            //diccionari tots els usos
-      Efluents_info: {}         //diccionari efluents (primari/secundari) de l'infraestructura existent
+      Usos_info: {},              //diccionari tots els usos
+      Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
+	  Qualitat_microbiologica: {} //diccionari amb qualitats microbiològiques.
     }
   },
   created: async function() {
@@ -237,6 +262,9 @@ export default {
 
     // llegir excel 'valors protectors usos'
     this.read_file('/20211103_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
+
+	// llegir excel 'monitoratge de la qualitat autobiològica', que mostra el % de reducció Rmin per a terns de tractament dels indicadors microbiològics.
+	this.read_file('20211004_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
 
   },
   methods:{
@@ -273,6 +301,9 @@ export default {
           _this.Efluents_info = await llegir_caract_efluent_secundari(binaryData);
         else if (type === 'usos')
           _this.Usos_info = await llegir_vp_usos(binaryData);
+		else if (type === 'qualitat_microbiologica')
+		  _this.Qualitat_microbiologica = await llegir_qualitat_micro(binaryData);
+          
       }
 
     },
@@ -286,8 +317,6 @@ export default {
       let efluent_secundari = _this.tractament_secundari;
       let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
-	  console.log(dict_tractaments)
-	  console.log(dict_tractaments_m)
 
       if(Object.keys(_this.Trens_info).length !== 0 && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
         for (const [key, tren] of Object.entries(dict_trens)) {
@@ -300,7 +329,7 @@ export default {
             let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari);
 
             //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
-            let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu);
+            let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat);
             let puntuacio = Math.round((((avaluacio_compliments.length / 20) * 100) + Number.EPSILON) * 100) / 100;
             // console.log('avaluacio ', tren,': ', avaluacio_compliments, min_max.max, puntuacio)
             // console.log(min_max);
@@ -327,6 +356,19 @@ export default {
     eliminar_avaluacio(){
       this.ranquing_trens = [];
     },
+
+	// retorna cert si cal mostrar nota en un ús.
+	mostrar_nota_dummy: function (id){
+		return id === 'Dummy9' || id === 'Dummy10' || id === 'Dummy11' || id === 'Dummy14';
+	},
+
+	// retorna l'etiqueta a mostrar en un ús.
+	nota_dummy: function(id){
+		if(id === 'Dummy9' || id === 'Dummy10') return 'Caldria fer una avaluació específica del risc microbiològic: estimació de l’exposició i definició de mesures de control. Els valors de reducció de patògens mínims (requerits per a un tren de tractament) definits per defecte en el SAD es basen en una estimació feta a partir dels valors legislats segons el Reial decret 1620/2007.';
+		else if(id === 'Dummy11') return 'Caldria fer una avaluació específica del risc microbiològic. Seguint un criteri conservador, els valors de reducció de patògens definits per defecte en el SAD són els mateixos valors que els necessaris per tractar l’aigua per a l’ús de recàrrega d’aqüífers per injecció directa.';
+		else if(id === 'Dummy14') return 'El SAD no defineix valors de reducció de patògens per defecte. Però, caldria assolir els valors de reducció de patògens necessaris per a l’ús 15 si l’aigua s’utilitzés amb aquesta finalitat més avall.';
+		else return '';
+	},
 
     //retorna cert si cal mostrar nota de rang del valor protector amb 'id', fals altrament
     mostrar_nota_vp: function (id){
@@ -369,6 +411,7 @@ export default {
     //actualitza la qualitat del corrent_objectiu (usuari), en funció dels vp mínims dels usos seleccionats.
     usos_seleccionats: function (newUse, oldUse){
       let _this = this;
+	  let vp_assigned = new Set();
       if (_this.usos_seleccionats.length > 0){
 
         //assignem a l'usuari la qualitat objectiva del primer ús seleccionat.
@@ -379,13 +422,14 @@ export default {
         const n_usos = _this.usos_seleccionats.length;
 
         //si hi ha més d'un ús seleccionat, actualitzem els indicadors de qualitat amb els valors protectors mínims.
-        for (let i=1; i<n_usos; i++){
+        for (let i=0; i<n_usos; i++){
           const us = _this.usos_seleccionats[i];
           let qualitat_us = _this.Usos_info[us].qualitat;
 
           // actualitzem qualitat final amb els valors més baixos protectors dels usos seleccionats, per cada indicador.
           for (const [key, value] of Object.entries(qualitat_us)) {
             if (value.vp !== 'nd'){
+			  if(key !== 'I22' && key !== 'I23') vp_assigned.add(key);
               const valor_actual = _this.user.corrent_objectiu.qualitat[key];
               if (valor_actual === 'nd' || value.vp < valor_actual)
                 _this.user.corrent_objectiu.qualitat[key] = value.vp;
@@ -393,6 +437,10 @@ export default {
           }
         }
       }
+
+	  // 2. Actualitzem el valor del grau d'informació sobre els VP.
+	  _this.grau_informacio = Math.round(vp_assigned.size / 21 * 100 * 100)/100;
+
     },
 
     //actualitza els valors inicial de qualitat de l'aigua (usuari) en funció de l'efluent secundari seleccionat.
@@ -481,6 +529,22 @@ input[type=number]{
   position: absolute;
   z-index: 1;
 }
+
+/* Tooltip text 2 */
+.tooltip .tooltiptext2 {
+  visibility: hidden;
+  width: 400px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
 .tooltip .tooltiptext_ind {
   visibility: hidden;
   width: auto;
@@ -497,6 +561,11 @@ input[type=number]{
 
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext, .tooltip:hover .tooltiptext_ind {
+  visibility: visible;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext2, .tooltip:hover .tooltiptext_ind {
   visibility: visible;
 }
 
