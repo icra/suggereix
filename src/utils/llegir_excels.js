@@ -56,6 +56,7 @@ function llegir_vp_usos(binaryData){
         let tipusVp= row[5];  //tipus de valor protector (1,2 o 3): columna 'E'
         let valorVp = row[6]; //valor protector: columna 'F'
         let refVp = row[8];   //referència del valor protector
+        let regulat= row[9];  //Indica si el VP es troba regulat per l'ús concret.
         if (refVp === undefined)  //si no hi ha referència, guardem string buida.
           refVp = "";
 
@@ -74,7 +75,8 @@ function llegir_vp_usos(binaryData){
           uses[useId].qualitat[indId] = {
             vp: valorVp,
             tipus: tipusVp,
-            ref: refVp
+            ref: refVp,
+            regulat: regulat ? true : false
           }
         }
         //ja hi ha definit algun valor protector. Comprovem si el següent és un vp inferior o 'nd' per actualitzar-lo
@@ -83,7 +85,8 @@ function llegir_vp_usos(binaryData){
             uses[useId].qualitat[indId] = {
               vp: valorVp,
               tipus: tipusVp,
-              ref: refVp
+              ref: refVp,
+              regulat: regulat ? true : false
             }
         }
       }
@@ -264,10 +267,13 @@ function llegir_qualitat_micro(binaryData){
       for (let j=1; j<=3; j++){
         let indicador = worksheet.getCell('E'+i.toString()).value;
         let percent_eliminacio = worksheet.getCell('G'+i.toString()).value;
+        let lograritmic_eliminacio = worksheet.getCell('F'+i.toString()).value;
         if(typeof percent_eliminacio === 'string') percent_eliminacio = 0;
         else if(typeof percent_eliminacio === 'object') percent_eliminacio = percent_eliminacio.result;
+        if(typeof lograritmic_eliminacio === 'string') lograritmic_eliminacio = 0;
+        else if(typeof lograritmic_eliminacio === 'object') lograritmic_eliminacio = lograritmic_eliminacio.result;
 
-        quality_micro[usage_name][indicador] = percent_eliminacio
+        quality_micro[usage_name][indicador] = [percent_eliminacio,lograritmic_eliminacio]
         i++;
       }
     }
