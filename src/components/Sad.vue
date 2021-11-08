@@ -126,7 +126,7 @@
                 <td style="text-align: right; padding: 0px 5px 0px 5px">min:</td>
                 <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1' && key !== 'I22' && key !== 'I23'">
                   <td
-                      :style="{background: tren.compliments.includes(key) ? 'lightgreen' : 'LightCoral'}"
+                      :style="{background: tren.compliments_min[key] === 0 ? 'lightgreen' : tren.compliments_min[key] === 1 ? 'LightSalmon' : 'LightCoral'}"
                       style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
                   >
                     {{show_sc_not(tren.concentracio.min.qualitat[key])}}
@@ -137,7 +137,7 @@
                 <td style="text-align: right; padding: 0px 5px 0px 5px">max:</td>
                 <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1' && key !== 'I22' && key !== 'I23'">
                   <td
-                      :style="{background: tren.compliments.includes(key) ? 'lightgreen' : 'LightCoral'}"
+                      :style="{background: tren.compliments_max[key] === 0 ? 'lightgreen' : tren.compliments_min[key] === 1 ? 'LightSalmon' : 'LightCoral'}"
                       style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
                   >
                     {{show_sc_not(tren.concentracio.max.qualitat[key])}}
@@ -205,11 +205,25 @@
         <div>
           <table border=1>
 			  <tr>
-                <th>Ús</th>
-                <th>Indicador</th>
+                <th colspan=2>Ús</th>
+                <th colspan=2>Indicador</th>
 				<th>Reducció logarítmica</th>
-				<th>Reducció acumulada</th>
               </tr>
+			  <tbody v-for="(obj,id) in this.Qualitat_microbiologica" :key="id">
+				<tr>
+					<td :rowspan="4">
+						{{id}}
+					</td>
+					<td :rowspan="4"  class="doubletd2">
+						{{Usos_info[id] ? Usos_info[id].nom : ''}}
+					</td>
+				</tr>
+				<tr v-for="ind in Object.keys(obj)" :key="ind">
+					<td style="font-family:monospace">{{ind}}</td>
+                    <td>{{Corrent.info_qualitat[ind].nom.substring(0,20)}}</td>
+					<td><input type="number" v-model.number="obj[ind][1]" :ref="id+'_'+ind" :id="id+'_'+ind" class="nd" /></td>
+				</tr>
+			  </tbody>
 		  </table>
 		</div>
 	  </div>
@@ -318,6 +332,13 @@ export default {
       let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
 
+	  // Actualitza valors de la reducció microbiològica. 
+	  for(const [id, obj] of Object.entries(_this.Qualitat_microbiologica)){
+		  for(const ind of Object.keys(obj)){
+			  _this.Qualitat_microbiologica[id][ind][0]= 1 - Math.pow(10, -_this.Qualitat_microbiologica[id][ind][1])
+		  }
+	  }
+
       if(Object.keys(_this.Trens_info).length !== 0 && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
         for (const [key, tren] of Object.entries(dict_trens)) {
           let array_tractaments = tren['array_tractaments'];
@@ -328,15 +349,17 @@ export default {
           if(tren_aplicable){
             let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari);
 
-            //l'avaluació es fa en base als valors de concentració màxims comparats als valors protectors segons els usos.
-            let avaluacio_compliments = min_max.max.n_compliments(_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat);
-            let puntuacio = Math.round((((avaluacio_compliments.length / 20) * 100) + Number.EPSILON) * 100) / 100;
-            // console.log('avaluacio ', tren,': ', avaluacio_compliments, min_max.max, puntuacio)
-            // console.log(min_max);
+            //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
+            const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
+			const avaluacio_compliments_min = min_max.min.n_compliments('min',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
+			const max_length = Object.values(avaluacio_compliments_max).filter(value => value === 0);
+            let puntuacio = Math.round((((max_length.length / 20) * 100) + Number.EPSILON) * 100) / 100;
+
             let new_train = {
               id: key,
               concentracio: min_max,
-              compliments: avaluacio_compliments,
+              compliments_max: avaluacio_compliments_max,
+			  compliments_min: avaluacio_compliments_min,
               puntuacio: puntuacio,
             }
 
@@ -477,6 +500,9 @@ table td {
 }
 .doubletd {
   width:120px;
+}
+.doubletd2 {
+  width:240px;
 }
 .nd{
   text-align:right;

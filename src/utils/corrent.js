@@ -126,15 +126,30 @@ export default class Corrent{
 
   }
 
+  // retorna cert si, en els usos seleccionats, l'indicador es troba regulat.
+  es_regulat(usos_seleccionats,indicador,usos_info){
+    for(const usage of usos_seleccionats){
+      if(usos_info[usage].qualitat[indicador].regulat) return true;
+    }
+    return false;
+  }
+
   //detecta els compliments i retorna un array amb els ids dels indicadors que compleixen.
-  n_compliments(corrent,qualitat_micro,usos_seleccionats,qualitat_inicial){
-    return Object.keys(corrent.qualitat).filter(id=>{
-      let indicadors_microbiologics = ['I19', 'I20', 'I21'];
+  n_compliments(type,corrent,qualitat_micro,usos_seleccionats,qualitat_inicial,usos_info){
+
+    const indicadors_microbiologics = ['I19', 'I20', 'I21'];
+
+    // 0: compleix. 1: incompleix però indicador no és regulat, 2: incompleix indicador regulat.
+    const compliments = {};
+
+    // First, get an array of evaluations.
+    for(const id of Object.keys(corrent.qualitat)){
       //mirar tots els indicadors excepte el pH ('I1'), I22 i I23
       if (id !== 'I1' && id !== 'I22' && id !== 'I23'){
-
         //si el VP és 'nd', es considera que compleix (excepte els microbiològics).
-        if (!indicadors_microbiologics.includes(id) && corrent.qualitat[id] === 'nd') return true;
+        if(!indicadors_microbiologics.includes(id) && corrent.qualitat[id] === 'nd'){
+          compliments[id] = 0;
+        }
         else if(indicadors_microbiologics.includes(id)){
           if(corrent.qualitat[id] === 'nd' || this.qualitat[id] <= corrent.qualitat[id]){
             // Ara cal comprovar que s'ha aconseguit un Rmin de, com a mínim, el que s'especifica en la Taula A8 per els usos seleccionats.
@@ -142,12 +157,23 @@ export default class Corrent{
             for(const usage of usos_seleccionats){
               if(qualitat_micro[usage][id][0] > reduccio_requerida) reduccio_requerida = qualitat_micro[usage][id][0];
             }
-            return this.qualitat[id] <= (1-reduccio_requerida)*qualitat_inicial[id].max
+            if(this.qualitat[id] <= (1-reduccio_requerida)*qualitat_inicial[id][type]){
+              compliments[id] = 0;
+            }
+            else{
+              compliments[id] = this.es_regulat(usos_seleccionats,id,usos_info) ? 2 : 1;
+            }
           }
-          else return false;
+          else compliments[id] = this.es_regulat(usos_seleccionats,id,usos_info) ? 2 : 1;
         }
-        else return this.qualitat[id] <= corrent.qualitat[id];
+        else if(this.qualitat[id] <= corrent.qualitat[id]){
+          compliments[id] = 0;
+        }
+        else{
+          compliments[id] = this.es_regulat(usos_seleccionats,id,usos_info) ? 2 : 1;
+        }
       }
-    });
+    }
+    return compliments;
   }
 }
