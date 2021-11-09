@@ -1,42 +1,57 @@
 <template>
-
-  <div id='intro'>
-    <details class=seccio open>
-      <summary class=seccio>1. Definició aigua</summary>
+  <div id="intro">
+    <details class="seccio" open>
+      <summary class="seccio">1. Definició aigua</summary>
       <div>
-        <table border=1>
+        <table border="1">
           <tr>
-            <th colspan="2">Capacitat tractament (m3/d):
-              <input type="number" v-model.number="user.corrent.Q" style="max-width:75px">
+            <th colspan="2">
+              Capacitat tractament (m3/d):
+              <input
+                type="number"
+                v-model.number="user.corrent.Q"
+                style="max-width: 75px"
+              />
             </th>
-            <th colspan=2>Descripció infraestructura existent</th>
+            <th colspan="2">Descripció infraestructura existent</th>
             <th>Ús d'aigua regenerada</th>
-            <th rowspan=3>Unitat</th>
+            <th rowspan="3">Unitat</th>
           </tr>
 
           <tr>
-            <th colspan=2 rowspan="2">Indicadors de qualitat</th>
-            <td colspan=2>
+            <th colspan="2" rowspan="2">Indicadors de qualitat</th>
+            <td colspan="2">
               Selecciona la infraestructura existent:
-              <br>
-              <select v-model="tractament_secundari" style="max-width:350px">
-                <option v-for="(obj, key) in Usuari.info_tractaments_secundaris" :value="key" :key="key">
-                  {{obj.nom}}
-                  [{{key}}]
+              <br />
+              <select v-model="tractament_secundari" style="max-width: 350px">
+                <option
+                  v-for="(obj, key) in Usuari.info_tractaments_secundaris"
+                  :value="key"
+                  :key="key"
+                >
+                  {{ obj.nom }}
+                  [{{ key }}]
                 </option>
               </select>
             </td>
 
             <td>
               <b>Selecciona l'ús (o usos) d'aigua regenerada:</b>
-              <br>
-              <template v-for="(obj,key) in Usos_info">
-                <input type="checkbox" :id="key" :value="key" v-model="usos_seleccionats">
-                <label :for="key">{{obj.nom}}</label>
-				<div v-if="mostrar_nota_dummy(obj.codi)" class="tooltip">*
-					<span class="tooltiptext2">{{nota_dummy(obj.codi)}}</span>
-				</div>
-                <br>
+              <br />
+              <template v-for="(obj, key) in Usos_info">
+                <input
+                  type="checkbox"
+                  :id="key"
+                  :value="key"
+                  :key="key"
+                  v-model="usos_seleccionats"
+                />
+                <label :for="key" :key="key+'_'+obj.nom">{{ obj.nom }}</label>
+                <div v-if="mostrar_nota_dummy(obj.codi)" class="tooltip" :key="key+'_'+obj.codi">
+                  *
+                  <span class="tooltiptext2">{{ nota_dummy(obj.codi) }}</span>
+                </div>
+                <br :key="key+'_'+obj.codi+obj.nom"/>
               </template>
             </td>
           </tr>
@@ -44,59 +59,113 @@
           <tr>
             <td style="text-align: right; padding-right: 20px">min</td>
             <td style="text-align: right; padding-right: 20px">max</td>
-            <td style="text-align: right; padding-right: 20px">Valors objectius de qualitat (VP)</td>
+            <td style="text-align: right; padding-right: 20px">
+              Valors objectius de qualitat (VP)
+            </td>
           </tr>
 
           <tr v-for="(val, key) in user.corrent.qualitat" :key="key">
             <td style="text-align: right; padding: 0px 10px 0px 10px">
-              {{Corrent.info_qualitat[key].nom}}
+              {{ Corrent.info_qualitat[key].nom }}
             </td>
-            <td style="font-family:monospace">
-              {{key}}
-            </td>
-            <td v-if="key !== 'I22' && key !== 'I23'">
-              <input v-if="key !== 'I1' && selected_input !== key+'_min'" type="text" :value="show_sc_not(user.corrent.qualitat[key].min)" :ref="key+'_min'" :id="key+'_min'" class="nd" @focus="focusChanged">
-			  <input v-else type="number" v-model.number="user.corrent.qualitat[key].min" v-on:blur="handleBlur" />
+            <td style="font-family: monospace">
+              {{ key }}
             </td>
             <td v-if="key !== 'I22' && key !== 'I23'">
-              <input v-if="key !== 'I1' && selected_input !== key+'_max'" type="text" :value="show_sc_not(user.corrent.qualitat[key].max)" :ref="key+'_max'" :id="key+'_max'" class="nd" @focus="focusChanged">
-			  <input v-else type="number" v-model.number="user.corrent.qualitat[key].max" v-on:blur="handleBlur" />
+              <input
+                v-if="key !== 'I1' && selected_input !== key + '_min'"
+                type="text"
+                :value="show_sc_not(user.corrent.qualitat[key].min)"
+                :ref="key + '_min'"
+                :id="key + '_min'"
+                class="nd"
+                @focus="focusChanged"
+              />
+              <input
+                v-else
+                type="number"
+                v-model.number="user.corrent.qualitat[key].min"
+                v-on:blur="handleBlur"
+              />
+            </td>
+            <td v-if="key !== 'I22' && key !== 'I23'">
+              <input
+                v-if="key !== 'I1' && selected_input !== key + '_max'"
+                type="text"
+                :value="show_sc_not(user.corrent.qualitat[key].max)"
+                :ref="key + '_max'"
+                :id="key + '_max'"
+                class="nd"
+                @focus="focusChanged"
+              />
+              <input
+                v-else
+                type="number"
+                v-model.number="user.corrent.qualitat[key].max"
+                v-on:blur="handleBlur"
+              />
             </td>
             <td v-else-if="key === 'I22'" colspan="2" class="doubletd">
-              L’I22 (N-nitrosodimetilamina) es pot formar en tractaments de desinfecció amb cloramines, amb clor si al medi també hi ha amoni, i en tractaments amb ozó.
+              L’I22 (N-nitrosodimetilamina) es pot formar en tractaments de
+              desinfecció amb cloramines, amb clor si al medi també hi ha amoni,
+              i en tractaments amb ozó.
             </td>
             <td v-else colspan="2" class="doubletd">
-              L’I23 (triclorometà) es pot formar en tractaments de desinfecció amb clor lliure.
+              L’I23 (triclorometà) es pot formar en tractaments de desinfecció
+              amb clor lliure.
             </td>
             <td style="text-align: right">
-              <div v-if="mostrar_nota_vp(key)" class="tooltip">*
-                <span class="tooltiptext">{{nota_rang_vp(key)}}</span>
+              <div v-if="mostrar_nota_vp(key)" class="tooltip">
+                *
+                <span class="tooltiptext">{{ nota_rang_vp(key) }}</span>
               </div>
-			  <input v-if="isNaN(user.corrent_objectiu.qualitat[key])" placeholder="nd" class="nd" disabled>
-              <input v-else-if="key !== 'I1' && selected_input !== key+'_vp'" type="text" :value="show_sc_not(user.corrent_objectiu.qualitat[key])" :ref="key+'_vp'" :id="key+'_vp'" class="nd" @focus="focusChanged">
-			  <input v-else type="number" v-model.number="user.corrent_objectiu.qualitat[key]" v-on:blur="handleBlur">
+              <input
+                v-if="isNaN(user.corrent_objectiu.qualitat[key])"
+                placeholder="nd"
+                class="nd"
+                disabled
+              />
+              <input
+                v-else-if="key !== 'I1' && selected_input !== key + '_vp'"
+                type="text"
+                :value="show_sc_not(user.corrent_objectiu.qualitat[key])"
+                :ref="key + '_vp'"
+                :id="key + '_vp'"
+                class="nd"
+                @focus="focusChanged"
+              />
+              <input
+                v-else
+                type="number"
+                v-model.number="user.corrent_objectiu.qualitat[key]"
+                v-on:blur="handleBlur"
+              />
             </td>
             <td>
-              {{Corrent.info_qualitat[key].unitat}}
+              {{ Corrent.info_qualitat[key].unitat }}
             </td>
           </tr>
-		  <tr>
-			  <td colspan="5" class="nd"><b>Grau d'informació sobre els VP</b></td>
-			  <td><b>{{grau_informacio}} %</b></td>
-		  </tr>
+          <tr>
+            <td colspan="5" class="nd">
+              <b>Grau d'informació sobre els VP</b>
+            </td>
+            <td>
+              <b>{{ grau_informacio }} %</b>
+            </td>
+          </tr>
         </table>
       </div>
     </details>
 
-    <details class=seccio open>
-      <summary class=seccio>2. Avaluació trens de tractament</summary>
+    <details class="seccio" open>
+      <summary class="seccio">2. Avaluació trens de tractament</summary>
       <div style="text-align: left">
         <button @click="avaluacio_trens">Avaluació trens</button>
         <button @click="eliminar_avaluacio">Esborrar avaluació</button>
       </div>
       <div>
         <div v-if="this.ranquing_trens.length !== 0">
-          <table border=1>
+          <table border="1">
             <tr>
               <th colspan="2" rowspan="2">Tren</th>
               <th rowspan="2">id</th>
@@ -105,42 +174,97 @@
             </tr>
 
             <tr>
-              <th v-for="(val, key) in Corrent.info_qualitat"
-                  :key="key"
-                  style="font-family:monospace; text-align: left; padding: 0px 5px 0px 3px"
-                  v-if="key !== 'I1' && key !== 'I22' && key !== 'I23'">
-
-                <div class="tooltip" style="color: inherit">{{key}}
-                  <span class="tooltiptext_ind" style="font-size: 10px">{{val.nom}}</span>
+              <th
+                v-for="(val, key) in info_qualitats"
+                :key="key"
+                style="
+                  font-family: monospace;
+                  text-align: left;
+                  padding: 0px 5px 0px 3px;
+                "
+              >
+                <div class="tooltip" style="color: inherit">
+                  {{ key }}
+                  <span class="tooltiptext_ind" style="font-size: 10px">{{
+                    val.nom
+                  }}</span>
                 </div>
-                <div style="font-size: 10px; font-family: monospace">({{val.unitat}})</div>
+                <div style="font-size: 10px; font-family: monospace">
+                  ({{ val.unitat }})
+                </div>
               </th>
             </tr>
 
-            <template v-for="(tren,id) in this.ranquing_trens">
-              <tr>
-                <td rowspan="2" style="font-family:monospace">{{id + 1}}</td>
-                <td rowspan="2" style="text-align: right; padding: 0px 10px 0px 10px">{{Trens_info[tren.id].nom}}</td>
-                <td rowspan="2" style="text-align: left; padding: 0px 10px 0px 10px">{{tren.id}}</td>
-                <td rowspan="2" style="text-align: center">{{tren.puntuacio}}</td>
-                <td style="text-align: right; padding: 0px 5px 0px 5px">min:</td>
-                <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1' && key !== 'I22' && key !== 'I23'">
+            <template v-for="(tren, id) in this.ranquing_trens">
+              <tr :key="id+'_min'">
+                <td rowspan="2" style="font-family: monospace">{{ id + 1 }}</td>
+                <td
+                  rowspan="2"
+                  style="text-align: right; padding: 0px 10px 0px 10px"
+                >
+                  {{ Trens_info[tren.id].nom }}
+                </td>
+                <td
+                  rowspan="2"
+                  style="text-align: left; padding: 0px 10px 0px 10px"
+                >
+                  {{ tren.id }}
+                </td>
+                <td rowspan="2" style="text-align: center">
+                  {{ tren.puntuacio }}
+                </td>
+                <td style="text-align: right; padding: 0px 5px 0px 5px">
+                  min:
+                </td>
+                <template
+                  v-for="(val, key) in info_qualitats"
+                  style="font-family: monospace"
+                >
                   <td
-                      :style="{background: tren.compliments_min[key] === 0 ? 'lightgreen' : tren.compliments_min[key] === 1 ? 'LightSalmon' : 'LightCoral'}"
-                      style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
+                    :key="key+'_aval_min'"
+                    :style="{
+                      background:
+                        tren.compliments_min[key] === 0
+                          ? 'lightgreen'
+                          : tren.compliments_min[key] === 1
+                          ? 'LightSalmon'
+                          : 'LightCoral',
+                    }"
+                    style="
+                      font-size: small;
+                      text-align: left;
+                      padding: 0px 5px 0px 5px;
+                    "
                   >
-                    {{show_sc_not(tren.concentracio.min.qualitat[key])}}
+                    {{ show_sc_not(tren.concentracio.min.qualitat[key]) }}
                   </td>
                 </template>
               </tr>
-              <tr>
-                <td style="text-align: right; padding: 0px 5px 0px 5px">max:</td>
-                <template v-for="(val, key) in user.corrent.qualitat" style="font-family:monospace" v-if="key !== 'I1' && key !== 'I22' && key !== 'I23'">
+              <tr :key="id+'_max'">
+                <td style="text-align: right; padding: 0px 5px 0px 5px">
+                  max:
+                </td>
+                <template
+                  v-for="(val, key) in info_qualitats"
+                  style="font-family: monospace"
+                >
                   <td
-                      :style="{background: tren.compliments_max[key] === 0 ? 'lightgreen' : tren.compliments_min[key] === 1 ? 'LightSalmon' : 'LightCoral'}"
-                      style="font-size: small; text-align: left; padding: 0px 5px 0px 5px"
+                    :key="key+'_aval_max'"
+                    :style="{
+                      background:
+                        tren.compliments_max[key] === 0
+                          ? 'lightgreen'
+                          : tren.compliments_min[key] === 1
+                          ? 'LightSalmon'
+                          : 'LightCoral',
+                    }"
+                    style="
+                      font-size: small;
+                      text-align: left;
+                      padding: 0px 5px 0px 5px;
+                    "
                   >
-                    {{show_sc_not(tren.concentracio.max.qualitat[key])}}
+                    {{ show_sc_not(tren.concentracio.max.qualitat[key]) }}
                   </td>
                 </template>
               </tr>
@@ -150,87 +274,115 @@
       </div>
     </details>
 
-    <details class=seccio close>
-      <summary class=seccio>Modificació dels tractaments (opcional)</summary>
+    <details class="seccio" close>
+      <summary class="seccio">Modificació dels tractaments (opcional)</summary>
       <div>
         <div>
-          <table border=1>
+          <table border="1">
             <tr>
               <th>Tractament</th>
               <th>Pretractament</th>
               <th>Editar tractament</th>
             </tr>
-            <tbody v-for="(tra,nom_tra) in this.Tractaments_info" :key="nom_tra">
-            <tr>
-              <td :rowspan="1+Object.keys(tra).length">
-                {{nom_tra}}
-              </td>
-            </tr>
-            <tr v-for="(pre,nom_pre) in tra">
-              <td>
-                {{nom_pre}}
-              </td>
-              <td>
-                <details>
-                  <summary>editar</summary>
-                  <div>
-                    Edita els valors d'eliminació
+            <tbody
+              v-for="(tra, nom_tra) in this.Tractaments_info"
+              :key="nom_tra"
+            >
+              <tr>
+                <td :rowspan="1 + Object.keys(tra).length">
+                  {{ nom_tra }}
+                </td>
+              </tr>
+              <tr v-for="(pre, nom_pre) in tra" :key="nom_tra+'_'+nom_pre">
+                <td>
+                  {{ nom_pre }}
+                </td>
+                <td>
+                  <details>
+                    <summary>editar</summary>
+                    <div>
+                      Edita els valors d'eliminació
 
-                    <table border=1>
-                      <tr>
-                        <th colspan=2>id</th>
-                        <th>min(%)</th>
-                        <th>max(%)</th>
-                      </tr>
-                      <tr v-for="(obj,id) in pre">
-                        <td style="font-family:monospace">{{id}}</td>
-                        <td>{{Corrent.info_qualitat[id].nom.substring(0,20)}}</td>
-                        <td><input type=number v-model.number="obj.min" min=0 max=100></td>
-                        <td><input type=number v-model.number="obj.max" min=0 max=100></td>
-                      </tr>
-                    </table>
-                  </div>
-                </details>
-              </td>
-            </tr>
+                      <table border="1">
+                        <tr>
+                          <th colspan="2">id</th>
+                          <th>min(%)</th>
+                          <th>max(%)</th>
+                        </tr>
+                        <tr v-for="(obj, id) in pre" :key="id+'_'+nom_tra+'_'+nom_pre">
+                          <td style="font-family: monospace">{{ id }}</td>
+                          <td>
+                            {{ Corrent.info_qualitat[id].nom.substring(0, 20) }}
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              v-model.number="obj.min"
+                              min="0"
+                              max="100"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              v-model.number="obj.max"
+                              min="0"
+                              max="100"
+                            />
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </details>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
     </details>
 
-	<details class=seccio close>
-      <summary class=seccio>Modificació de la reducció acumulada mínima requerida al llarg d'un tren (opcional)</summary>
+    <details class="seccio" close>
+      <summary class="seccio">
+        Modificació de la reducció acumulada mínima requerida al llarg d'un tren
+        (opcional)
+      </summary>
       <div>
         <div>
-          <table border=1>
-			  <tr>
-                <th colspan=2>Ús</th>
-                <th colspan=2>Indicador</th>
-				<th>Reducció logarítmica</th>
+          <table border="1">
+            <tr>
+              <th colspan="2">Ús</th>
+              <th colspan="2">Indicador</th>
+              <th>Reducció logarítmica</th>
+            </tr>
+            <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
+              <tr>
+                <td :rowspan="4">
+                  {{ id }}
+                </td>
+                <td :rowspan="4" class="doubletd2">
+                  {{ Usos_info[id] ? Usos_info[id].nom : "" }}
+                </td>
               </tr>
-			  <tbody v-for="(obj,id) in this.Qualitat_microbiologica" :key="id">
-				<tr>
-					<td :rowspan="4">
-						{{id}}
-					</td>
-					<td :rowspan="4"  class="doubletd2">
-						{{Usos_info[id] ? Usos_info[id].nom : ''}}
-					</td>
-				</tr>
-				<tr v-for="ind in Object.keys(obj)" :key="ind">
-					<td style="font-family:monospace">{{ind}}</td>
-                    <td>{{Corrent.info_qualitat[ind].nom.substring(0,20)}}</td>
-					<td><input type="number" v-model.number="obj[ind][1]" :ref="id+'_'+ind" :id="id+'_'+ind" class="nd" /></td>
-				</tr>
-			  </tbody>
-		  </table>
-		</div>
-	  </div>
-	</details> 
-
+              <tr v-for="ind in Object.keys(obj)" :key="ind">
+                <td style="font-family: monospace">{{ ind }}</td>
+                <td>{{ Corrent.info_qualitat[ind].nom.substring(0, 20) }}</td>
+                <td>
+                  <input
+                    type="number"
+                    v-model.number="obj[ind][1]"
+                    :ref="id + '_' + ind"
+                    :id="id + '_' + ind"
+                    class="nd"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
   </div>
-
 </template>
 
 <script>
@@ -428,7 +580,10 @@ export default {
     }
   },
   computed: {
-
+    // Variable que conté la informació de qualitats filtrades sense 'I1', 'I22' i 'I23'
+    info_qualitats: function () {
+        return Object.fromEntries(Object.entries(this.Corrent.info_qualitat).filter(([key]) => key !== 'I1' && key !== 'I22' && key !== 'I23'));
+    }
   },
   watch: {
     //actualitza la qualitat del corrent_objectiu (usuari), en funció dels vp mínims dels usos seleccionats.
@@ -492,44 +647,44 @@ a {
   color: #42b983;
 }
 
-table{
-  border-collapse:collapse;
+table {
+  border-collapse: collapse;
 }
 table td {
-  word-wrap:break-word;
+  word-wrap: break-word;
 }
 .doubletd {
-  width:120px;
+  width: 120px;
 }
 .doubletd2 {
-  width:240px;
+  width: 240px;
 }
-.nd{
-  text-align:right;
+.nd {
+  text-align: right;
 }
-th{
-  text-align:center;
+th {
+  text-align: center;
 }
-details summary{
+details summary {
   text-align: left;
 }
-details summary:hover{
-  cursor:pointer;
-  text-decoration:underline;
+details summary:hover {
+  cursor: pointer;
+  text-decoration: underline;
 }
 details.seccio {
-  margin-bottom:1em;
+  margin-bottom: 1em;
 }
-details.seccio > summary{
-  font-weight:bold;
-  font-size:larger;
+details.seccio > summary {
+  font-weight: bold;
+  font-size: larger;
 }
 details.seccio > div {
-  padding:1em;
-  background:#eff5fb;
+  padding: 1em;
+  background: #eff5fb;
 }
-input[type=number]{
-  text-align:right;
+input[type="number"] {
+  text-align: right;
 }
 
 /* Tooltip container */
@@ -538,7 +693,6 @@ input[type=number]{
   display: inline-block;
   color: maroon;
   padding: 0px 5px 0px 5px;
-  //border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 
 /* Tooltip text */
@@ -586,13 +740,14 @@ input[type=number]{
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext, .tooltip:hover .tooltiptext_ind {
+.tooltip:hover .tooltiptext,
+.tooltip:hover .tooltiptext_ind {
   visibility: visible;
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext2, .tooltip:hover .tooltiptext_ind {
+.tooltip:hover .tooltiptext2,
+.tooltip:hover .tooltiptext_ind {
   visibility: visible;
 }
-
 </style>
