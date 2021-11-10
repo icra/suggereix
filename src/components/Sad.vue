@@ -16,6 +16,7 @@
             <th colspan="2">Descripció infraestructura existent</th>
             <th>Ús d'aigua regenerada</th>
             <th rowspan="3">Unitat</th>
+            <th rowspan="3">Referència</th>
           </tr>
 
           <tr>
@@ -35,7 +36,7 @@
               </select>
             </td>
 
-            <td>
+            <td class="doubletd3">
               <b>Selecciona l'ús (o usos) d'aigua regenerada:</b>
               <br />
               <template v-for="(obj, key) in Usos_info">
@@ -143,6 +144,9 @@
             </td>
             <td>
               {{ Corrent.info_qualitat[key].unitat }}
+            </td>
+            <td class="doubletd2">
+              {{ user.corrent_objectiu.refs[key] }}
             </td>
           </tr>
           <tr>
@@ -427,7 +431,7 @@ export default {
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
 
     // llegir excel 'valors protectors usos'
-    this.read_file('/20211103_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
+    this.read_file('/20211108_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
 
 	// llegir excel 'monitoratge de la qualitat autobiològica', que mostra el % de reducció Rmin per a terns de tractament dels indicadors microbiològics.
 	this.read_file('20211004_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
@@ -499,7 +503,7 @@ export default {
               (efluent_secundari.includes('BRM') && primer_tractament === 'BRM') ||
               (efluent_secundari.includes('DP') && primer_tractament === 'BRM');
           if(tren_aplicable){
-            let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari);
+            let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari,key);
 
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
             const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
@@ -596,6 +600,7 @@ export default {
         //_this.user.corrent_objectiu.qualitat = _this.Usos_info[newUse[0]].qualitat;
         for (const [key, value] of Object.entries(_this.Usos_info[newUse[0]].qualitat)) {
           _this.user.corrent_objectiu.qualitat[key] = value.vp;
+          _this.user.corrent_objectiu.refs[key] = value.ref;
         }
         const n_usos = _this.usos_seleccionats.length;
 
@@ -611,9 +616,14 @@ export default {
               const valor_actual = _this.user.corrent_objectiu.qualitat[key];
               if (valor_actual === 'nd' || value.vp < valor_actual)
                 _this.user.corrent_objectiu.qualitat[key] = value.vp;
+                _this.user.corrent_objectiu.refs[key] = value.ref;
             }
           }
         }
+      }
+      else{
+          // Posa els valors inicials.
+          _this.user.reseteja_corrent_objectiu();
       }
 
 	  // 2. Actualitzem el valor del grau d'informació sobre els VP.
@@ -658,6 +668,9 @@ table td {
 }
 .doubletd2 {
   width: 240px;
+}
+.doubletd3 {
+  width: 360px;
 }
 .nd {
   text-align: right;

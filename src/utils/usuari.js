@@ -7,6 +7,10 @@ export default class Usuari{
     this.corrent_objectiu = new Corrent(); //qualitat desitjada
   }
 
+  reseteja_corrent_objectiu(){
+    this.corrent_objectiu = new Corrent();
+  }
+
   static get info_tractaments_secundaris(){
     const I19 = {min: 1548816.61891249, max: 85113803.8202378};
     const I20 = {min: 2187761.62394955, max: 89125093.8133748};

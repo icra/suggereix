@@ -37,14 +37,16 @@ export default class Corrent{
     this.Q = 0; //m3
 
     this.qualitat={};
+    this.refs={};
     Object.keys(Corrent.info_qualitat).forEach(id=>{
       this.qualitat[id] = 0;
+      this.refs[id]= "";
     });
   }
 
   //aplica un carro de tecnologies/tractaments
   //genera 2 nous corrents "min" i "max"
-  aplica_tren_tractaments(array_tractaments, tractaments_dict, dict_tractaments_m, tractament_secundari){
+  aplica_tren_tractaments(array_tractaments, tractaments_dict, dict_tractaments_m, tractament_secundari,key){
 
     //retorna dos corrents nous
     let _this = this;
@@ -55,7 +57,6 @@ export default class Corrent{
     min.Q = _this.Q;
     max.Q = _this.Q;
 
-    let n = array_tractaments.length; // número de tractaments aplicats en el tren
     let efluent_secundari = tractament_secundari;
 
     // guardem els 'FAC_DS1/2/3' com a 'FAC_DS'
@@ -84,13 +85,14 @@ export default class Corrent{
         let pretractament = efluent_secundari;
 
         // En cas de tractar-se de indicadors microbiològics, aplicar primer els tractaments primari i secundari (si n'hi ha) fins a arribar al mateix punt de referència dels altres indicadors.
+        let n = array_tractaments.length; // número de tractaments aplicats en el tren
         if (id === 'I19' || id === 'I20' || id === 'I21'){
           pretractament = 'na';
           const array_pretractaments = ['DP'];
           if(tractament_secundari !== 'DP'){
             array_pretractaments.push(tractament_secundari);
           }
-          n+=array_pretractaments.length;
+          n+= array_pretractaments.length;
           array_pretractaments.forEach(tractament=>{
             if(!dict_tractaments_m[tractament][pretractament][id]) {
               return;
@@ -112,7 +114,6 @@ export default class Corrent{
           r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);
           pretractament = tractament;
         });
-
         r_min = 1.0 - (r_min / Math.pow(100, n));
         r_max = 1.0 - (r_max / Math.pow(100, n));
 
