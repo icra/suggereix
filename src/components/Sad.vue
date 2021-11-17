@@ -10,6 +10,7 @@
               <input
                 type="number"
                 v-model.number="user.corrent.Q"
+                min="1" step="1"
                 style="max-width: 75px"
               />
             </th>
@@ -278,6 +279,111 @@
       </div>
     </details>
 
+    <details class="seccio" open>
+      <summary class="seccio">3. Avaluació multicliteri dels trens viables</summary>
+      <div style="text-align: left">
+        <button @click="avaluacio_trens_multicriteri">Avaluació multicriteri</button>
+        <button @click="eliminar_avaluacio_multicriteri">Esborrar avaluació</button>
+      </div>
+      <div>
+        <div v-if="this.trens_multicriteris.length !== 0">
+          <table border="1">
+            <tr>
+              <th rowspan="2">Tren</th>
+              <th rowspan="2">id</th>
+              <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. químics)</th>
+              <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. microbiològics)</th>
+              <th colspan="2" rowspan="2" class="doubletd">Cost Total (€)</th>
+              <th rowspan="2" class="doubletd">Consum energètic mitjà (kWh/dia)</th>
+              <th rowspan="2" class="doubletd">Petjada de carboni (kg CO2 eq./dia)</th>
+              <th rowspan="2" class="doubletd">Petjada hídrica (L eq./dia)</th>
+              <th rowspan="2" class="doubletd">Espai ocupat (m2)</th>
+            </tr>
+            <tr />
+
+            <template v-for="(tren, id) in this.trens_multicriteris">
+              <tr :key="id+'_min_multi'">
+                <td
+                  rowspan="2"
+                  style="text-align: right; padding: 0px 10px 0px 10px"
+                >
+                  {{ Trens_info[tren.id].nom }}
+                </td>
+                <td
+                  rowspan="2"
+                  style="text-align: left; padding: 0px 10px 0px 10px"
+                >
+                  {{ tren.id }}
+                </td>
+                <td style="text-align: right; padding: 0px 5px 0px 5px">
+                  min:
+                </td>
+                <td style="text-align: left; padding: 0px 10px 0px 10px">
+                  {{ Math.round((tren.criteris.eliminacio_min_quimics + Number.EPSILON) * 100) / 100 }}
+                </td>
+                <td style="text-align: right; padding: 0px 5px 0px 5px">
+                  min:
+                </td>
+                <td style="text-align: left; padding: 0px 10px 0px 10px">
+                  {{ Math.round((tren.criteris.eliminacio_min_microbiologics + Number.EPSILON) * 100) / 100 }}
+                </td>
+                <td style="text-align: right; padding: 0px 5px 0px 5px">
+                  min:
+                </td>
+                <td style="text-align: left; padding: 0px 10px 0px 10px">
+                  {{ show_sc_not(tren.criteris.cost_total_min) }}
+                </td>
+                <td
+                  rowspan="2"
+                  style="text-align: left; padding: 0px 10px 0px 10px"
+                >
+                  {{ show_sc_not(tren.criteris.cons_ene_mitja) }}
+                </td>
+                <td
+                  rowspan="2"
+                  style="text-align: left; padding: 0px 10px 0px 10px"
+                >
+                  {{ show_sc_not(tren.criteris.hc) }}
+                </td>
+                <td
+                  rowspan="2"
+                  style="text-align: left; padding: 0px 10px 0px 10px"
+                >
+                  {{ show_sc_not(tren.criteris.hh) }}
+                </td>
+                <td
+                  rowspan="2"
+                  style="text-align: left; padding: 0px 10px 0px 10px"
+                >
+                  {{ show_sc_not(tren.criteris.espai_ocupat) }}
+                </td>
+              </tr>
+              <tr :key="id+'_max_multi'">
+                <td style="text-align: right; padding: 0px 5px 0px 5px">
+                  max:
+                </td>
+                <td style="text-align: left; padding: 0px 10px 0px 10px">
+                  {{ Math.round((tren.criteris.eliminacio_max_quimics + Number.EPSILON) * 100) / 100 }}
+                </td>
+                <td style="text-align: right; padding: 0px 5px 0px 5px">
+                  max:
+                </td>
+                <td style="text-align: left; padding: 0px 10px 0px 10px">
+                  {{ Math.round((tren.criteris.eliminacio_max_microbiologics + Number.EPSILON) * 100) / 100 }}
+                </td>
+                <td style="text-align: right; padding: 0px 5px 0px 5px">
+                  max:
+                </td>
+                <td style="text-align: left; padding: 0px 10px 0px 10px">
+                  {{ show_sc_not(tren.criteris.cost_total_max) }}
+                </td>
+              </tr>
+            </template>
+          </table>
+        </div>
+      </div>
+    </details>
+
     <details class="seccio" close>
       <summary class="seccio">Modificació dels tractaments (opcional)</summary>
       <div>
@@ -347,8 +453,7 @@
     </details>
 
     <details class="seccio" close>
-      <summary class="seccio">
-        Modificació de la reducció acumulada mínima requerida al llarg d'un tren
+      <summary class="seccio">Modificació de la reducció acumulada mínima requerida al llarg d'un tren
         (opcional)
       </summary>
       <div>
@@ -393,7 +498,8 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri} from "../utils/llegir_excels";
+import {avaluar_multicriteris} from "../utils/multicriteri";
 
 export default {
   name: 'Sad',
@@ -405,6 +511,7 @@ export default {
       tractament_secundari: "", //tractament secundari infraestructura
       ranquing_trens: [],       //array de trens ordenats per compliments
       usos_seleccionats: [],    //ús o usos seleccionats per l'usuari
+      trens_multicriteris: [],  //array de trans viables amb els seus multicriteris calculats.
 
       //backend
       Usuari,                   //classe
@@ -414,7 +521,9 @@ export default {
       Trens_info: {},           //diccionari tots els trens
       Usos_info: {},              //diccionari tots els usos
       Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
-	  Qualitat_microbiologica: {} //diccionari amb qualitats microbiològiques.
+	  Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
+      Multicriteri_info: {}        //diccionari amb la informació de l'avaluació multicriteri.
+
     }
   },
   created: async function() {
@@ -435,6 +544,9 @@ export default {
 
 	// llegir excel 'monitoratge de la qualitat autobiològica', que mostra el % de reducció Rmin per a terns de tractament dels indicadors microbiològics.
 	this.read_file('20211004_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
+
+    // llegir excel 'Avaluació multicriteri', que mostra els criteris a considerar amb cadascun dels tractaments.
+	this.read_file('/20211111_SUGGEREIX_Criteris_add.xlsx', 'multicriteri');
 
   },
   methods:{
@@ -473,6 +585,8 @@ export default {
           _this.Usos_info = await llegir_vp_usos(binaryData);
 		else if (type === 'qualitat_microbiologica')
 		  _this.Qualitat_microbiologica = await llegir_qualitat_micro(binaryData);
+        else if (type === 'multicriteri')
+		  _this.Multicriteri_info = await llegir_multicriteri(binaryData);
           
       }
 
@@ -487,6 +601,11 @@ export default {
       let efluent_secundari = _this.tractament_secundari;
       let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
+
+      if(isNaN(_this.user.corrent.Q) || _this.user.corrent.Q < 1 || _this.user.corrent.Q >= 1000000 || !Number.isInteger(_this.user.corrent.Q)){
+          alert("Capacitat de tractament invàlida");
+          return;
+      }
 
 	  // Actualitza valors de la reducció microbiològica. 
 	  for(const [id, obj] of Object.entries(_this.Qualitat_microbiologica)){
@@ -509,7 +628,10 @@ export default {
             const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
 			const avaluacio_compliments_min = min_max.min.n_compliments('min',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
 			const max_length = Object.values(avaluacio_compliments_max).filter(value => value === 0);
-            let puntuacio = Math.round((((max_length.length / 20) * 100) + Number.EPSILON) * 100) / 100;
+            const max_length_noref = Object.values(avaluacio_compliments_max).filter(value => value === 0 || value === 1);
+            const puntuacio = Math.round((((max_length.length / 20) * 100) + Number.EPSILON) * 100) / 100;
+            const puntuacio_noref = Math.round((((max_length_noref.length / 20) * 100) + Number.EPSILON) * 100) / 100;
+
 
             let new_train = {
               id: key,
@@ -517,6 +639,7 @@ export default {
               compliments_max: avaluacio_compliments_max,
 			  compliments_min: avaluacio_compliments_min,
               puntuacio: puntuacio,
+              puntuacio_noref: puntuacio_noref
             }
 
             avaluacio_trens.push(new_train);
@@ -531,9 +654,48 @@ export default {
 
     },
 
+     //actualitza l'array de multicriteris dels trens viables, calculats amb fuzzy dels intervals dels tractaments de l'excel.
+    avaluacio_trens_multicriteri: function (){
+
+      const _this = this;
+      const ranquing_trens = _this.ranquing_trens;
+
+      // No es pot fer la valoració multicriteri si no s'ha fet abans l'avaluació de trens.
+      if(!ranquing_trens.length){
+          alert("Primer cal avaluar els trens de tractament.");
+          return;
+      }
+
+      // S'obtenen els trens viables. Si no n'hi ha, no es pot fer la valoració multicriteri.
+      const trens_viables = ranquing_trens.filter(tren => tren.puntuacio_noref === 100);
+      if(!trens_viables.length){
+          alert("No es poden avaluar els criteris ja que no s'ha obtingut cap tren de tractament viable.");
+          return;
+      }
+
+      // Ara cal calcular el valor de cadascun dels 10 criteris per cada tren.
+      const criteris_trens = [];
+      for(const tren of trens_viables){
+          const criteris = avaluar_multicriteris(tren, _this.Trens_info, _this.Multicriteri_info);
+          criteris_trens.push({
+              id: tren.id,
+              criteris: criteris
+          });
+      }
+
+      // Guardar el resultat.
+      _this.trens_multicriteris = criteris_trens;
+
+    },
+
     //reseteja el ranquing de trens (array buit)
     eliminar_avaluacio(){
       this.ranquing_trens = [];
+    },
+
+    //reseteja el ranquing d'avaluacions multicriteri (array buit)
+    eliminar_avaluacio_multicriteri(){
+      this.trens_multicriteris = [];
     },
 
 	// retorna cert si cal mostrar nota en un ús.
