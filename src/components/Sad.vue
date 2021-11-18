@@ -1,4 +1,4 @@
-<template>
+<template data-vuetify>
   <div id="intro">
     <details class="seccio" open>
       <summary class="seccio">1. Definició aigua</summary>
@@ -287,6 +287,8 @@
       </div>
       <div>
         <div v-if="this.trens_multicriteris.length !== 0">
+            <div class="click-chip-hover background-blue">Taula de criteris inicial</div>
+            <div class="click-chip-hover outline-blue">Visualització de criteris normalitzats</div>
           <table border="1">
             <tr>
               <th rowspan="2">Tren</th>
@@ -302,6 +304,7 @@
             <tr />
 
             <template v-for="(tren, id) in this.trens_multicriteris">
+                
               <tr :key="id+'_min_multi'">
                 <td
                   rowspan="2"
@@ -925,4 +928,28 @@ input[type="number"] {
 .tooltip:hover .tooltiptext_ind {
   visibility: visible;
 }
+
+.outline-blue{
+  border: 1.5px solid #0074c3;
+  color: #0074c3;
+  outline: none;
+}
+
+.background-blue{
+  background: #0074c3;
+  color: #ffffff;
+}
+
+.click-chip, .click-chip-hover{
+  padding: 5px 10px;
+  border-radius: 50px;
+  display: inline-flex;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.click-chip-hover:hover{
+  filter: brightness(85%);
+}
+
 </style>
