@@ -17,6 +17,24 @@ const IND_QUIMICS = ['I2','I3','I4','I5','I6','I7','I8','I9','I10','I11','I12','
 // Variable constant amb els indicadors microbiològics.
 const IND_MICRO = ['I19','I20','I21']
 
+// Diccionari constant amb el ID del criteri i si és beneficios o no.
+const DICT_CRI_BENEFICIOSOS = {
+    eliminacio_quimics: true,
+    eliminacio_microbiologics: true,
+    cons_ene_mitja: false,
+    cost_total: false,
+    espai_ocupat: false,
+    hc: false,
+    hh: false
+}
+
+// Retorna la mitjana dels valors d'un array.
+const mitjana = (array) => {
+    const sum = array.reduce((a, b) => a + b, 0);
+    const avg = ((sum / array.length) || 0)*100;
+    return avg;
+}
+
 // Funció que calcula el percentatge d'eliminació mitjà.
 const perElimMitja = (eliminacions, tipus_ind) => {
 
@@ -28,9 +46,7 @@ const perElimMitja = (eliminacions, tipus_ind) => {
     for (const [indicador, eliminacio] of Object.entries(eliminacions)) {
         if(indicadors.includes(indicador)) array_eliminacions.push(eliminacio);
     }
-    const sum = array_eliminacions.reduce((a, b) => a + b, 0);
-    const avg = ((sum / array_eliminacions.length) || 0)*100;
-    return avg;
+    return mitjana(array_eliminacions);
 }
 
 // Aquesta funció obté els criteris del tractament corresponent.
@@ -160,3 +176,104 @@ export const avaluar_multicriteris = (tren, info_trens, info_multicriteris) => {
     }
 
 }
+
+// Aquesta funció obté el màxim o mínim (extrem) de cada criteri per un array de trens, depenent de si elñ criteri és beneficiós o no.
+export const obtenirExtremCriteris = (criteris_trens) => {
+    const extrem_criteris = {};
+    // S'obté un array amb clau criteri i valor valor del criteri (un element per cada tren).
+    const tren_criteris = criteris_trens.map(criteris_tren => criteris_tren.criteris_agregats);
+    // Per cada criteri, si és beneficiós s'afegeix a 'extrem_criteris' amb el valor màxim, en cas de ser no beneficiós amb el valor mínim.
+    for (const [criteri, es_beneficios] of Object.entries(DICT_CRI_BENEFICIOSOS)) {
+        if(es_beneficios) extrem_criteris[criteri] = Math.max(...tren_criteris.map(criteris => criteris[criteri]));
+        else extrem_criteris[criteri] = Math.min(...tren_criteris.map(criteris => criteris[criteri]));
+    }
+    return extrem_criteris;
+}
+
+// Agregació de criteris.
+export const agregaCriteris = (criteris) => {
+    return {
+        eliminacio_quimics: criteris.eliminacio_min_quimics,
+        eliminacio_microbiologics: criteris.eliminacio_min_microbiologics,
+        cost_total: mitjana([criteris.cost_total_min,criteris.cost_total_max]),
+        cons_ene_mitja: criteris.cons_ene_mitja,
+        espai_ocupat: criteris.espai_ocupat,
+        hc: criteris.hc,
+        hh: criteris.hh
+    }
+} 
+
+// Aquesta funció rep els criteris ja calculats i agregats, i els normalitza 
+//  a partir del diccionari d'extrems prèviament calculat per cada criteri.
+export const normalitzaCriteris = (criteris_agregats, extrem_criteris) => {
+    // Normalització.
+    const criteris_normalitzats = {};
+    for(const [criteri, valor_agregat] of Object.entries(criteris_agregats)){
+        // Si és beneficiós: cal dividir cada valor per el valor màxim.
+        if(DICT_CRI_BENEFICIOSOS[criteri]) criteris_normalitzats[criteri] = valor_agregat / extrem_criteris[criteri];
+        // Si no és beneficiós: cal dividir el valor mínim per cada valor.
+        else criteris_normalitzats[criteri] = extrem_criteris[criteri] / valor_agregat;
+    }
+    return criteris_normalitzats;
+}
+
+const obtenirDatasets = (trens_multicriteris, trens_info) => {
+    const datasets = [];
+    for(const tren_multicriteris of trens_multicriteris){
+        const dataset = {
+            label: tren_multicriteris.id + ': ' + trens_info[tren_multicriteris.id].nom,
+            data: [65, 59, 90, 81, 56, 55, 40],
+            fill: true,
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgb(255, 99, 132)',
+            pointBackgroundColor: 'rgb(255, 99, 132)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(255, 99, 132)'
+        }
+        datasets.push(dataset);
+    }
+    return datasets;
+}
+
+// Retorna les dades en format que necessita la llibreria chart.js per a dibuizar un radar graph.
+//  +info: https://www.chartjs.org/docs/latest/charts/radar.html
+export const obtenirDadesGraphMulticriteri = (trens_multicriteris, trens_info) => {
+    return {
+        labels: Object.keys(DICT_CRI_BENEFICIOSOS),
+        datasets: obtenirDatasets(trens_multicriteris, trens_info)
+    }
+}
+
+const data = {
+    labels: [
+      'Eating',
+      'Drinking',
+      'Sleeping',
+      'Designing',
+      'Coding',
+      'Cycling',
+      'Running'
+    ],
+    datasets: [{
+      label: 'My First Dataset',
+      data: [65, 59, 90, 81, 56, 55, 40],
+      fill: true,
+      backgroundColor: 'rgba(255, 99, 132, 0.2)',
+      borderColor: 'rgb(255, 99, 132)',
+      pointBackgroundColor: 'rgb(255, 99, 132)',
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: 'rgb(255, 99, 132)'
+    }, {
+      label: 'My Second Dataset',
+      data: [28, 48, 40, 19, 96, 27, 100],
+      fill: true,
+      backgroundColor: 'rgba(54, 162, 235, 0.2)',
+      borderColor: 'rgb(54, 162, 235)',
+      pointBackgroundColor: 'rgb(54, 162, 235)',
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: 'rgb(54, 162, 235)'
+    }]
+  };

@@ -190,8 +190,8 @@ export default class Corrent {
                 min.eliminacio[id] = r_min;
                 max.eliminacio[id] = r_max;
 
-                min.qualitat[id] = Math.round(((_this.qualitat[id].min * (1 - r_max)) + Number.EPSILON) * 10000) / 10000; //arrodonit a 5 decimals
-                max.qualitat[id] = Math.round(((_this.qualitat[id].max * (1 - r_min)) + Number.EPSILON) * 10000) / 10000;
+                min.qualitat[id] = _this.qualitat[id].min * (1 - r_max)
+                max.qualitat[id] = _this.qualitat[id].max * (1 - r_min)
 
             }
         });

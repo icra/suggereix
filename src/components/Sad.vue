@@ -287,102 +287,119 @@
       </div>
       <div>
         <div v-if="this.trens_multicriteris.length !== 0">
-            <div class="click-chip-hover background-blue">Taula de criteris inicial</div>
-            <div class="click-chip-hover outline-blue">Visualització de criteris normalitzats</div>
-          <table border="1">
-            <tr>
-              <th rowspan="2">Tren</th>
-              <th rowspan="2">id</th>
-              <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. químics)</th>
-              <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. microbiològics)</th>
-              <th colspan="2" rowspan="2" class="doubletd">Cost Total (€)</th>
-              <th rowspan="2" class="doubletd">Consum energètic mitjà (kWh/dia)</th>
-              <th rowspan="2" class="doubletd">Petjada de carboni (kg CO2 eq./dia)</th>
-              <th rowspan="2" class="doubletd">Petjada hídrica (L eq./dia)</th>
-              <th rowspan="2" class="doubletd">Espai ocupat (m2)</th>
-            </tr>
-            <tr />
+            <div 
+                :id="'taula_de_criteris_inicial'"
+                v-bind:class="visio_multicriteri === 0 ? 'click-chip-hover background-blue' : 'click-chip-hover outline-blue'"
+                @click="canviVisio"
+            >
+                Taula de criteris inicial
+            </div>
+            <div 
+                :id="'visualitzacio_de_criteris_normalitzats'"
+                v-bind:class="visio_multicriteri === 1 ? 'click-chip-hover background-blue' : 'click-chip-hover outline-blue'"
+                @click="canviVisio"
+            >
+                Visualització de criteris normalitzats
+            </div>
+          <div v-if="this.visio_multicriteri === 0">
+            <table border="1">
+                <tr>
+                <th rowspan="2">Tren</th>
+                <th rowspan="2">id</th>
+                <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. químics)</th>
+                <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. microbiològics)</th>
+                <th colspan="2" rowspan="2" class="doubletd">Cost Total (€)</th>
+                <th rowspan="2" class="doubletd">Consum energètic mitjà (kWh/dia)</th>
+                <th rowspan="2" class="doubletd">Petjada de carboni (kg CO2 eq./dia)</th>
+                <th rowspan="2" class="doubletd">Petjada hídrica (L eq./dia)</th>
+                <th rowspan="2" class="doubletd">Espai ocupat (m2)</th>
+                </tr>
+                <tr />
 
-            <template v-for="(tren, id) in this.trens_multicriteris">
-                
-              <tr :key="id+'_min_multi'">
-                <td
-                  rowspan="2"
-                  style="text-align: right; padding: 0px 10px 0px 10px"
-                >
-                  {{ Trens_info[tren.id].nom }}
-                </td>
-                <td
-                  rowspan="2"
-                  style="text-align: left; padding: 0px 10px 0px 10px"
-                >
-                  {{ tren.id }}
-                </td>
-                <td style="text-align: right; padding: 0px 5px 0px 5px">
-                  min:
-                </td>
-                <td style="text-align: left; padding: 0px 10px 0px 10px">
-                  {{ Math.round((tren.criteris.eliminacio_min_quimics + Number.EPSILON) * 100) / 100 }}
-                </td>
-                <td style="text-align: right; padding: 0px 5px 0px 5px">
-                  min:
-                </td>
-                <td style="text-align: left; padding: 0px 10px 0px 10px">
-                  {{ Math.round((tren.criteris.eliminacio_min_microbiologics + Number.EPSILON) * 100) / 100 }}
-                </td>
-                <td style="text-align: right; padding: 0px 5px 0px 5px">
-                  min:
-                </td>
-                <td style="text-align: left; padding: 0px 10px 0px 10px">
-                  {{ show_sc_not(tren.criteris.cost_total_min) }}
-                </td>
-                <td
-                  rowspan="2"
-                  style="text-align: left; padding: 0px 10px 0px 10px"
-                >
-                  {{ show_sc_not(tren.criteris.cons_ene_mitja) }}
-                </td>
-                <td
-                  rowspan="2"
-                  style="text-align: left; padding: 0px 10px 0px 10px"
-                >
-                  {{ show_sc_not(tren.criteris.hc) }}
-                </td>
-                <td
-                  rowspan="2"
-                  style="text-align: left; padding: 0px 10px 0px 10px"
-                >
-                  {{ show_sc_not(tren.criteris.hh) }}
-                </td>
-                <td
-                  rowspan="2"
-                  style="text-align: left; padding: 0px 10px 0px 10px"
-                >
-                  {{ show_sc_not(tren.criteris.espai_ocupat) }}
-                </td>
-              </tr>
-              <tr :key="id+'_max_multi'">
-                <td style="text-align: right; padding: 0px 5px 0px 5px">
-                  max:
-                </td>
-                <td style="text-align: left; padding: 0px 10px 0px 10px">
-                  {{ Math.round((tren.criteris.eliminacio_max_quimics + Number.EPSILON) * 100) / 100 }}
-                </td>
-                <td style="text-align: right; padding: 0px 5px 0px 5px">
-                  max:
-                </td>
-                <td style="text-align: left; padding: 0px 10px 0px 10px">
-                  {{ Math.round((tren.criteris.eliminacio_max_microbiologics + Number.EPSILON) * 100) / 100 }}
-                </td>
-                <td style="text-align: right; padding: 0px 5px 0px 5px">
-                  max:
-                </td>
-                <td style="text-align: left; padding: 0px 10px 0px 10px">
-                  {{ show_sc_not(tren.criteris.cost_total_max) }}
-                </td>
-              </tr>
-            </template>
-          </table>
+                <template v-for="(tren, id) in this.trens_multicriteris">
+                    
+                <tr :key="id+'_min_multi'">
+                    <td
+                    rowspan="2"
+                    style="text-align: right; padding: 0px 10px 0px 10px"
+                    >
+                    {{ Trens_info[tren.id].nom }}
+                    </td>
+                    <td
+                    rowspan="2"
+                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    >
+                    {{ tren.id }}
+                    </td>
+                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    min:
+                    </td>
+                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    {{ Math.round((tren.criteris.eliminacio_min_quimics + Number.EPSILON) * 100) / 100 }}
+                    </td>
+                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    min:
+                    </td>
+                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    {{ Math.round((tren.criteris.eliminacio_min_microbiologics + Number.EPSILON) * 100) / 100 }}
+                    </td>
+                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    min:
+                    </td>
+                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    {{ show_sc_not(tren.criteris.cost_total_min) }}
+                    </td>
+                    <td
+                    rowspan="2"
+                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    >
+                    {{ show_sc_not(tren.criteris.cons_ene_mitja) }}
+                    </td>
+                    <td
+                    rowspan="2"
+                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    >
+                    {{ show_sc_not(tren.criteris.hc) }}
+                    </td>
+                    <td
+                    rowspan="2"
+                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    >
+                    {{ show_sc_not(tren.criteris.hh) }}
+                    </td>
+                    <td
+                    rowspan="2"
+                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    >
+                    {{ show_sc_not(tren.criteris.espai_ocupat) }}
+                    </td>
+                </tr>
+                <tr :key="id+'_max_multi'">
+                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    max:
+                    </td>
+                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    {{ Math.round((tren.criteris.eliminacio_max_quimics + Number.EPSILON) * 100) / 100 }}
+                    </td>
+                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    max:
+                    </td>
+                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    {{ Math.round((tren.criteris.eliminacio_max_microbiologics + Number.EPSILON) * 100) / 100 }}
+                    </td>
+                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    max:
+                    </td>
+                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    {{ show_sc_not(tren.criteris.cost_total_max) }}
+                    </td>
+                </tr>
+                </template>
+            </table>
+          </div>
+          <div v-else-if="this.visio_multicriteri === 1">
+              <Graph v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
+          </div>
         </div>
       </div>
     </details>
@@ -502,10 +519,12 @@
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
 import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri} from "../utils/llegir_excels";
-import {avaluar_multicriteris} from "../utils/multicriteri";
+import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
+import Graph from './Graph.vue'
 
 export default {
   name: 'Sad',
+  components: { Graph },
   data: function(){
     return {
       user: new Usuari(),       //objecte
@@ -515,6 +534,7 @@ export default {
       ranquing_trens: [],       //array de trens ordenats per compliments
       usos_seleccionats: [],    //ús o usos seleccionats per l'usuari
       trens_multicriteris: [],  //array de trans viables amb els seus multicriteris calculats.
+      visio_multicriteri: 0,    //Variable que indica la visió activa de l'apartat multicriteri.
 
       //backend
       Usuari,                   //classe
@@ -561,6 +581,11 @@ export default {
 		let _this = this;
 		_this.selected_input = "";
 	},
+    canviVisio(event){
+        let _this = this;
+		if(event.target.id === 'taula_de_criteris_inicial') _this.visio_multicriteri = 0;
+        else if(event.target.id === 'visualitzacio_de_criteris_normalitzats') _this.visio_multicriteri = 1;
+    },
 	show_sc_not(value){
 		if(value === undefined || isNaN(value)) return '';
 		else return value.toExponential(1);
@@ -676,18 +701,30 @@ export default {
           return;
       }
 
-      // Ara cal calcular el valor de cadascun dels 10 criteris per cada tren.
+      // Ara cal calcular el valor de cadascun dels 10 criteris per cada tren i agregar els seus valors en 7 criteris.
       const criteris_trens = [];
       for(const tren of trens_viables){
           const criteris = avaluar_multicriteris(tren, _this.Trens_info, _this.Multicriteri_info);
+          const criteris_agregats = agregaCriteris(criteris);
           criteris_trens.push({
               id: tren.id,
-              criteris: criteris
+              criteris: criteris,
+              criteris_agregats: criteris_agregats
           });
       }
 
+      // Agregació i normalització de criteris.
+      const trens_criteris_norm = {};
+      const extrem_criteris = obtenirExtremCriteris(criteris_trens);
+      for(const criteri_tren of criteris_trens) {
+          trens_criteris_norm[criteri_tren.id] = normalitzaCriteris(criteri_tren.criteris_agregats, extrem_criteris);
+      }
+
       // Guardar el resultat.
-      _this.trens_multicriteris = criteris_trens;
+      _this.trens_multicriteris = criteris_trens.map(tren => {
+          tren.criteris_norm = trens_criteris_norm[tren.id];
+          return tren;
+      });
 
     },
 
@@ -800,6 +837,10 @@ export default {
     tractament_secundari: function (newUse, oldUse){
       let _this = this;
       _this.user.corrent.qualitat = Usuari.info_tractaments_secundaris[newUse].qualitat;
+    },
+
+    visio_multicriteri: function(newUse, oldUse){
+        
     }
   }
 }
