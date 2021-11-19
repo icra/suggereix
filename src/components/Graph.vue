@@ -1,5 +1,5 @@
 <template>
-  <canvas id="multicriteri_chart" width="600" height="600"></canvas>
+  <canvas id="multicriteri_chart" width="700" height="700"></canvas>
 </template>
 <script>
 

@@ -308,7 +308,7 @@
                 <th rowspan="2">id</th>
                 <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. químics)</th>
                 <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. microbiològics)</th>
-                <th colspan="2" rowspan="2" class="doubletd">Cost Total (€)</th>
+                <th colspan="2" rowspan="2" class="doubletd">Cost total (€)</th>
                 <th rowspan="2" class="doubletd">Consum energètic mitjà (kWh/dia)</th>
                 <th rowspan="2" class="doubletd">Petjada de carboni (kg CO2 eq./dia)</th>
                 <th rowspan="2" class="doubletd">Petjada hídrica (L eq./dia)</th>

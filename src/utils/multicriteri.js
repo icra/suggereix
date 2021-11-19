@@ -3,9 +3,6 @@
 // Importa la llibreria que s'encarrega de la lògica fuzzy.
 import {
     variable,
-    invRamp,
-    gaussian,
-    ramp,
     triangle,
     defuzz,
     or
@@ -26,6 +23,17 @@ const DICT_CRI_BENEFICIOSOS = {
     espai_ocupat: false,
     hc: false,
     hh: false
+}
+
+// Diccionari constant amb el ID del criteri i el seu nom.
+const DICT_CRI_NOMS = {
+    eliminacio_quimics: '% d\'eliminació mínim (I. químics)',
+    eliminacio_microbiologics: "% d'eliminació mínim (I. microbiològics)",
+    cons_ene_mitja: "Consum energètic mitjà (kWh/dia)",
+    cost_total: "Mitjana del cost total (€)",
+    espai_ocupat: "Espai ocupat (m2)",
+    hc: "Petjada de carboni (kg CO2 eq./dia)",
+    hh: "Petjada hídrica (L eq./dia)"
 }
 
 // Variable constant amb la paleta de colors.
@@ -250,7 +258,7 @@ export const normalitzaCriteris = (criteris_agregats, extrem_criteris) => {
 const obtenirLlistaCriterisGraph = (tren_multicriteris) => {
     const criteris = [];
     for(const criteri of Object.keys(DICT_CRI_BENEFICIOSOS)){
-        criteris.push(tren_multicriteris.criteris_norm[criteri]);
+        criteris.push(tren_multicriteris.criteris_norm[criteri] * 100);
     }
     return criteris;
 }
@@ -282,7 +290,7 @@ const obtenirDatasets = (trens_multicriteris, trens_info) => {
 //  +info: https://www.chartjs.org/docs/latest/charts/radar.html
 export const obtenirDadesGraphMulticriteri = (trens_multicriteris, trens_info) => {
     return {
-        labels: Object.keys(DICT_CRI_BENEFICIOSOS),
+        labels: Object.keys(DICT_CRI_BENEFICIOSOS).map(criteri => DICT_CRI_NOMS[criteri]),
         datasets: obtenirDatasets(trens_multicriteris, trens_info)
     }
 }

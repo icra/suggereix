@@ -103,7 +103,7 @@ export default class Corrent {
 
     constructor() {
         //característiques corrent (diccionari)
-        this.Q = 1; //m3
+        this.Q = 2000; //m3
 
         this.qualitat = {};
         this.eliminacio = {};
