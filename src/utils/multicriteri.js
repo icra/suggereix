@@ -28,6 +28,35 @@ const DICT_CRI_BENEFICIOSOS = {
     hh: false
 }
 
+// Variable constant amb la paleta de colors.
+const COLOR_PALETTE_BORDER = [
+    "rgb(136, 204, 238)",
+    "rgb(204, 102, 119)",
+    "rgb(221, 204, 119)",
+    "rgb(17, 119, 51)",
+    "rgb(170, 68, 153)",
+    "rgb(68, 170, 153)",
+    "rgb(153, 153, 51)",
+    "rgb(136, 34, 85)",
+    "rgb(102, 17, 0)",
+    "rgb(102, 153, 204)",
+    "rgb(136, 136, 136)"
+];
+
+const COLOR_PALETTE_BACKGROUND = [
+    "rgba(136, 204, 238, 0.2)",
+    "rgba(204, 102, 119, 0.2)",
+    "rgba(221, 204, 119, 0.2)",
+    "rgba(17, 119, 51, 0.2)",
+    "rgba(170, 68, 153, 0.2)",
+    "rgba(68, 170, 153, 0.2)",
+    "rgba(153, 153, 51, 0.2)",
+    "rgba(136, 34, 85, 0.2)",
+    "rgba(102, 17, 0, 0.2)",
+    "rgba(102, 153, 204, 0.2)",
+    "rgba(136, 136, 136, 0.2)"
+];
+
 // Retorna la mitjana dels valors d'un array.
 const mitjana = (array) => {
     const sum = array.reduce((a, b) => a + b, 0);
@@ -217,21 +246,34 @@ export const normalitzaCriteris = (criteris_agregats, extrem_criteris) => {
     return criteris_normalitzats;
 }
 
+// Retorna la llista de criteris normalitzats i ordenats.
+const obtenirLlistaCriterisGraph = (tren_multicriteris) => {
+    const criteris = [];
+    for(const criteri of Object.keys(DICT_CRI_BENEFICIOSOS)){
+        criteris.push(tren_multicriteris.criteris_norm[criteri]);
+    }
+    return criteris;
+}
+
+// Retorna els datasets necessaris per a mostrar el radi graph.
 const obtenirDatasets = (trens_multicriteris, trens_info) => {
     const datasets = [];
+    let color = 0;
     for(const tren_multicriteris of trens_multicriteris){
         const dataset = {
             label: tren_multicriteris.id + ': ' + trens_info[tren_multicriteris.id].nom,
-            data: [65, 59, 90, 81, 56, 55, 40],
+            data: obtenirLlistaCriterisGraph(tren_multicriteris),
             fill: true,
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgb(255, 99, 132)',
-            pointBackgroundColor: 'rgb(255, 99, 132)',
+            backgroundColor: COLOR_PALETTE_BACKGROUND[color],
+            borderColor: COLOR_PALETTE_BORDER[color],
+            pointBackgroundColor: COLOR_PALETTE_BORDER[color],
             pointBorderColor: '#fff',
             pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgb(255, 99, 132)'
+            pointHoverBorderColor: COLOR_PALETTE_BORDER[color]
         }
         datasets.push(dataset);
+        color++;
+        if(color >= COLOR_PALETTE_BORDER.length) color= 0;
     }
     return datasets;
 }
@@ -244,36 +286,3 @@ export const obtenirDadesGraphMulticriteri = (trens_multicriteris, trens_info) =
         datasets: obtenirDatasets(trens_multicriteris, trens_info)
     }
 }
-
-const data = {
-    labels: [
-      'Eating',
-      'Drinking',
-      'Sleeping',
-      'Designing',
-      'Coding',
-      'Cycling',
-      'Running'
-    ],
-    datasets: [{
-      label: 'My First Dataset',
-      data: [65, 59, 90, 81, 56, 55, 40],
-      fill: true,
-      backgroundColor: 'rgba(255, 99, 132, 0.2)',
-      borderColor: 'rgb(255, 99, 132)',
-      pointBackgroundColor: 'rgb(255, 99, 132)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgb(255, 99, 132)'
-    }, {
-      label: 'My Second Dataset',
-      data: [28, 48, 40, 19, 96, 27, 100],
-      fill: true,
-      backgroundColor: 'rgba(54, 162, 235, 0.2)',
-      borderColor: 'rgb(54, 162, 235)',
-      pointBackgroundColor: 'rgb(54, 162, 235)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgb(54, 162, 235)'
-    }]
-  };
