@@ -177,8 +177,20 @@ export default class Corrent {
                 }
 
                 array_tractaments.forEach(tractament => {
-                    if (!tractaments_dict[tractament][pretractament][id]) {
-                        return;
+                    if(!tractaments_dict[tractament]){
+                        console.log("Error: No s'ha trobat el tractament '"+tractament+"' del tren:");
+                        console.log(array_tractaments);
+                        throw new Error();
+                    }
+                    else if( !tractaments_dict[tractament][pretractament]){
+                        console.log("Error: No s'ha trobat el pretractament '"+pretractament+"' en el tractament '"+tractament+"' del tren:");
+                        console.log(array_tractaments);
+                        throw new Error();
+                    }
+                    else if (!tractaments_dict[tractament][pretractament][id]){
+                        console.log("Error: No s'ha trobat l'indicador '"+id+"' pel pretractament '"+pretractament+"' en el tractament '"+tractament+"' del tren:");
+                        console.log(array_tractaments);
+                        throw new Error();
                     }
 
                     r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);

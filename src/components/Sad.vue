@@ -551,13 +551,13 @@ export default {
   },
   created: async function() {
     // llegir excel 'tractaments'
-    this.read_file('/20210723_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
+    this.read_file('/20211201_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
 
     // llegir excel 'tractaments' per a punt de referència 1 (indicadors microbiològics).
     this.read_file('/20211004_SUGGEREIX_Taula_B5.xlsx', 'tractaments_micro');
 
     // llegir excel 'trens'
-    this.read_file('/20210723_SUGGEREIX_PT4_Trens.xlsx', 'trens');
+    this.read_file('/20211201_SUGGEREIX_PT4_Trens_rev.xlsx', 'trens');
 
     // llegir excel 'efluent secundari' (característiques infraestructura existent)
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
