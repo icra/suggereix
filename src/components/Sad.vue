@@ -1,7 +1,7 @@
 <template data-vuetify>
   <div id="intro">
     <details class="seccio" open>
-      <summary class="seccio">1. Definició aigua</summary>
+      <summary class="seccio">1. Definició del projecte de reutilització i requeriments de qualitat </summary>
       <div>
         <table border="1">
           <tr>
@@ -163,7 +163,7 @@
     </details>
 
     <details class="seccio" open>
-      <summary class="seccio">2. Avaluació trens de tractament</summary>
+      <summary class="seccio">2. Selecció dels trens de tractament viables (avaluant el compliment dels VPs per tots els contaminants)</summary>
       <div style="text-align: left">
         <button @click="avaluacio_trens">Avaluació trens</button>
         <button @click="eliminar_avaluacio">Esborrar avaluació</button>
@@ -280,7 +280,7 @@
     </details>
 
     <details class="seccio" open>
-      <summary class="seccio">3. Avaluació multicliteri dels trens viables</summary>
+      <summary class="seccio">3. Avaluació multicriteri dels trens viables</summary>
       <div style="text-align: left">
         <button @click="avaluacio_trens_multicriteri">Avaluació multicriteri</button>
         <button @click="eliminar_avaluacio_multicriteri">Esborrar avaluació</button>
