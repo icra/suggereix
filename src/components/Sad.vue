@@ -563,7 +563,7 @@ export default {
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
 
     // llegir excel 'valors protectors usos'
-    this.read_file('/20211108_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
+    this.read_file('/20211214_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
 
 	// llegir excel 'monitoratge de la qualitat autobiològica', que mostra el % de reducció Rmin per a terns de tractament dels indicadors microbiològics.
 	this.read_file('20211004_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
