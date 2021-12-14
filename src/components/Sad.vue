@@ -230,10 +230,10 @@
                     :style="{
                       background:
                         tren.compliments_min[key] === 0
-                          ? 'lightgreen'
+                          ? '#baffc9' // green
                           : tren.compliments_min[key] === 1
-                          ? 'LightSalmon'
-                          : 'LightCoral',
+                          ? '#ffdfba'  //orange
+                          : '#ffb3ba', //red
                     }"
                     style="
                       font-size: small;
@@ -257,11 +257,11 @@
                     :key="key+'_aval_max'"
                     :style="{
                       background:
-                        tren.compliments_max[key] === 0
-                          ? 'lightgreen'
+                        tren.compliments_min[key] === 0
+                          ? '#baffc9' // green
                           : tren.compliments_min[key] === 1
-                          ? 'LightSalmon'
-                          : 'LightCoral',
+                          ? '#ffdfba'  //orange
+                          : '#ffb3ba', //red
                     }"
                     style="
                       font-size: small;
