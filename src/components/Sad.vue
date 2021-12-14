@@ -22,9 +22,8 @@
 
           <tr>
             <th colspan="2" rowspan="2">Indicadors de qualitat</th>
-            <td colspan="2">
+            <td colspan="2" class="doubletd">
               Selecciona la infraestructura existent:
-              <br />
               <select v-model="tractament_secundari" style="max-width: 350px">
                 <option
                   v-for="(obj, key) in Usuari.info_tractaments_secundaris"
@@ -35,6 +34,10 @@
                   [{{ key }}]
                 </option>
               </select>
+              <br>
+              <div>
+                <img src="/img/fase1.png" alt="Diagrama de la infraestructura existent" class="center" style="margin-top:1cm;"> 
+              </div>
             </td>
 
             <td class="doubletd3">
@@ -164,6 +167,9 @@
 
     <details class="seccio" open>
       <summary class="seccio">2. Selecció dels trens de tractament viables (avaluant el compliment dels VPs per tots els contaminants)</summary>
+      <div>
+        <img src="/img/fase2.png" alt="Diagrama de la selecció dels trens de tractament viables" style="margin-top:1cm;"> 
+      </div>
       <div style="text-align: left">
         <button @click="avaluacio_trens">Avaluació trens</button>
         <button @click="eliminar_avaluacio">Esborrar avaluació</button>
@@ -927,6 +933,12 @@ input[type="number"] {
   /* Position the tooltip text - see examples below! */
   position: absolute;
   z-index: 1;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Tooltip text 2 */
