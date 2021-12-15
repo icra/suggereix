@@ -172,6 +172,7 @@
     <details ref="vp-details" class="seccio" close>
       <summary class="seccio">1.1. Consulta i/o modificació dels valors objectius de qualitat VP (opcional)</summary>
       <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i deixa modificar els VP per a tots els indicadors.</p>
+      <p>Per defecte, el valor VP que es selecciona per a cada indicador és el valor menor diferent de 'nd'. Si es vol utilitzar un valor VP d'un tipus i ús concret, es pot seleccionar a partir de les caselles de selecció.</p>
       <div>
         <table border="1">
           <tr>
@@ -188,7 +189,15 @@
             <td style="font-family: monospace">
               {{ ind }}
             </td>
-            <td v-for="index in usos_seleccionats.length * 3" :key="index+'_valueVP'" style='text-align:center; vertical-align:middle'>
+            <td v-for="index in (usos_seleccionats.length * 3)" :key="index+'_valueVP'" style='text-align:center; vertical-align:middle'>
+                <input
+                  type="checkbox"
+                  :id="'vpcheck_' + ind + '_' + index + '_' + usos_seleccionats[Math.trunc((index-1)/3)]"
+                  :value="'vpcheck_' + ind + '_' + index + '_' + usos_seleccionats[Math.trunc((index-1)/3)]"
+                  :ref="'vpcheck_' + ind + '_' + index + '_' + usos_seleccionats[Math.trunc((index-1)/3)]"
+                  v-on:click="checkboxVP"
+                  :disabled="mod_ind_vps[ind] && ((mod_ind_vps[ind][2] !== (((index+2) % 3)+1) || mod_ind_vps[ind][3] !== usos_seleccionats[Math.trunc((index-1)/3)]))"
+                />
                 <input
                     v-if="isNaN(Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].vp) && selected_input !== ind + '_vpmod_'+index"
                     type="text"
@@ -639,6 +648,23 @@ export default {
 
   },
   methods:{
+    checkboxVP(event) {
+		let _this = this;
+        const [,ind,index,us] = event.target.id.split("_");
+        if(event.target.checked){
+            const vp_object = _this.Usos_info[_this.usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)];
+            _this.mod_ind_vps = {
+                ..._this.mod_ind_vps,
+                [ind]: [vp_object.vp, vp_object.ref, (((index+2) % 3)+1), us]
+            };
+        }
+        else{
+            _this.mod_ind_vps = {
+                ..._this.mod_ind_vps,
+                [ind]: undefined
+            };
+        }
+    },
     focusChanged(event) {
 		let _this = this;
 		_this.selected_input = event.target.id;
@@ -866,12 +892,12 @@ export default {
         let _this = this;
         let vp_assigned = new Set();
         if (_this.usos_seleccionats.length > 0){
-
             // Per a cada indicador, comprova si l'usuari ha preseleccionat valor o bé cal agafar el mínim.
             for(const ind in _this.user.corrent.qualitat){
                 if(_this.mod_ind_vps[ind]){
                     _this.user.corrent_objectiu.qualitat[ind] = _this.mod_ind_vps[ind][0];
                     _this.user.corrent_objectiu.refs[ind] = _this.mod_ind_vps[ind][1];
+                    if(_this.mod_ind_vps[ind][0] !== 'nd' && ind !== 'I22' && ind !== 'I23') vp_assigned.add(ind);
                 }
                 else{
                     // Cal agafar el valor mínim de tots els usos seleccionats. Buscar el el diccionari de usos.
@@ -917,9 +943,33 @@ export default {
         deep: true
     },
 
+    mod_ind_vps: function(newUse,oldUse) {
+        this.update_vps();
+    },
+
     //actualitza la qualitat del corrent_objectiu (usuari), en funció dels vp mínims dels usos seleccionats.
     usos_seleccionats: function (newUse, oldUse){
-      this.update_vps();
+      const _this = this;
+      //quan es canvia l'ús, s'ha de revisar que no hi hagi un VP modificat d'un ús que s'ha tret.
+      if(oldUse.length > newUse.length){
+        //cal treure els VP modificats de l'ús que s'ha tret.
+        const us_eliminat = oldUse.filter(x => newUse.indexOf(x) === -1)[0];
+        for (const ind of Object.keys(_this.mod_ind_vps)) {
+          if(_this.mod_ind_vps[ind] && _this.mod_ind_vps[ind][3] === us_eliminat){
+              //treure l'ús i desmarcar el checkbox de la taula.
+              const tipus = _this.mod_ind_vps[ind][2];
+              const index = (oldUse.indexOf(us_eliminat) * 3) + tipus;
+              const ref = "vpcheck_" + ind + "_" + index + "_" + us_eliminat;
+              const el = this.$refs[ref];
+              if(el && el[0]) el[0].checked = false;
+              _this.mod_ind_vps = {
+                  ..._this.mod_ind_vps,
+                  [ind]: undefined
+              }
+          }
+        }
+      }
+      _this.update_vps();
     },
 
     //actualitza els valors inicial de qualitat de l'aigua (usuari) en funció de l'efluent secundari seleccionat.
