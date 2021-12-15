@@ -39,7 +39,7 @@ function llegir_vp_usos(binaryData) {
                 uses[useId] = {
                     nom: useName,
                     codi: useId,
-                    qualitat: {} //valors protectors
+                    qualitat: {}, //valors protectors,
                 };
             }
         });
@@ -63,7 +63,7 @@ function llegir_vp_usos(binaryData) {
                     refVp = "";
 
                 if (typeof valorVp === 'object') { //de tipus formula (la cel·la té objectes 'result' i 'formula', ens guardem només 'result').
-                    valorVp = Math.round((valorVp.result + Number.EPSILON) * 1000000) / 1000000; //arrodonit a 7 decimals
+                    valorVp = valorVp.result
                 }
 
                 //valorVp tipus string, i no és 'nd'. exemple: '<1' (pels indicadors microbiològics I19, I20, I21)
@@ -72,24 +72,18 @@ function llegir_vp_usos(binaryData) {
                     valorVp = parseFloat(valorVp.replace(/[^\d.-]/g, '')); //eliminar tot el que no siguin números i separador decimal.
                 }
 
-                //no hi ha definit encara cap valor protector, guardem dades obtingudes
-                if (uses[useId].qualitat[indId] === undefined) {
+                //Posar el valor processat al diccionari de qualitat.
+                if (uses[useId].qualitat[indId] === undefined){
                     uses[useId].qualitat[indId] = {
-                        vp: valorVp,
-                        tipus: tipusVp,
-                        ref: refVp,
-                        regulat: regulat ? true : false
-                    }
+                        1: {ref: '', regulat: false, vp: 'nd'},
+                        2: {ref: '', regulat: false, vp: 'nd'},
+                        3: {ref: '', regulat: false, vp: 'nd'}
+                    };
                 }
-                //ja hi ha definit algun valor protector. Comprovem si el següent és un vp inferior o 'nd' per actualitzar-lo
-                else {
-                    if (uses[useId].qualitat[indId].vp === 'nd' || uses[useId].qualitat[indId].vp > valorVp)
-                        uses[useId].qualitat[indId] = {
-                            vp: valorVp,
-                            tipus: tipusVp,
-                            ref: refVp,
-                            regulat: regulat ? true : false
-                        }
+                uses[useId].qualitat[indId][tipusVp] = {
+                    vp: valorVp,
+                    ref: refVp,
+                    regulat: regulat ? true : false
                 }
             }
         });

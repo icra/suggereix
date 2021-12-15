@@ -169,6 +169,59 @@
       </div>
     </details>
 
+    <details ref="vp-details" class="seccio" close>
+      <summary class="seccio">1.1. Consulta i/o modificació dels valors objectius de qualitat VP (opcional)</summary>
+      <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i deixa modificar els VP per a tots els indicadors.</p>
+      <div>
+        <table border="1">
+          <tr>
+            <th colspan="2" rowspan="2">Indicadors de qualitat</th>
+            <th colspan="3" class="doubletd12" v-for="us in usos_seleccionats" :key="us+'_modtable'">{{Usos_info[us].nom}}</th>
+          </tr>
+          <tr>
+            <th v-for="index in usos_seleccionats.length * 3" :key="index+'_modtabletipus'">{{'VP '+(((index+2) % 3)+1)}}</th>
+          </tr>
+          <tr v-for="(val, ind) in user.corrent.qualitat" :key="ind+'_modVP'">
+            <td class="doubletd" style="text-align: right; padding: 0px 10px 0px 10px">
+              {{ Corrent.info_qualitat[ind].nom }}
+            </td>
+            <td style="font-family: monospace">
+              {{ ind }}
+            </td>
+            <td v-for="index in usos_seleccionats.length * 3" :key="index+'_valueVP'" style='text-align:center; vertical-align:middle'>
+                <input
+                    v-if="isNaN(Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].vp) && selected_input !== ind + '_vpmod_'+index"
+                    type="text"
+                    :value="Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].vp"
+                    :ref="ind + '_vpmod_'+index"
+                    :id="ind + '_vpmod_'+index"
+                    class="nd"
+                    style="width: 66.66px"
+                    @focus="focusChanged"
+                />
+                <input
+                    v-else-if="ind !== 'I1' && selected_input !== ind + '_vpmod_'+index"
+                    type="text"
+                    :value="show_sc_not(Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].vp)"
+                    :ref="ind + '_vpmod_'+index"
+                    :id="ind + '_vpmod_'+index"
+                    class="nd"
+                    style="width: 66.66px"
+                    @focus="focusChanged"
+                />
+                <input
+                    v-else
+                    type="number"
+                    v-model.number="Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].vp"
+                    style="width: 66.66px"
+                    v-on:blur="handleBlur"
+                />
+            </td>
+          </tr>
+        </table>
+      </div>
+    </details>
+
     <details class="seccio" open>
       <summary class="seccio">2. Selecció dels trens de tractament viables (avaluant el compliment dels VPs per tots els contaminants)</summary>
       <div>
@@ -284,6 +337,114 @@
                 </template>
               </tr>
             </template>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="seccio" close>
+      <summary class="seccio">2.1. Modificació dels tractaments (opcional)</summary>
+      <div>
+        <div>
+          <table border="1">
+            <tr>
+              <th>Tractament</th>
+              <th>Pretractament</th>
+              <th>Editar tractament</th>
+            </tr>
+            <tbody
+              v-for="(tra, nom_tra) in this.Tractaments_info"
+              :key="nom_tra"
+            >
+              <tr>
+                <td :rowspan="1 + Object.keys(tra).length">
+                  {{ nom_tra }}
+                </td>
+              </tr>
+              <tr v-for="(pre, nom_pre) in tra" :key="nom_tra+'_'+nom_pre">
+                <td>
+                  {{ nom_pre }}
+                </td>
+                <td>
+                  <details>
+                    <summary>editar</summary>
+                    <div>
+                      Edita els valors d'eliminació
+
+                      <table border="1">
+                        <tr>
+                          <th colspan="2">id</th>
+                          <th>min(%)</th>
+                          <th>max(%)</th>
+                        </tr>
+                        <tr v-for="(obj, id) in pre" :key="id+'_'+nom_tra+'_'+nom_pre">
+                          <td style="font-family: monospace">{{ id }}</td>
+                          <td>
+                            {{ Corrent.info_qualitat[id].nom.substring(0, 20) }}
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              v-model.number="obj.min"
+                              min="0"
+                              max="100"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              v-model.number="obj.max"
+                              min="0"
+                              max="100"
+                            />
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </details>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="seccio" close >
+      <summary class="seccio">2.2. Modificació de la reducció acumulada mínima requerida al llarg d'un tren
+        (opcional)
+      </summary>
+      <div>
+        <div>
+          <table border="1">
+            <tr>
+              <th colspan="2">Ús</th>
+              <th colspan="2">Indicador</th>
+              <th>Reducció logarítmica</th>
+            </tr>
+            <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
+              <tr>
+                <td :rowspan="4">
+                  {{ id }}
+                </td>
+                <td :rowspan="4" class="doubletd2">
+                  {{ Usos_info[id] ? Usos_info[id].nom : "" }}
+                </td>
+              </tr>
+              <tr v-for="ind in Object.keys(obj)" :key="ind">
+                <td style="font-family: monospace">{{ ind }}</td>
+                <td>{{ Corrent.info_qualitat[ind].nom.substring(0, 20) }}</td>
+                <td>
+                  <input
+                    type="number"
+                    v-model.number="obj[ind][1]"
+                    :ref="id + '_' + ind"
+                    :id="id + '_' + ind"
+                    class="nd"
+                  />
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -414,118 +575,6 @@
       </div>
     </details>
 
-    <details ref="vp-details" class="seccio" :open="this.modify_vp_open" v-on:click="this.modify_vp_open = !this.modify_vp_open">
-      <summary class="seccio">Modificació dels valors objectius de qualitat VP (opcional)</summary>
-      WIP
-    </details>
-
-    <details class="seccio" close>
-      <summary class="seccio">Modificació dels tractaments (opcional)</summary>
-      <div>
-        <div>
-          <table border="1">
-            <tr>
-              <th>Tractament</th>
-              <th>Pretractament</th>
-              <th>Editar tractament</th>
-            </tr>
-            <tbody
-              v-for="(tra, nom_tra) in this.Tractaments_info"
-              :key="nom_tra"
-            >
-              <tr>
-                <td :rowspan="1 + Object.keys(tra).length">
-                  {{ nom_tra }}
-                </td>
-              </tr>
-              <tr v-for="(pre, nom_pre) in tra" :key="nom_tra+'_'+nom_pre">
-                <td>
-                  {{ nom_pre }}
-                </td>
-                <td>
-                  <details>
-                    <summary>editar</summary>
-                    <div>
-                      Edita els valors d'eliminació
-
-                      <table border="1">
-                        <tr>
-                          <th colspan="2">id</th>
-                          <th>min(%)</th>
-                          <th>max(%)</th>
-                        </tr>
-                        <tr v-for="(obj, id) in pre" :key="id+'_'+nom_tra+'_'+nom_pre">
-                          <td style="font-family: monospace">{{ id }}</td>
-                          <td>
-                            {{ Corrent.info_qualitat[id].nom.substring(0, 20) }}
-                          </td>
-                          <td>
-                            <input
-                              type="number"
-                              v-model.number="obj.min"
-                              min="0"
-                              max="100"
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="number"
-                              v-model.number="obj.max"
-                              min="0"
-                              max="100"
-                            />
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
-                  </details>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-
-    <details class="seccio" close >
-      <summary class="seccio">Modificació de la reducció acumulada mínima requerida al llarg d'un tren
-        (opcional)
-      </summary>
-      <div>
-        <div>
-          <table border="1">
-            <tr>
-              <th colspan="2">Ús</th>
-              <th colspan="2">Indicador</th>
-              <th>Reducció logarítmica</th>
-            </tr>
-            <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
-              <tr>
-                <td :rowspan="4">
-                  {{ id }}
-                </td>
-                <td :rowspan="4" class="doubletd2">
-                  {{ Usos_info[id] ? Usos_info[id].nom : "" }}
-                </td>
-              </tr>
-              <tr v-for="ind in Object.keys(obj)" :key="ind">
-                <td style="font-family: monospace">{{ ind }}</td>
-                <td>{{ Corrent.info_qualitat[ind].nom.substring(0, 20) }}</td>
-                <td>
-                  <input
-                    type="number"
-                    v-model.number="obj[ind][1]"
-                    :ref="id + '_' + ind"
-                    :id="id + '_' + ind"
-                    class="nd"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
   </div>
 </template>
 
@@ -551,6 +600,7 @@ export default {
       trens_multicriteris: [],  //array de trans viables amb els seus multicriteris calculats.
       visio_multicriteri: 0,    //Variable que indica la visió activa de l'apartat multicriteri.
       modify_vp_open: false,    //Variable que indica si el panell de modificació dels VP està obert o no.
+      mod_ind_vps: {},          //diccionari on hi haurà el valor VP de cada indicador que l'usuari hagi modificat.
 
       //backend
       Usuari,                   //classe
@@ -809,6 +859,47 @@ export default {
       };
       return ids_us_dict[id];
       
+    },
+
+    //Function that updated the VP values (due to use changes or to VP values change).
+    update_vps: function(){
+        let _this = this;
+        let vp_assigned = new Set();
+        if (_this.usos_seleccionats.length > 0){
+
+            // Per a cada indicador, comprova si l'usuari ha preseleccionat valor o bé cal agafar el mínim.
+            for(const ind in _this.user.corrent.qualitat){
+                if(_this.mod_ind_vps[ind]){
+                    _this.user.corrent_objectiu.qualitat[ind] = _this.mod_ind_vps[ind][0];
+                    _this.user.corrent_objectiu.refs[ind] = _this.mod_ind_vps[ind][1];
+                }
+                else{
+                    // Cal agafar el valor mínim de tots els usos seleccionats. Buscar el el diccionari de usos.
+                    let vp_value = 'nd';
+                    let vp_ref = '';
+                    for(const us of _this.usos_seleccionats){
+                        for (const [key, value] of Object.entries(_this.Usos_info[us].qualitat[ind])) {
+                            if(value.vp !== 'nd'){
+                                if(vp_value === 'nd' || value.vp < vp_value){
+                                    if(ind !== 'I22' && ind !== 'I23') vp_assigned.add(ind);
+                                    vp_value = value.vp;
+                                    vp_ref = value.ref;
+                                }
+                            }
+                        }
+                    }
+                    _this.user.corrent_objectiu.qualitat[ind] = vp_value;
+                    _this.user.corrent_objectiu.refs[ind] = vp_ref;
+                }
+            }
+        }
+        else{
+            // Posa els valors inicials.
+            _this.user.reseteja_corrent_objectiu();
+        }
+
+        // 2. Actualitzem el valor del grau d'informació sobre els VP.
+        _this.grau_informacio = Math.round(vp_assigned.size / 21 * 100 * 100)/100;
     }
   },
   computed: {
@@ -818,45 +909,17 @@ export default {
     }
   },
   watch: {
+    //actualitza la qualitat del corrent_objectiu (usuari), en funció de si es modifica un valor de la taula dels VP.
+    Usos_info:{
+        handler: function(newVal, oldVal) {
+            this.update_vps();
+        },
+        deep: true
+    },
+
     //actualitza la qualitat del corrent_objectiu (usuari), en funció dels vp mínims dels usos seleccionats.
     usos_seleccionats: function (newUse, oldUse){
-      let _this = this;
-	  let vp_assigned = new Set();
-      if (_this.usos_seleccionats.length > 0){
-
-        //assignem a l'usuari la qualitat objectiva del primer ús seleccionat.
-        //_this.user.corrent_objectiu.qualitat = _this.Usos_info[newUse[0]].qualitat;
-        for (const [key, value] of Object.entries(_this.Usos_info[newUse[0]].qualitat)) {
-          _this.user.corrent_objectiu.qualitat[key] = value.vp;
-          _this.user.corrent_objectiu.refs[key] = value.ref;
-        }
-        const n_usos = _this.usos_seleccionats.length;
-
-        //si hi ha més d'un ús seleccionat, actualitzem els indicadors de qualitat amb els valors protectors mínims.
-        for (let i=0; i<n_usos; i++){
-          const us = _this.usos_seleccionats[i];
-          let qualitat_us = _this.Usos_info[us].qualitat;
-
-          // actualitzem qualitat final amb els valors més baixos protectors dels usos seleccionats, per cada indicador.
-          for (const [key, value] of Object.entries(qualitat_us)) {
-            if (value.vp !== 'nd'){
-			  if(key !== 'I22' && key !== 'I23') vp_assigned.add(key);
-              const valor_actual = _this.user.corrent_objectiu.qualitat[key];
-              if (valor_actual === 'nd' || value.vp < valor_actual)
-                _this.user.corrent_objectiu.qualitat[key] = value.vp;
-                _this.user.corrent_objectiu.refs[key] = value.ref;
-            }
-          }
-        }
-      }
-      else{
-          // Posa els valors inicials.
-          _this.user.reseteja_corrent_objectiu();
-      }
-
-	  // 2. Actualitzem el valor del grau d'informació sobre els VP.
-	  _this.grau_informacio = Math.round(vp_assigned.size / 21 * 100 * 100)/100;
-
+      this.update_vps();
     },
 
     //actualitza els valors inicial de qualitat de l'aigua (usuari) en funció de l'efluent secundari seleccionat.
@@ -897,6 +960,9 @@ table td {
 }
 .doubletd {
   width: 120px;
+}
+.doubletd12 {
+  width: 200px;
 }
 .doubletd2 {
   width: 240px;
