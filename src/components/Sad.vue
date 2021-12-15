@@ -821,7 +821,7 @@ export default {
 	nota_dummy: function(id){
 		if(id === 'Dummy9' || id === 'Dummy10') return 'Caldria fer una avaluació específica del risc microbiològic: estimació de l’exposició i definició de mesures de control. Els valors de reducció de patògens mínims (requerits per a un tren de tractament) definits per defecte en el SAD es basen en una estimació feta a partir dels valors legislats segons el Reial decret 1620/2007.';
 		else if(id === 'Dummy11') return 'Caldria fer una avaluació específica del risc microbiològic. Seguint un criteri conservador, els valors de reducció de patògens definits per defecte en el SAD són els mateixos valors que els necessaris per tractar l’aigua per a l’ús de recàrrega d’aqüífers per injecció directa.';
-		else if(id === 'Dummy14') return 'El SAD no defineix valors de reducció de patògens per defecte. Però, caldria assolir els valors de reducció de patògens necessaris per a l’ús 15 si l’aigua s’utilitzés amb aquesta finalitat més avall.';
+		else if(id === 'Dummy14') return 'El SAD no defineix valors de reducció de patògens per defecte. Però, caldria assolir els valors de reducció de patògens necessaris per a l’ús "Prepotable" si l’aigua s’utilitzés amb aquesta finalitat més avall.';
 		else return '';
 	},
 
