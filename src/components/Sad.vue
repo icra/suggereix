@@ -773,12 +773,14 @@ export default {
         const usos_numeros = _this.usos_seleccionats.flatMap(us => ids_us_dict[id].includes(Number(us.substr(-1))) ? [us] : []);
         return usos_numeros.length !== 0;
       }
-      else return false;
+      else return isNaN(_this.user.corrent_objectiu.qualitat[id]);
     },
 
     //retorna l'string amb el rang de valors a mostrar pel valor protector de l'indicador 'id'.
     nota_rang_vp: function (id){
       let _this = this;
+      // Primer es comprova si el valor VP és undefined.
+      if(isNaN(_this.user.corrent_objectiu.qualitat[id])) return "Valor no definit";
       // Diccionari de rangs en funció de l'indicador 'id' (en el cas particular del I1 varia en funció de l'ús).
       const ids_us_dict = {
         'I1': _this.usos_seleccionats.includes('Dummy15') ? 'rang: 6,5-9,5' : 'rang: 6-9',
@@ -923,7 +925,7 @@ input[type="number"] {
 /* Tooltip text */
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 100px;
+  width: 140px;
   background-color: black;
   color: #fff;
   text-align: center;
