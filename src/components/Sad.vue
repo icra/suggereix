@@ -66,6 +66,10 @@
             <td style="text-align: right; padding-right: 20px">max</td>
             <td style="text-align: right; padding-right: 20px">
               Valors objectius de qualitat (VP)
+              <div class="tooltip">
+                <button class="btn" v-on:click="modificar_vps"><img src="/img/edit.png" width="20" height="20" /></button>
+                <span class="tooltiptext">Modificar valors</span>
+              </div>
             </td>
           </tr>
 
@@ -410,6 +414,11 @@
       </div>
     </details>
 
+    <details ref="vp-details" class="seccio" :open="this.modify_vp_open" v-on:click="this.modify_vp_open = !this.modify_vp_open">
+      <summary class="seccio">Modificació dels valors objectius de qualitat VP (opcional)</summary>
+      WIP
+    </details>
+
     <details class="seccio" close>
       <summary class="seccio">Modificació dels tractaments (opcional)</summary>
       <div>
@@ -478,7 +487,7 @@
       </div>
     </details>
 
-    <details class="seccio" close>
+    <details class="seccio" close >
       <summary class="seccio">Modificació de la reducció acumulada mínima requerida al llarg d'un tren
         (opcional)
       </summary>
@@ -541,6 +550,7 @@ export default {
       usos_seleccionats: [],    //ús o usos seleccionats per l'usuari
       trens_multicriteris: [],  //array de trans viables amb els seus multicriteris calculats.
       visio_multicriteri: 0,    //Variable que indica la visió activa de l'apartat multicriteri.
+      modify_vp_open: false,    //Variable que indica si el panell de modificació dels VP està obert o no.
 
       //backend
       Usuari,                   //classe
@@ -742,6 +752,14 @@ export default {
     //reseteja el ranquing d'avaluacions multicriteri (array buit)
     eliminar_avaluacio_multicriteri(){
       this.trens_multicriteris = [];
+    },
+
+    modificar_vps(){
+        this.modify_vp_open = true;
+        const el = this.$refs['vp-details'];
+        if (el) {
+            el.scrollIntoView({behavior: 'smooth'});
+        }
     },
 
 	// retorna cert si cal mostrar nota en un ús.
