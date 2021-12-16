@@ -423,21 +423,19 @@
       <summary class="seccio">2.2. Modificació de la reducció acumulada mínima requerida al llarg d'un tren
         (opcional)
       </summary>
+      <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i permet modificar els valors de reducció logarítmica per als indicadors microbiològics, p. ex., si es disposa d'una avaluació específica del risc microbiològic.</p>
       <div>
         <div>
           <table border="1">
             <tr>
-              <th colspan="2">Ús</th>
+              <th>Ús</th>
               <th colspan="2">Indicador</th>
               <th>Reducció logarítmica</th>
             </tr>
             <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
               <tr>
-                <td :rowspan="4">
-                  {{ id }}
-                </td>
                 <td :rowspan="4" class="doubletd2">
-                  {{ Usos_info[id] ? Usos_info[id].nom : "" }}
+                  {{ Usos_info[id] ? Usos_info[id].nom : id }}
                 </td>
               </tr>
               <tr v-for="ind in Object.keys(obj)" :key="ind">
