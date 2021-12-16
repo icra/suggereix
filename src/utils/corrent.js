@@ -108,6 +108,7 @@ export default class Corrent {
         this.qualitat = {};
         this.eliminacio = {};
         this.refs = {};
+        this.regulat = {};
         Object.keys(Corrent.info_qualitat).forEach(id => {
             this.qualitat[id] = 0;
             this.refs[id] = "";
@@ -215,14 +216,6 @@ export default class Corrent {
 
     }
 
-    // retorna cert si, en els usos seleccionats, l'indicador es troba regulat.
-    es_regulat(usos_seleccionats, indicador, usos_info) {
-        for (const usage of usos_seleccionats) {
-            if (usos_info[usage].qualitat[indicador].regulat) return true;
-        }
-        return false;
-    }
-
     //detecta els compliments i retorna un array amb els ids dels indicadors que compleixen.
     n_compliments(type, corrent, qualitat_micro, usos_seleccionats, qualitat_inicial, usos_info) {
 
@@ -248,13 +241,13 @@ export default class Corrent {
                         if (this.qualitat[id] <= (1 - reduccio_requerida) * qualitat_inicial[id][type]) {
                             compliments[id] = 0;
                         } else {
-                            compliments[id] = this.es_regulat(usos_seleccionats, id, usos_info) ? 2 : 1;
+                            compliments[id] = corrent.regulat[id] ? 2 : 1;
                         }
-                    } else compliments[id] = this.es_regulat(usos_seleccionats, id, usos_info) ? 2 : 1;
+                    } else compliments[id] = corrent.regulat[id] ? 2 : 1;
                 } else if (this.qualitat[id] <= corrent.qualitat[id]) {
                     compliments[id] = 0;
                 } else {
-                    compliments[id] = this.es_regulat(usos_seleccionats, id, usos_info) ? 2 : 1;
+                    compliments[id] = corrent.regulat[id] ? 2 : 1;
                 }
             }
         }

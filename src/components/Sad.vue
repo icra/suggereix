@@ -180,7 +180,7 @@
             <th colspan="3" class="doubletd12" v-for="us in usos_seleccionats" :key="us+'_modtable'">{{Usos_info[us].nom}}</th>
           </tr>
           <tr>
-            <th v-for="index in usos_seleccionats.length * 3" :key="index+'_modtabletipus'">{{'VP '+(((index+2) % 3)+1)}}</th>
+            <th v-for="index in usos_seleccionats.length * 3" :key="index+'_modtabletipus'" style="width: 100px">{{(((index+2) % 3)+1) === 1 ? 'VP qualitat ambiental' : (((index+2) % 3)+1) === 2 ? 'VP salut humana' : 'VP per a plantes'}}</th>
           </tr>
           <tr v-for="(val, ind) in user.corrent.qualitat" :key="ind+'_modVP'">
             <td class="doubletd" style="text-align: right; padding: 0px 10px 0px 10px">
@@ -224,6 +224,11 @@
                     v-model.number="Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].vp"
                     style="width: 66.66px"
                     v-on:blur="handleBlur"
+                />
+                Regulat:
+                <input
+                    type="checkbox"
+                    v-model="Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].regulat"
                 />
             </td>
           </tr>
@@ -653,7 +658,7 @@ export default {
             const vp_object = _this.Usos_info[_this.usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)];
             _this.mod_ind_vps = {
                 ..._this.mod_ind_vps,
-                [ind]: [vp_object.vp, vp_object.ref, (((index+2) % 3)+1), us]
+                [ind]: [vp_object.vp, vp_object.ref, (((index+2) % 3)+1), us, vp_object.regulat]
             };
         }
         else{
@@ -895,12 +900,14 @@ export default {
                 if(_this.mod_ind_vps[ind]){
                     _this.user.corrent_objectiu.qualitat[ind] = _this.mod_ind_vps[ind][0];
                     _this.user.corrent_objectiu.refs[ind] = _this.mod_ind_vps[ind][1];
+                    _this.user.corrent_objectiu.regulat[ind] = _this.mod_ind_vps[ind][4];
                     if(_this.mod_ind_vps[ind][0] !== 'nd' && ind !== 'I22' && ind !== 'I23') vp_assigned.add(ind);
                 }
                 else{
                     // Cal agafar el valor mínim de tots els usos seleccionats. Buscar el el diccionari de usos.
                     let vp_value = 'nd';
                     let vp_ref = '';
+                    let vp_regulat = false;
                     for(const us of _this.usos_seleccionats){
                         for (const [key, value] of Object.entries(_this.Usos_info[us].qualitat[ind])) {
                             if(value.vp !== 'nd'){
@@ -908,12 +915,14 @@ export default {
                                     if(ind !== 'I22' && ind !== 'I23') vp_assigned.add(ind);
                                     vp_value = value.vp;
                                     vp_ref = value.ref;
+                                    vp_regulat = value.regulat;
                                 }
                             }
                         }
                     }
                     _this.user.corrent_objectiu.qualitat[ind] = vp_value;
                     _this.user.corrent_objectiu.refs[ind] = vp_ref;
+                    _this.user.corrent_objectiu.regulat[ind] = vp_regulat;
                 }
             }
         }
