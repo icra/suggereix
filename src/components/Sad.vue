@@ -429,6 +429,7 @@
         (opcional)
       </summary>
       <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i permet modificar els valors de reducció logarítmica per als indicadors microbiològics, p. ex., si es disposa d'una avaluació específica del risc microbiològic.</p>
+      <p>Per defecte, els valors de reducció logarítmica definits per a l'ús "recàrrega d'aqüífers per percolació" són els mateixos valors que els definits per a l’ús "recàrrega d'aqüífers per injecció directa" sense tenir en compte l'atenuació natural del medi. Amb una avaluació específica del risc microbiològic, es podria avaluar la capacitat d'atenuació del medi i reduir els valors definits per defecte.</p>
       <div>
         <div>
           <table border="1">
