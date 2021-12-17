@@ -334,9 +334,9 @@
                     :key="key+'_aval_max'"
                     :style="{
                       background:
-                        tren.compliments_min[key] === 0
+                        tren.compliments_max[key] === 0
                           ? '#baffc9' // green
-                          : tren.compliments_min[key] === 1
+                          : tren.compliments_max[key] === 1
                           ? '#ffdfba'  //orange
                           : '#ffb3ba', //red
                     }"
@@ -750,8 +750,8 @@ export default {
 
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
             const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
-			const avaluacio_compliments_min = min_max.min.n_compliments('min',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
-			const max_length = Object.values(avaluacio_compliments_max).filter(value => value === 0);
+			      const avaluacio_compliments_min = min_max.min.n_compliments('min',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
+			      const max_length = Object.values(avaluacio_compliments_max).filter(value => value === 0);
             const max_length_noref = Object.values(avaluacio_compliments_max).filter(value => value === 0 || value === 1);
             const puntuacio = Math.round((((max_length.length / 20) * 100) + Number.EPSILON) * 100) / 100;
             const puntuacio_noref = Math.round((((max_length_noref.length / 20) * 100) + Number.EPSILON) * 100) / 100;
@@ -791,11 +791,13 @@ export default {
       }
 
       // S'obtenen els trens viables. Si no n'hi ha, no es pot fer la valoració multicriteri.
-      const trens_viables = ranquing_trens.filter(tren => tren.puntuacio_noref === 100);
+      let trens_viables = ranquing_trens.filter(tren => tren.puntuacio_noref === 100);
       if(!trens_viables.length){
           alert("No es poden avaluar els criteris ja que no s'ha obtingut cap tren de tractament viable.");
           return;
       }
+      // WIP: Agafa només els deu primers.
+      if(trens_viables.length > 10) trens_viables = trens_viables.slice(0, 10);
 
       // Ara cal calcular el valor de cadascun dels 10 criteris per cada tren i agregar els seus valors en 7 criteris.
       const criteris_trens = [];
