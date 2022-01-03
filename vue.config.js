@@ -1,6 +1,7 @@
 const prefixer = require('postcss-prefix-selector');
 
 module.exports = {
+    productionSourceMap: false,
     transpileDependencies: [
         'vuetify'
     ],
