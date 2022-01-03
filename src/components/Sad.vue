@@ -466,6 +466,18 @@
     <details class="seccio" open>
       <summary class="seccio">3. Avaluació multicriteri dels trens viables</summary>
       <div style="text-align: left">
+        <p><b>Màxim compliment assolit:</b> {{this.ranquing_trens.length ? this.ranquing_trens[0].puntuacio : 0}} %</p>
+        <p><b>Considerar trens viables a partir de: </b>
+            <input
+                class="viables"
+                type="number"
+                v-model.number="treshold_viables"
+                min="0"
+                max="100"
+                step="1"
+            /> % ({{this.ranquing_trens.filter(tren => tren.puntuacio >= treshold_viables).length}} trens viables)
+        </p>
+
         <button @click="avaluacio_trens_multicriteri">Avaluació multicriteri</button>
         <button @click="eliminar_avaluacio_multicriteri">Esborrar avaluació</button>
       </div>
@@ -614,6 +626,7 @@ export default {
       visio_multicriteri: 0,    //Variable que indica la visió activa de l'apartat multicriteri.
       modify_vp_open: false,    //Variable que indica si el panell de modificació dels VP està obert o no.
       mod_ind_vps: {},          //diccionari on hi haurà el valor VP de cada indicador que l'usuari hagi modificat.
+      treshold_viables: 100,    //treshold a partir de quan considerem un tren com a viable.
 
       //backend
       Usuari,                   //classe
@@ -725,6 +738,7 @@ export default {
       let efluent_secundari = _this.tractament_secundari;
       let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
+      let max_puntuacio = 0;
 
       if(isNaN(_this.user.corrent.Q) || _this.user.corrent.Q < 1 || _this.user.corrent.Q >= 1000000 || !Number.isInteger(_this.user.corrent.Q)){
           alert("Capacitat de tractament invàlida");
@@ -754,6 +768,7 @@ export default {
 			      const max_length = Object.values(avaluacio_compliments_max).filter(value => value === 0);
             const max_length_noref = Object.values(avaluacio_compliments_max).filter(value => value === 0 || value === 1);
             const puntuacio = Math.round((((max_length.length / 20) * 100) + Number.EPSILON) * 100) / 100;
+            if(puntuacio > max_puntuacio) max_puntuacio = puntuacio;
             const puntuacio_noref = Math.round((((max_length_noref.length / 20) * 100) + Number.EPSILON) * 100) / 100;
 
 
@@ -769,6 +784,7 @@ export default {
             avaluacio_trens.push(new_train);
           }
         }
+        _this.treshold_viables = max_puntuacio;
         avaluacio_trens.sort((a, b) => b.puntuacio - a.puntuacio);
         _this.ranquing_trens = avaluacio_trens;
       }
@@ -783,6 +799,7 @@ export default {
 
       const _this = this;
       const ranquing_trens = _this.ranquing_trens;
+      const treshold_viables = _this.treshold_viables;
 
       // No es pot fer la valoració multicriteri si no s'ha fet abans l'avaluació de trens.
       if(!ranquing_trens.length){
@@ -791,7 +808,7 @@ export default {
       }
 
       // S'obtenen els trens viables. Si no n'hi ha, no es pot fer la valoració multicriteri.
-      let trens_viables = ranquing_trens.filter(tren => tren.puntuacio_noref === 100);
+      let trens_viables = ranquing_trens.filter(tren => tren.puntuacio >= treshold_viables);
       if(!trens_viables.length){
           alert("No es poden avaluar els criteris ja que no s'ha obtingut cap tren de tractament viable.");
           return;
@@ -1079,6 +1096,10 @@ input[type="number"] {
   /* Position the tooltip text - see examples below! */
   position: absolute;
   z-index: 1;
+}
+
+.viables {
+  width: 50px;
 }
 
 .center {
