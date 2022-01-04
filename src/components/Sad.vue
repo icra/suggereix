@@ -466,7 +466,6 @@
     <details class="seccio" open>
       <summary class="seccio">3. Avaluació multicriteri dels trens viables</summary>
       <div style="text-align: left">
-        <p><b>Màxim compliment assolit:</b> {{this.ranquing_trens.length ? this.ranquing_trens[0].puntuacio : 0}} %</p>
         <p><b>Considerar trens viables a partir de: </b>
             <input
                 class="viables"
@@ -552,6 +551,14 @@
                         <span class="tooltiptext">Sort columns</span>
                     </div>
                 </th>
+                <th rowspan="2" class="td" style="padding: 10px">
+                    Avaluar
+                    <br>
+                    <input
+                        type="checkbox"
+                        v-on:click="avaluarClick"
+                    />
+                </th>
                 </tr>
                 <tr />
 
@@ -611,6 +618,15 @@
                     v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(1-getCriteriPercentage('espai_ocupat',tren.criteris_agregats['espai_ocupat']))"
                     >
                     {{ show_sc_not(tren.criteris.espai_ocupat) }}
+                    </td>
+                    <td
+                    rowspan="2"
+                    style="text-align: center; padding: 0px 10px 0px 10px;"
+                    >
+                    <input
+                        type="checkbox"
+                        v-model="tren.avaluar"
+                    />
                     </td>
                 </tr>
                 <tr :key="id+'_max_multi'">
@@ -715,7 +731,6 @@ export default {
     sort_multicriteri(event) {
         let _this = this;
         const column = event.currentTarget.id;
-        console.log(column)
         if(!_this.multicriteri_order.length || _this.multicriteri_order[0] !== column){
             _this.multicriteri_order = [column, 'asc'];
             _this.trens_multicriteris.sort((a, b) => b.criteris_agregats[column] < a.criteris_agregats[column]);
@@ -729,7 +744,10 @@ export default {
             _this.multicriteri_order = [];
             _this.trens_multicriteris.sort((a, b) => Number(b.id) < Number(a.id));
         }
-        console.log(_this.trens_multicriteris)
+    },
+    avaluarClick(event) {
+		let _this = this;
+        _this.trens_multicriteris = _this.trens_multicriteris.map(tren => ({...tren, avaluar: event.target.checked}));
     },
     checkboxVP(event) {
 		let _this = this;
@@ -902,6 +920,7 @@ export default {
       // Guardar el resultat.
       _this.trens_multicriteris = criteris_trens.map(tren => {
           tren.criteris_norm = trens_criteris_norm[tren.id];
+          tren.avaluar = true;
           return tren;
       });
 

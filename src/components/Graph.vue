@@ -18,7 +18,7 @@ export default {
         if(ctx){
             const config = {
                 type: 'radar',
-                data: obtenirDadesGraphMulticriteri(vm.trens_multicriteris, vm.trens_info),
+                data: obtenirDadesGraphMulticriteri(vm.trens_multicriteris.filter(tren => tren.avaluar), vm.trens_info),
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
