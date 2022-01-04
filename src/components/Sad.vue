@@ -502,13 +502,56 @@
                 <tr>
                 <th rowspan="2">Tren</th>
                 <th rowspan="2">id</th>
-                <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. químics)</th>
-                <th colspan="2" rowspan="2" class="doubletd">Mitjana del % d'eliminació (I. microbiològics)</th>
-                <th colspan="2" rowspan="2" class="doubletd">Cost total (€)</th>
-                <th rowspan="2" class="doubletd">Consum energètic mitjà (kWh/dia)</th>
-                <th rowspan="2" class="doubletd">Petjada de carboni (kg CO2 eq./dia)</th>
-                <th rowspan="2" class="doubletd">Petjada hídrica (L eq./dia)</th>
-                <th rowspan="2" class="doubletd">Espai ocupat (m2)</th>
+                <th colspan="2" rowspan="2" class="doubletd">
+                    Mitjana del % d'eliminació (I. químics) 
+                    <div class="tooltip">
+                        <button :id="'eliminacio_quimics'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
+                        <span class="tooltiptext">Sort columns</span>
+                    </div>
+                    
+                </th>
+                <th colspan="2" rowspan="2" class="doubletd">
+                    Mitjana del % d'eliminació (I. microbiològics)
+                    <div class="tooltip">
+                        <button :id="'eliminacio_microbiologics'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
+                        <span class="tooltiptext">Sort columns</span>
+                    </div>
+                </th>
+                <th colspan="2" rowspan="2" class="doubletd">
+                    Cost total (€)
+                    <div class="tooltip">
+                        <button :id="'cost_total'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
+                        <span class="tooltiptext">Sort columns</span>
+                    </div>
+                </th>
+                <th rowspan="2" class="doubletd">
+                    Consum energètic mitjà (kWh/dia)
+                    <div class="tooltip">
+                        <button :id="'cons_ene_mitja'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
+                        <span class="tooltiptext">Sort columns</span>
+                    </div>
+                </th>
+                <th rowspan="2" class="doubletd">
+                    Petjada de carboni (kg CO2 eq./dia)
+                    <div class="tooltip">
+                        <button :id="'hc'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
+                        <span class="tooltiptext">Sort columns</span>
+                    </div>
+                </th>
+                <th rowspan="2" class="doubletd">
+                    Petjada hídrica (L eq./dia)
+                    <div class="tooltip">
+                        <button :id="'hh'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
+                        <span class="tooltiptext">Sort columns</span>
+                    </div>
+                </th>
+                <th rowspan="2" class="doubletd">
+                    Espai ocupat (m2)
+                    <div class="tooltip">
+                        <button :id="'espai_ocupat'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
+                        <span class="tooltiptext">Sort columns</span>
+                    </div>
+                </th>
                 </tr>
                 <tr />
 
@@ -527,66 +570,66 @@
                     >
                     {{ tren.id }}
                     </td>
-                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
                     min:
                     </td>
-                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    <td v-bind:style="'text-align: left; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
                     {{ Math.round((tren.criteris.eliminacio_min_quimics + Number.EPSILON) * 100) / 100 }}
                     </td>
-                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
                     min:
                     </td>
-                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
                     {{ Math.round((tren.criteris.eliminacio_min_microbiologics + Number.EPSILON) * 100) / 100 }}
                     </td>
-                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cost_total',tren.criteris_agregats['cost_total']))">
                     min:
                     </td>
-                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cost_total',tren.criteris_agregats['cost_total']))">
                     {{ show_sc_not(tren.criteris.cost_total_min) }}
                     </td>
                     <td
                     rowspan="2"
-                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cons_ene_mitja',tren.criteris_agregats['cons_ene_mitja']))"
                     >
                     {{ show_sc_not(tren.criteris.cons_ene_mitja) }}
                     </td>
                     <td
                     rowspan="2"
-                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(1-getCriteriPercentage('hc',tren.criteris_agregats['hc']))"
                     >
                     {{ show_sc_not(tren.criteris.hc) }}
                     </td>
                     <td
                     rowspan="2"
-                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(1-getCriteriPercentage('hh',tren.criteris_agregats['hh']))"
                     >
                     {{ show_sc_not(tren.criteris.hh) }}
                     </td>
                     <td
                     rowspan="2"
-                    style="text-align: left; padding: 0px 10px 0px 10px"
+                    v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(1-getCriteriPercentage('espai_ocupat',tren.criteris_agregats['espai_ocupat']))"
                     >
                     {{ show_sc_not(tren.criteris.espai_ocupat) }}
                     </td>
                 </tr>
                 <tr :key="id+'_max_multi'">
-                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
                     max:
                     </td>
-                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
                     {{ Math.round((tren.criteris.eliminacio_max_quimics + Number.EPSILON) * 100) / 100 }}
                     </td>
-                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
                     max:
                     </td>
-                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
                     {{ Math.round((tren.criteris.eliminacio_max_microbiologics + Number.EPSILON) * 100) / 100 }}
                     </td>
-                    <td style="text-align: right; padding: 0px 5px 0px 5px">
+                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cost_total',tren.criteris_agregats['cost_total']))">
                     max:
                     </td>
-                    <td style="text-align: left; padding: 0px 10px 0px 10px">
+                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cost_total',tren.criteris_agregats['cost_total']))">
                     {{ show_sc_not(tren.criteris.cost_total_max) }}
                     </td>
                 </tr>
@@ -627,6 +670,7 @@ export default {
       modify_vp_open: false,    //Variable que indica si el panell de modificació dels VP està obert o no.
       mod_ind_vps: {},          //diccionari on hi haurà el valor VP de cada indicador que l'usuari hagi modificat.
       treshold_viables: 100,    //treshold a partir de quan considerem un tren com a viable.
+      multicriteri_order: [],   //order of the multicriteri table.
 
       //backend
       Usuari,                   //classe
@@ -637,8 +681,11 @@ export default {
       Usos_info: {},              //diccionari tots els usos
       Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
 	  Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
-      Multicriteri_info: {}        //diccionari amb la informació de l'avaluació multicriteri.
-
+      Multicriteri_info: {},       //diccionari amb la informació de l'avaluació multicriteri.
+      PercentColors: [
+        { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
+        { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
+        { pct: 1.0, color: { r: 217, g: 247, b: 205 } } ]
     }
   },
   created: async function() {
@@ -665,6 +712,25 @@ export default {
 
   },
   methods:{
+    sort_multicriteri(event) {
+        let _this = this;
+        const column = event.currentTarget.id;
+        console.log(column)
+        if(!_this.multicriteri_order.length || _this.multicriteri_order[0] !== column){
+            _this.multicriteri_order = [column, 'asc'];
+            _this.trens_multicriteris.sort((a, b) => b.criteris_agregats[column] < a.criteris_agregats[column]);
+            return;
+        }
+        if(_this.multicriteri_order[1] === 'asc'){
+            _this.multicriteri_order[1] = 'desc';
+            _this.trens_multicriteris.sort((a, b) => a.criteris_agregats[column] < b.criteris_agregats[column]);
+        }
+        else{
+            _this.multicriteri_order = [];
+            _this.trens_multicriteris.sort((a, b) => Number(b.id) < Number(a.id));
+        }
+        console.log(_this.trens_multicriteris)
+    },
     checkboxVP(event) {
 		let _this = this;
         const [,ind,index,us] = event.target.id.split("_");
@@ -813,8 +879,6 @@ export default {
           alert("No es poden avaluar els criteris ja que no s'ha obtingut cap tren de tractament viable.");
           return;
       }
-      // WIP: Agafa només els deu primers.
-      if(trens_viables.length > 10) trens_viables = trens_viables.slice(0, 10);
 
       // Ara cal calcular el valor de cadascun dels 10 criteris per cada tren i agregar els seus valors en 7 criteris.
       const criteris_trens = [];
@@ -953,7 +1017,36 @@ export default {
 
         // 2. Actualitzem el valor del grau d'informació sobre els VP.
         _this.grau_informacio = Math.round(vp_assigned.size / 21 * 100 * 100)/100;
-    }
+    },
+
+    getCriteriPercentage: function(criteri, valor) {
+        const criteri_array = this.trens_multicriteris.map(tren => tren.criteris_agregats[criteri]);
+        const criteri_min = Math.min(...criteri_array);
+        const criteri_max = Math.max(...criteri_array);
+        return((valor - criteri_min) / (criteri_max - criteri_min));
+    },
+
+    //aquesta funció retorna un color de vermell a verd depenent del percentatge especificat entre 0 i 1.
+    getColorForPercentage: function(pct) {
+        for (var i = 1; i < this.PercentColors.length - 1; i++) {
+            if (pct < this.PercentColors[i].pct) {
+                break;
+            }
+        }
+        var lower = this.PercentColors[i - 1];
+        var upper = this.PercentColors[i];
+        var range = upper.pct - lower.pct;
+        var rangePct = (pct - lower.pct) / range;
+        var pctLower = 1 - rangePct;
+        var pctUpper = rangePct;
+        var color = {
+            r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
+            g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
+            b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
+        };
+        return 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
+        // or output as hex if preferred
+    }  
   },
   computed: {
     // Variable que conté la informació de qualitats filtrades sense 'I1', 'I22' i 'I23'
