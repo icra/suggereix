@@ -496,6 +496,13 @@
             >
                 Visualització de criteris normalitzats
             </div>
+            <div 
+                :id="'avaluacio_multicriteri'"
+                v-bind:class="visio_multicriteri === 2 ? 'click-chip-hover background-blue' : 'click-chip-hover outline-blue'"
+                @click="canviVisio"
+            >
+                Avaluació multicriteri
+            </div>
           <div v-if="this.visio_multicriteri === 0">
             <table border="1">
                 <tr>
@@ -556,6 +563,7 @@
                     <br>
                     <input
                         type="checkbox"
+                        checked
                         v-on:click="avaluarClick"
                     />
                 </th>
@@ -655,6 +663,9 @@
           <div v-else-if="this.visio_multicriteri === 1">
               <Graph v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
           </div>
+          <div v-else-if="this.visio_multicriteri === 2">
+              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
+          </div>
         </div>
       </div>
     </details>
@@ -668,11 +679,12 @@ import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
 import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
-import Graph from './Graph.vue'
+import Graph from './Graph.vue';
+import Avaluacio from './Avaluacio.vue';
 
 export default {
   name: 'Sad',
-  components: { Graph },
+  components: { Graph, Avaluacio },
   data: function(){
     return {
       user: new Usuari(),       //objecte
@@ -778,6 +790,7 @@ export default {
         let _this = this;
 		if(event.target.id === 'taula_de_criteris_inicial') _this.visio_multicriteri = 0;
         else if(event.target.id === 'visualitzacio_de_criteris_normalitzats') _this.visio_multicriteri = 1;
+        else if(event.target.id === 'avaluacio_multicriteri') _this.visio_multicriteri = 2;
     },
 	show_sc_not(value){
 		if(value === undefined || isNaN(value)) return '';
