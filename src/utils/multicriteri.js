@@ -26,7 +26,7 @@ const DICT_CRI_BENEFICIOSOS = {
 }
 
 // Diccionari constant amb el ID del criteri i el seu nom.
-const DICT_CRI_NOMS = {
+export const DICT_CRI_NOMS = {
     eliminacio_quimics: '% d\'eliminació mínim (I. químics)',
     eliminacio_microbiologics: "% d'eliminació mínim (I. microbiològics)",
     cons_ene_mitja: "Consum energètic mitjà (kWh/dia)",

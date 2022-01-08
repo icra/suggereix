@@ -1,14 +1,63 @@
 <template>
-  <canvas id="avaluacio_multicriteri_chart" width="700" height="700"></canvas>
+    <div id="intro">
+        <table border="1">
+            <tr>
+                <th>Criteri</th>
+                <th>Prioritat Fuzzy</th>
+            </tr>
+            <template v-for="(cri,id) in DICT_CRI_NOMS">
+                <tr :key="id+'_selec_weights'">
+                    <td>{{cri}}</td>
+                    <td class="doubletd">
+                        <select v-model="pes_criteris[id]" style="max-width: 350px">
+                            <option
+                            v-for="(nom, key) in pes_criteris_info"
+                            :value="key"
+                            :key="key"
+                            >
+                            {{ nom }}
+                            </option>
+                        </select>
+                    </td>
+                </tr>
+            </template>
+        </table>
+        <canvas id="avaluacio_multicriteri_chart" width="700" height="300"></canvas>
+        <div :ref="'av_bottom'"></div>
+    </div>
 </template>
+
 <script>
 
+import Chart from 'chart.js/auto';
 import {fuzzifyMatrix,fuzzyTopsis} from "../utils/fuzzy_topsis";
-import {DICT_CRI_BENEFICIOSOS} from "../utils/multicriteri";
+import {DICT_CRI_NOMS} from "../utils/multicriteri";
 
 export default {
-  name: "Graph",
+  name: "Avaluacio",
   props: ["trens_multicriteris","trens_info"],
+  data: function(){
+    return {
+        DICT_CRI_NOMS: DICT_CRI_NOMS,
+        pes_criteris: {
+            eliminacio_quimics: 'M',
+            eliminacio_microbiologics: 'M',
+            cost_total: 'H',
+            cons_ene_mitja: 'H',
+            espai_ocupat: 'M',
+            hc: 'M',
+            hh: 'M'
+        },
+        pes_criteris_info: {
+            'VL': 'Molt baixa (MB)',
+            'L': 'Baixa (B)',
+            'M': 'Mitjana (M)',
+            'H': 'Alta (A)',
+            'VH': 'Molt alta (MA)'
+        },
+        trens_avaluats: []
+    }
+  },
   mounted() {
     let vm = this;      
 
@@ -30,15 +79,6 @@ export default {
         }
         // Fuzzifica els valors del diccionari (matriu) de criteris.
         fuzzy_dict = fuzzifyMatrix(fuzzy_dict);
-        const pes_criteris = {
-            eliminacio_quimics: 'M',
-            eliminacio_microbiologics: 'M',
-            cost_total: 'H',
-            cons_ene_mitja: 'H',
-            espai_ocupat: 'M',
-            hc: 'M',
-            hh: 'M'
-        }
         // Aquest diccionari marca tots els criteris com a beneficiosos, ja que partim de la normalització que ja s'ha invertit els no beneficiosos.
         const dict_beneficiosos ={
             eliminacio_quimics: true,
@@ -50,11 +90,64 @@ export default {
             hh: true
         }
         // Aplica fuzzy topsis al diccionari (matriu) de criteris i alternatives creada, juntament amb la matriu de decisió.
-		const cc_dict = fuzzyTopsis(fuzzy_dict, pes_criteris, dict_beneficiosos);
+		const cc_dict = fuzzyTopsis(fuzzy_dict, this.pes_criteris, dict_beneficiosos);
         
         // Ordenar els trens de 'trens_multicriteris' en funció del CC obtingut.
         const trens_multicriteris_avaluat = trens_multicriteris.map(tren => ({...tren, cc: cc_dict[tren.id]}));
         trens_multicriteris_avaluat.sort((tren_a, tren_b) => tren_b.cc - tren_a.cc);
+        this.trens_avaluats = trens_multicriteris_avaluat;
+    },
+    obtenirDadesGraphTrens(){
+        const _this = this;
+        // Si hi ha més de 15 trens, afagar només els 15 primers.
+        const trens = _this.trens_avaluats.length > 15 ? _this.trens_avaluats.slice(0, 15) : _this.trens_avaluats
+        return {
+            labels: trens.map(tren => tren.id + ': ' + _this.trens_info[tren.id].nom),
+            datasets: [{
+                label: 'Valor CC',
+                data: trens.map(tren => tren.cc),
+                borderWidth: 1
+            }]
+        };
+    }
+  },
+  watch: {
+    //cada vegada que s'actualitzin els pesos, es re-computa el fuzzy topsis.
+    pes_criteris:{
+        handler: function(newVal, oldVal) {
+            this.computeFuzzyTopsis(this.trens_multicriteris, this.trens_info);
+        },
+        deep: true
+    },
+    //cada vegada que canviin els trens avaluats, actualitza els gràfics.
+    trens_avaluats:{
+        handler: function(newVal, oldVal) {
+            const ctx = document.getElementById('avaluacio_multicriteri_chart');
+            if(ctx){
+                const config = {
+                    type: 'bar',
+                    data: this.obtenirDadesGraphTrens(),
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins:{
+                            legend: {
+                                display: false
+                            }
+                        }
+                    },
+                };
+                const myChart = new Chart(ctx, config);
+                const el = this.$refs['av_bottom'];
+                if (el) {
+                    el.scrollIntoView({behavior: 'smooth'});
+                }
+            }
+        },
+        deep: true
     }
   }
 };
