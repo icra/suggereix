@@ -55,7 +55,8 @@ export default {
             'H': 'Alta (A)',
             'VH': 'Molt alta (MA)'
         },
-        trens_avaluats: []
+        trens_avaluats: [],
+        chart: undefined
     }
   },
   mounted() {
@@ -63,11 +64,11 @@ export default {
 
     vm.$nextTick(function () {      
         // 1. Compute the fuzzy topsis.
-        vm.computeFuzzyTopsis(vm.trens_multicriteris, vm.trens_info);
+        vm.computeFuzzyTopsis(vm.trens_multicriteris.filter(tren => tren.avaluar));
     });
   },
   methods:{
-    computeFuzzyTopsis(trens_multicriteris, trens_info){
+    computeFuzzyTopsis(trens_multicriteris){
         // Es crea el diccionari de fuzzy topsis a partir de posar els criteris com a claus, i valor té una clau amb la alternativa (ID tren) 
         //  i valor el valor normalitzat.
         let fuzzy_dict = {};
@@ -106,7 +107,9 @@ export default {
             datasets: [{
                 label: 'Valor CC',
                 data: trens.map(tren => tren.cc),
-                borderWidth: 1
+                backgroundColor: "rgb(136, 204, 238)",
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 2
             }]
         };
     }
@@ -115,13 +118,14 @@ export default {
     //cada vegada que s'actualitzin els pesos, es re-computa el fuzzy topsis.
     pes_criteris:{
         handler: function(newVal, oldVal) {
-            this.computeFuzzyTopsis(this.trens_multicriteris, this.trens_info);
+            this.computeFuzzyTopsis(this.trens_multicriteris.filter(tren => tren.avaluar));
         },
         deep: true
     },
     //cada vegada que canviin els trens avaluats, actualitza els gràfics.
     trens_avaluats:{
         handler: function(newVal, oldVal) {
+            if(this.chart) this.chart.destroy();
             const ctx = document.getElementById('avaluacio_multicriteri_chart');
             if(ctx){
                 const config = {
@@ -135,12 +139,12 @@ export default {
                         },
                         plugins:{
                             legend: {
-                                display: false
+                                onClick: null
                             }
                         }
                     },
                 };
-                const myChart = new Chart(ctx, config);
+                this.chart = new Chart(ctx, config);
                 const el = this.$refs['av_bottom'];
                 if (el) {
                     el.scrollIntoView({behavior: 'smooth'});
