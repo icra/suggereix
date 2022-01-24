@@ -501,7 +501,7 @@
                 v-bind:class="visio_multicriteri === 2 ? 'click-chip-hover background-blue' : 'click-chip-hover outline-blue'"
                 @click="canviVisio"
             >
-                Avaluació multicriteri
+                Priorització dels trens viables
             </div>
           <div v-if="this.visio_multicriteri === 0">
             <table border="1">
@@ -531,21 +531,21 @@
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
-                    Consum energètic mitjà (kWh/dia)
+                    Consum energètic mitjà (kWh/m3)
                     <div class="tooltip">
                         <button :id="'cons_ene_mitja'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
                         <span class="tooltiptext">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
-                    Petjada de carboni (kg CO2 eq./dia)
+                    Petjada de carboni (kg CO2 eq./m3)
                     <div class="tooltip">
                         <button :id="'hc'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
                         <span class="tooltiptext">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
-                    Petjada hídrica (L eq./dia)
+                    Petjada hídrica (L eq./m3)
                     <div class="tooltip">
                         <button :id="'hh'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
                         <span class="tooltiptext">Sort columns</span>
@@ -670,6 +670,106 @@
       </div>
     </details>
 
+    <details class="seccio" close >
+      <summary class="seccio">3.1. Modificació dels rangs de consum i valors dels criteris de cada tractament
+        (opcional)
+      </summary>
+      <p>Per cada tractament es disposa de 4 rangs qualitatius (Baix (B), Mitjà (M), Alt (A) i Molt Alt (MA)) de consum amb determinats valors de criteris. Els valors dels rangs de consum i els valors corresponents dels criteris es poden modificar en aquesta taula.</p>
+      <p><b>S'assumeix un temps d'operació de la planta general de: </b>
+            <input
+                class="viables"
+                type="number"
+                v-model.number="anys_operacio"
+                min="1"
+                max="100"
+                step="1"
+            /> anys
+      </p>
+      <div>
+        <div>
+          <table border="1">
+            <tr>
+              <th>Tractament</th>
+              <th>Rang qualitatiu</th>
+              <th>Consum inferior (m3/d)</th>
+              <th>Consum superior (m3/d)</th>
+              <th>Consum energètic mitjà (kWh/m3)</th>
+              <th>Petjada de carboni (kg CO2 eq./m3)</th>
+              <th>Petjada hídrica (L eq./m3)</th>
+              <th>Espai ocupat (m2)</th>
+              <th>OPEX (€/m3)</th>
+              <th>CAPEX mínim (€/m3/d)</th>
+              <th>CAPEX màxim (€/m3/d)</th>
+            </tr>
+            <tbody v-for="(obj, id) in this.Multicriteri_info" :key="id+'_multi'">
+              <tr>
+                <td :rowspan="5" class="doubletd">
+                  {{ id }}
+                </td>
+              </tr>
+              <tr v-for="ind in Object.keys(obj)" :key="ind+'_multi'">
+                <td class="doubletd">{{ RangsQualitatius[ind] }}</td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].cap_min"
+                    min="0"
+                    class="smalltd"
+                /></td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].cap_max"
+                    min="0"
+                    class="smalltd"
+                /></td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].cons_ene_mitja"
+                    min="0"
+                    class="smalltd"
+                /></td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].hc"
+                    min="0"
+                    class="smalltd"
+                /></td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].hh"
+                    min="0"
+                    class="smalltd"
+                /></td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].espai_ocupat"
+                    min="0"
+                    class="smalltd"
+                /></td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].opex"
+                    min="0"
+                    class="smalltd"
+                /></td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].capex_min_d"
+                    min="0"
+                    class="smalltd"
+                /></td>
+                <td class="smalltd"><input
+                    type="number"
+                    v-model.number="Multicriteri_info[id][ind].capex_max_d"
+                    min="0"
+                    class="smalltd"
+                /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
   </div>
 </template>
 
@@ -699,6 +799,7 @@ export default {
       mod_ind_vps: {},          //diccionari on hi haurà el valor VP de cada indicador que l'usuari hagi modificat.
       treshold_viables: 100,    //treshold a partir de quan considerem un tren com a viable.
       multicriteri_order: [],   //order of the multicriteri table.
+      anys_operacio: 0,
 
       //backend
       Usuari,                   //classe
@@ -713,7 +814,13 @@ export default {
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
-        { pct: 1.0, color: { r: 217, g: 247, b: 205 } } ]
+        { pct: 1.0, color: { r: 217, g: 247, b: 205 } } ],
+      RangsQualitatius: {
+        0: 'Baix (B)',
+        1: 'Mitjà (M)',
+        2: 'Alt (A)',
+        3: 'Molt Alt (MA)'
+      }
     }
   },
   created: async function() {
@@ -819,9 +926,11 @@ export default {
           _this.Usos_info = await llegir_vp_usos(binaryData);
 		else if (type === 'qualitat_microbiologica')
 		  _this.Qualitat_microbiologica = await llegir_qualitat_micro(binaryData);
-        else if (type === 'multicriteri')
-		  _this.Multicriteri_info = await llegir_multicriteri(binaryData);
-          
+        else if (type === 'multicriteri'){
+          const res = await llegir_multicriteri(binaryData);
+		  _this.Multicriteri_info = res[0];
+          _this.anys_operacio = res[1];
+        }
       }
 
     },
@@ -910,6 +1019,14 @@ export default {
           alert("No es poden avaluar els criteris ja que no s'ha obtingut cap tren de tractament viable.");
           return;
       }
+
+      // Es pot haver modificat els costos o el temps d'operació de planta, així que cal recalcular el 'capex_min' i 'capex_max'.
+      Object.keys(_this.Multicriteri_info).map((key, index) => {
+          Object.keys(_this.Multicriteri_info[key]).map((key2, index2) => {
+              _this.Multicriteri_info[key][key2].capex_max = _this.Multicriteri_info[key][key2].capex_max_d / (_this.anys_operacio * 365)
+              _this.Multicriteri_info[key][key2].capex_min = _this.Multicriteri_info[key][key2].capex_min_d / (_this.anys_operacio * 365)
+          });
+      });
 
       // Ara cal calcular el valor de cadascun dels 10 criteris per cada tren i agregar els seus valors en 7 criteris.
       const criteris_trens = [];
@@ -1159,6 +1276,9 @@ table {
 }
 table td {
   word-wrap: break-word;
+}
+.smalltd {
+  width: 110px;
 }
 .doubletd {
   width: 120px;

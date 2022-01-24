@@ -101,11 +101,11 @@ export default {
     obtenirDadesGraphTrens(){
         const _this = this;
         // Si hi ha més de 15 trens, afagar només els 15 primers.
-        const trens = _this.trens_avaluats.length > 15 ? _this.trens_avaluats.slice(0, 15) : _this.trens_avaluats
+        const trens = _this.trens_avaluats;
         return {
             labels: trens.map(tren => tren.id + ': ' + _this.trens_info[tren.id].nom),
             datasets: [{
-                label: 'Valor CC',
+                label: 'Valor agregat i normalitzat',
                 data: trens.map(tren => tren.cc),
                 backgroundColor: "rgb(136, 204, 238)",
                 borderColor: 'rgb(54, 162, 235)',

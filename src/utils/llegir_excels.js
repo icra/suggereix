@@ -232,7 +232,10 @@ function llegir_multicriteri(binaryData) {
             }
         }
 
-        return multicriteris;
+        // Obtenir el temps d'operació per defecte.
+        const anys = wb.worksheets[1].getCell('B5').value;
+
+        return [multicriteris,anys];
     });
 }
 
