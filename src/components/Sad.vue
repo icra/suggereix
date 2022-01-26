@@ -691,8 +691,7 @@
             <tr>
               <th>Tractament</th>
               <th>Rang qualitatiu</th>
-              <th>Consum inferior (m3/d)</th>
-              <th>Consum superior (m3/d)</th>
+              <th colspan="2">Rang de cabal (m3/d)</th>
               <th>Consum energètic mitjà (kWh/m3)</th>
               <th>Petjada de carboni (kg CO2 eq./m3)</th>
               <th>Petjada hídrica (L eq./m3)</th>
