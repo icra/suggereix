@@ -109,10 +109,12 @@ export default class Corrent {
         this.eliminacio = {};
         this.refs = {};
         this.regulat = {};
+        this.seleccionat = {};
         Object.keys(Corrent.info_qualitat).forEach(id => {
             this.qualitat[id] = 0;
             this.refs[id] = "";
             this.eliminacio[id] = 0;
+            this.seleccionat[id] = (id !== 'I22' && id !== 'I23' && id !== 'I1') ? true : false;
         });
     }
 

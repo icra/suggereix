@@ -15,7 +15,7 @@
               />
             </th>
             <th colspan="2">Descripció infraestructura existent</th>
-            <th>Ús d'aigua regenerada</th>
+            <th colspan="2">Ús d'aigua regenerada</th>
             <th rowspan="3">Unitat</th>
             <th rowspan="3">Referència</th>
           </tr>
@@ -40,7 +40,7 @@
               </div>
             </td>
 
-            <td class="doubletd3">
+            <td colspan="2" class="doubletd3">
               <b>Selecciona l'ús (o usos) d'aigua regenerada:</b>
               <br />
               <template v-for="(obj, key) in Usos_info">
@@ -64,7 +64,7 @@
           <tr>
             <td style="text-align: right; padding-right: 20px">min</td>
             <td style="text-align: right; padding-right: 20px">max</td>
-            <td style="text-align: right; padding-right: 20px">
+            <td colspan="2" style="text-align: right; padding-right: 20px">
               Valors objectius de qualitat (VP)
               <div class="tooltip">
                 <button class="btn" v-on:click="modificar_vps"><img src="/img/edit.png" width="20" height="20" /></button>
@@ -122,6 +122,20 @@
             <td v-else colspan="2" class="doubletd">
               L’I23 (triclorometà) es pot formar en tractaments de desinfecció
               amb clor lliure.
+            </td>
+            <td style="text-align: left" class="doubletd">
+                <div v-if="key !== 'I22' && key !== 'I23' && key !== 'I1'">
+                    <input
+                        type="checkbox"
+                        v-model="user.corrent.seleccionat[key]"
+                    /> {{ user.corrent.seleccionat[key] ? 'Activat' : 'Desactivat' }}
+                </div>
+                <div v-else>
+                    <input
+                        type="checkbox"
+                        disabled
+                    /> Desactivat
+                </div>
             </td>
             <td style="text-align: right">
               <div v-if="mostrar_nota_vp(key)" class="tooltip">
