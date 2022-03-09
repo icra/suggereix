@@ -247,6 +247,20 @@
       </div>
       <div>
         <div v-if="this.ranquing_trens.length !== 0">
+            <div class='my-legend'>
+                <div class='legend-scale'>
+                <ul class='legend-labels'>
+                    <li>
+                        <span class="color" style='background:#baffc9;'></span>
+                        <span class="legend" style='width:65px;'>VP assolit</span>
+                        <span class="color" style='background:#ffdfba;'></span>
+                        <span class="legend">VP no assolit (no regulat)</span>
+                        <span class="color" style='background:#ffb3ba;'></span>
+                        <span class="legend">VP no assolit (regulat)</span>
+                    </li>
+                </ul>
+                </div>
+            </div>
           <table border="1">
             <tr>
               <th colspan="2" rowspan="2">Tren</th>
@@ -352,6 +366,20 @@
               </tr>
             </template>
           </table>
+          <div class='my-legend'>
+            <div class='legend-scale'>
+                <ul class='legend-labels'>
+                    <li>
+                        <span class="color" style='background:#baffc9;'></span>
+                        <span class="legend" style='width:65px;'>VP assolit</span>
+                        <span class="color" style='background:#ffdfba;'></span>
+                        <span class="legend">VP no assolit (no regulat)</span>
+                        <span class="color" style='background:#ffb3ba;'></span>
+                        <span class="legend">VP no assolit (regulat)</span>
+                    </li>
+                </ul>
+            </div>
+          </div>
         </div>
       </div>
     </details>
@@ -830,7 +858,7 @@ export default {
     this.read_file('/20211004_SUGGEREIX_Taula_B5.xlsx', 'tractaments_micro');
 
     // llegir excel 'trens'
-    this.read_file('/20211201_SUGGEREIX_PT4_Trens_rev.xlsx', 'trens');
+    this.read_file('/20220214_SUGGEREIX_Taula_Trens.xlsx', 'trens');
 
     // llegir excel 'efluent secundari' (característiques infraestructura existent)
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
@@ -1414,6 +1442,50 @@ input[type="number"] {
 
 .click-chip-hover:hover{
   filter: brightness(85%);
+}
+
+.my-legend .legend-title {
+    text-align: left;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 90%;
+}
+.my-legend .legend-scale ul {
+    margin: 0;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding: 0;
+    float: left;
+    list-style: none;
+}
+.my-legend .legend-scale ul li {
+    display:inline;
+    font-size: 80%;
+    list-style: none;
+    margin-left: 0;
+    line-height: 18px;
+    margin-bottom: 2px;
+}
+.my-legend ul.legend-labels li .color {
+    display: block;
+    float: left;
+    height: 16px;
+    width: 20px;
+    margin-right: 5px;
+    margin-left: 0;
+    border: 1px solid #999;
+}
+.my-legend ul.legend-labels li  .legend {
+    display: block;
+    float: left;
+    height: 16px;
+    width: 150px;
+    margin-right: 5px;
+    margin-left: 0;
+}
+
+.my-legend a {
+    color: #777;
 }
 
 </style>

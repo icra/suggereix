@@ -99,9 +99,9 @@ function llegir_trens(binaryData) {
     let _this = this;
     let workbook = new ExcelJS.Workbook();
     return workbook.xlsx.load(binaryData).then(wb => {
-        let worksheet = wb.worksheets[0];
+        let worksheet = wb.worksheets[1];
 
-        let startingRow = 4; //ignore first 3 columns (headers)
+        let startingRow = 5; //ignore first 3 columns (headers)
         let maxRows = worksheet.rowCount
         let trains = {}
 
