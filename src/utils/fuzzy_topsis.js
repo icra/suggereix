@@ -48,7 +48,7 @@ const assessmentFuzzy = variable(
 export const fuzzifyMatrix = (fuzzy_dict) => {
     for(const criterion of Object.keys(fuzzy_dict)){
         for(const alternative of Object.keys(fuzzy_dict[criterion])){
-            const assessmentKey = classify(assessmentFuzzy, fuzzy_dict[criterion][alternative])
+            const assessmentKey = classify(assessmentFuzzy, fuzzy_dict[criterion][alternative]) || 'VP';
             fuzzy_dict[criterion][alternative] = alternativeAssessmentFuzzyRatings[assessmentKey];
         }
     }

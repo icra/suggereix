@@ -115,6 +115,10 @@ export default {
     }
   },
   watch: {
+    //cada vegada que canviin les props dels trens multicriteri, computar el fuzzy topsis. 
+    trens_multicriteris: function(newVal, oldVal) {
+        this.computeFuzzyTopsis(newVal.filter(tren => tren.avaluar));
+    },
     //cada vegada que s'actualitzin els pesos, es re-computa el fuzzy topsis.
     pes_criteris:{
         handler: function(newVal, oldVal) {

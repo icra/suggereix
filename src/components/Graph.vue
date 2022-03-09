@@ -9,11 +9,28 @@ import {obtenirDadesGraphMulticriteri} from "../utils/multicriteri";
 export default {
   name: "Graph",
   props: ["trens_multicriteris","trens_info"],
+  data: function(){
+    return {
+        ctx_chart: undefined
+    }
+  },
+  watch: { 
+    trens_multicriteris: function(newVal, oldVal) { // watch it
+        let vm = this;  
+        vm.render_graph();
+    }
+  },
   mounted() {
     let vm = this;      
 
     vm.$nextTick(function () {      
+        vm.render_graph();
+    });
+  },
+  methods: {
+    render_graph() {
         // Dibuixa el diagrama.
+        let vm = this;    
         const ctx = document.getElementById('multicriteri_chart');
         if(ctx){
             const config = {
@@ -29,9 +46,10 @@ export default {
                     }
                 },
             };
-            const myChart = new Chart(ctx, config);
+            if(vm.ctx_chart) vm.ctx_chart.destroy();
+            vm.ctx_chart = new Chart(ctx, config);
         }
-    });
+    }
   }
 };
 </script>

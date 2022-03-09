@@ -225,11 +225,12 @@
                     style="width: 66.66px"
                     v-on:blur="handleBlur"
                 />
-                Regulat:
-                <input
-                    type="checkbox"
-                    v-model="Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].regulat"
-                />
+                <div v-if="Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].regulat" style="color:#17245c;">
+                    Regulat
+                </div>
+                <div v-else style="color:#17245c;">
+                    No regulat
+                </div>
             </td>
           </tr>
         </table>
@@ -986,6 +987,7 @@ export default {
 	  }
 
       if(Object.keys(_this.Trens_info).length !== 0 && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
+        _this.trens_multicriteris = [];
         for (const [key, tren] of Object.entries(dict_trens)) {
           let array_tractaments = tren['array_tractaments'];
           let primer_tractament = array_tractaments[0];
@@ -1086,6 +1088,7 @@ export default {
     //reseteja el ranquing de trens (array buit)
     eliminar_avaluacio(){
       this.ranquing_trens = [];
+      this.trens_multicriteris = [];
     },
 
     //reseteja el ranquing d'avaluacions multicriteri (array buit)
