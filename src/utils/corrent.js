@@ -149,9 +149,9 @@ export default class Corrent {
         }
 
         //calcula qualitat dels nous corrents aplicant eliminació
-        Object.keys(_this.qualitat).forEach(id => {
-            //calculem l'eliminació de tots els indicadors excepte del pH ('I1'), I22 i I23.
-            if (id !== 'I1' && id !== 'I22' && id !== 'I23') {
+        for (const [id, selected] of Object.entries(_this.seleccionat)) {
+            //calculem l'eliminació de tots els indicadors excepte no seleccionats.
+            if(selected){
                 min.qualitat[id] = _this.qualitat[id];
                 max.qualitat[id] = _this.qualitat[id];
                 let r_min = 1;
@@ -207,9 +207,8 @@ export default class Corrent {
 
                 min.qualitat[id] = _this.qualitat[id].min * (1 - r_max)
                 max.qualitat[id] = _this.qualitat[id].max * (1 - r_min)
-
             }
-        });
+        }
 
         return {
             min,
@@ -219,7 +218,7 @@ export default class Corrent {
     }
 
     //detecta els compliments i retorna un array amb els ids dels indicadors que compleixen.
-    n_compliments(type, corrent, qualitat_micro, usos_seleccionats, qualitat_inicial, usos_info) {
+    n_compliments(type, ind_seleccionats, corrent, qualitat_micro, usos_seleccionats, qualitat_inicial, usos_info) {
 
         const indicadors_microbiologics = ['I19', 'I20', 'I21'];
 
@@ -227,9 +226,9 @@ export default class Corrent {
         const compliments = {};
 
         // First, get an array of evaluations.
-        for (const id of Object.keys(corrent.qualitat)) {
-            //mirar tots els indicadors excepte el pH ('I1'), I22 i I23
-            if (id !== 'I1' && id !== 'I22' && id !== 'I23') {
+        for (const [id, selected] of Object.entries(ind_seleccionats)) {
+            //mirar tots els indicadors excepte els no seleccionats.
+            if (selected) {
                 //si el VP és 'nd', es considera que compleix (excepte els microbiològics).
                 if (!indicadors_microbiologics.includes(id) && corrent.qualitat[id] === 'nd') {
                     compliments[id] = 0;

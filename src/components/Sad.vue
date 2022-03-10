@@ -842,6 +842,7 @@ export default {
       treshold_viables: 100,    //treshold a partir de quan considerem un tren com a viable.
       multicriteri_order: [],   //order of the multicriteri table.
       anys_operacio: 0,
+      ind_seleccionats: {},     //indicadors seleccionats per valorar trens viables.
 
       //backend
       Usuari,                   //classe
@@ -987,6 +988,7 @@ export default {
       let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
       let max_puntuacio = 0;
+      _this.ind_seleccionats = JSON.parse(JSON.stringify(_this.user.corrent.seleccionat));
 
       if(isNaN(_this.user.corrent.Q) || _this.user.corrent.Q < 1 || _this.user.corrent.Q >= 1000000 || !Number.isInteger(_this.user.corrent.Q)){
           alert("Capacitat de tractament invàlida");
@@ -1008,17 +1010,19 @@ export default {
           let tren_aplicable = (efluent_secundari.includes('FAC_DS') && primer_tractament !== 'BRM') ||
               (efluent_secundari.includes('BRM') && primer_tractament === 'BRM') ||
               (efluent_secundari.includes('DP') && primer_tractament === 'BRM');
+        
           if(tren_aplicable){
             let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari,key);
 
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
-            const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
-			      const avaluacio_compliments_min = min_max.min.n_compliments('min',_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
-			      const max_length = Object.values(avaluacio_compliments_max).filter(value => value === 0);
+            const n_indicadors = Object.values(_this.ind_seleccionats).filter(selected => selected).length;
+            const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.ind_seleccionats,_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
+			const avaluacio_compliments_min = min_max.min.n_compliments('min',_this.ind_seleccionats,_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
+			const max_length = Object.values(avaluacio_compliments_max).filter(value => value === 0);
             const max_length_noref = Object.values(avaluacio_compliments_max).filter(value => value === 0 || value === 1);
-            const puntuacio = Math.round((((max_length.length / 20) * 100) + Number.EPSILON) * 100) / 100;
+            const puntuacio = Math.round((((max_length.length / n_indicadors) * 100) + Number.EPSILON) * 100) / 100;
             if(puntuacio > max_puntuacio) max_puntuacio = puntuacio;
-            const puntuacio_noref = Math.round((((max_length_noref.length / 20) * 100) + Number.EPSILON) * 100) / 100;
+            const puntuacio_noref = Math.round((((max_length_noref.length / n_indicadors) * 100) + Number.EPSILON) * 100) / 100;
 
 
             let new_train = {
@@ -1242,9 +1246,9 @@ export default {
     }  
   },
   computed: {
-    // Variable que conté la informació de qualitats filtrades sense 'I1', 'I22' i 'I23'
+    // Variable que conté la informació de qualitats filtrades sense els indicadors desactivats.
     info_qualitats: function () {
-        return Object.fromEntries(Object.entries(this.Corrent.info_qualitat).filter(([key]) => key !== 'I1' && key !== 'I22' && key !== 'I23'));
+        return Object.fromEntries(Object.entries(this.Corrent.info_qualitat).filter(([key]) => this.ind_seleccionats[key]));
     }
   },
   watch: {
