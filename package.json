@@ -11,6 +11,7 @@
     "chart.js": "^3.6.0",
     "core-js": "^3.6.5",
     "exceljs": "^4.2.1",
+    "force-graph": "^1.42.7",
     "postcss-prefix-selector": "^1.13.0",
     "vue": "^2.6.11",
     "vuetify": "^2.5.6",

@@ -707,7 +707,7 @@
               <Graph v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
           </div>
           <div v-else-if="this.visio_multicriteri === 2">
-              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
+              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info" @resultats="resultatAvaluacio"/>
           </div>
         </div>
       </div>
@@ -811,6 +811,28 @@
         </div>
       </div>
     </details>
+    <details class="seccio" open>
+      <summary class="seccio">4. Monitoratge d'un tren de tractaments</summary>
+      <div>
+          <p>Si s'ha computat la priorització de trens viables (fase 3), en aquest selector apareixeran els trens viables ponderats per puntuació.</p> 
+          <p>En cas contrari, apareixeran tots els trens de tractaments.</p>
+          <p><b>Seleccionar tren de tractament a monitorar: </b>
+            <select v-model="tren_monitoratge" style="max-width: 200px">
+                <option
+                  v-for="obj of selector_monitoratge"
+                  :value="obj"
+                  :key="obj.codi"
+                >
+                  {{ obj.selector || obj.nom }}
+                </option>
+              </select>
+          </p>
+          <div v-if="tren_monitoratge">
+              <p> *WIP* Aquí es mostrarà el diagrama interactiu del tren seleccionat</p>
+              <Monitoratge />
+          </div>
+      </div>
+    </details>
 
   </div>
 </template>
@@ -823,10 +845,11 @@ import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
+import Monitoratge from './Monitoratge.vue';
 
 export default {
   name: 'Sad',
-  components: { Graph, Avaluacio },
+  components: { Graph, Avaluacio, Monitoratge },
   data: function(){
     return {
       user: new Usuari(),       //objecte
@@ -843,6 +866,8 @@ export default {
       multicriteri_order: [],   //order of the multicriteri table.
       anys_operacio: 0,
       ind_seleccionats: {},     //indicadors seleccionats per valorar trens viables.
+      selector_monitoratge: {}, //selector del tren a monitorar.
+      tren_monitoratge: "",     //tren del monitoratge seleccionat.
 
       //backend
       Usuari,                   //classe
@@ -961,8 +986,10 @@ export default {
           _this.Tractaments_info = await llegir_tractaments(binaryData);
 		else if (type === 'tractaments_micro')
           _this.Tractaments_m_info = await llegir_tractaments_micro(binaryData);
-        else if (type === 'trens')
-          _this.Trens_info = await llegir_trens(binaryData);
+        else if (type === 'trens'){
+            _this.Trens_info = await llegir_trens(binaryData);
+            _this.selector_monitoratge = Object.values(_this.Trens_info);
+        }
         else if (type === 'efluent')
           _this.Efluents_info = await llegir_caract_efluent_secundari(binaryData);
         else if (type === 'usos')
@@ -1101,6 +1128,22 @@ export default {
           return tren;
       });
 
+    },
+
+    //funció que s'executa des del component avaluació per a transmetre els resultats.
+    resultatAvaluacio(trens_cc){
+        const _this = this;
+
+        const trens_monitoratge = [];
+        let counter = 1; 
+        for(const tren of trens_cc){
+            const cc = Math.round((tren.cc + Number.EPSILON) * 100) / 100
+            const tren_obj = {...tren, codi: tren.id, selector: counter+". "+_this.Trens_info[tren.id].nom+" ("+cc+")"};
+            trens_monitoratge.push(tren_obj);
+            counter += 1;
+        }
+        _this.tren_monitoratge = "";
+        _this.selector_monitoratge = trens_monitoratge;
     },
 
     //reseteja el ranquing de trens (array buit)

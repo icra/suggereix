@@ -35,7 +35,7 @@ import {DICT_CRI_NOMS} from "../utils/multicriteri";
 
 export default {
   name: "Avaluacio",
-  props: ["trens_multicriteris","trens_info"],
+  props: ["trens_multicriteris","trens_info", "resultatAvaluacio"],
   data: function(){
     return {
         DICT_CRI_NOMS: DICT_CRI_NOMS,
@@ -97,13 +97,14 @@ export default {
         const trens_multicriteris_avaluat = trens_multicriteris.map(tren => ({...tren, cc: cc_dict[tren.id]}));
         trens_multicriteris_avaluat.sort((tren_a, tren_b) => tren_b.cc - tren_a.cc);
         this.trens_avaluats = trens_multicriteris_avaluat;
+        this.$emit('resultats', this.trens_avaluats);
     },
     obtenirDadesGraphTrens(){
         const _this = this;
         // Si hi ha més de 15 trens, afagar només els 15 primers.
         const trens = _this.trens_avaluats;
         return {
-            labels: trens.map(tren => tren.id + ': ' + _this.trens_info[tren.id].nom),
+            labels: trens.map(tren => _this.trens_info[tren.id].nom),
             datasets: [{
                 label: 'Valor agregat i normalitzat',
                 data: trens.map(tren => tren.cc),
