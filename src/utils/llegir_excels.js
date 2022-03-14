@@ -115,13 +115,13 @@ function llegir_trens(binaryData) {
                 let trainTreatments = [];
                 let references = [];
 
-                //read treatments in order (from column D(4) to I(9) = 6 in total)
-                for (let i = 4; i < 10; i++) {
+                //read treatments in order (from column D(4) to J(10) = 7 in total)
+                for (let i = 4; i < 11; i++) {
                     if (row[i] !== undefined) trainTreatments.push(row[i].replaceAll(" ", ""));
                 }
 
-                //read references in order (from column J(10) to W(23) = 14 in total)
-                for (let i = 10; i < 24; i++) {
+                //read references in order (from column K(11) to W(24) = 14 in total)
+                for (let i = 11; i < 25; i++) {
                     if (row[i] !== undefined) references.push(row[i]);
                 }
 
