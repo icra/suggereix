@@ -707,7 +707,7 @@
               <Graph v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
           </div>
           <div v-else-if="this.visio_multicriteri === 2">
-              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
+              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info" @resultats="resultatAvaluacio"/>
           </div>
         </div>
       </div>
@@ -811,6 +811,27 @@
         </div>
       </div>
     </details>
+    <details class="seccio" open>
+      <summary class="seccio">4. Monitoratge d'un tren de tractaments</summary>
+      <div>
+          <p>Si s'ha computat la priorització de trens viables (fase 3), en aquest selector apareixeran els trens viables ponderats per puntuació.</p> 
+          <p>En cas contrari, apareixeran tots els trens de tractaments considerant la infraestructura existent.</p>
+          <p><b>Seleccionar tren de tractament a monitorar: </b>
+            <select v-model="tren_monitoratge" style="max-width: 200px">
+                <option
+                  v-for="obj of selector_monitoratge"
+                  :value="obj"
+                  :key="obj.codi"
+                >
+                  {{ obj.selector || obj.nom }}
+                </option>
+              </select>
+          </p>
+          <div v-if="tren_monitoratge">
+              <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" />
+          </div>
+      </div>
+    </details>
 
   </div>
 </template>
@@ -823,10 +844,11 @@ import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
+import Monitoratge from './Monitoratge.vue';
 
 export default {
   name: 'Sad',
-  components: { Graph, Avaluacio },
+  components: { Graph, Avaluacio, Monitoratge },
   data: function(){
     return {
       user: new Usuari(),       //objecte
@@ -843,6 +865,9 @@ export default {
       multicriteri_order: [],   //order of the multicriteri table.
       anys_operacio: 0,
       ind_seleccionats: {},     //indicadors seleccionats per valorar trens viables.
+      selector_monitoratge: [], //selector del tren a monitorar.
+      tren_monitoratge: "",     //tren del monitoratge seleccionat.
+      llest_monitoratge: false, //variable per saber si el monitoratge està llest.
 
       //backend
       Usuari,                   //classe
@@ -874,7 +899,7 @@ export default {
     this.read_file('/20211004_SUGGEREIX_Taula_B5.xlsx', 'tractaments_micro');
 
     // llegir excel 'trens'
-    this.read_file('/20220214_SUGGEREIX_Taula_Trens.xlsx', 'trens');
+    this.read_file('/20220314_SUGGEREIX_Taula_Trens.xlsx', 'trens');
 
     // llegir excel 'efluent secundari' (característiques infraestructura existent)
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
@@ -961,8 +986,9 @@ export default {
           _this.Tractaments_info = await llegir_tractaments(binaryData);
 		else if (type === 'tractaments_micro')
           _this.Tractaments_m_info = await llegir_tractaments_micro(binaryData);
-        else if (type === 'trens')
-          _this.Trens_info = await llegir_trens(binaryData);
+        else if (type === 'trens'){
+            _this.Trens_info = await llegir_trens(binaryData);
+        }
         else if (type === 'efluent')
           _this.Efluents_info = await llegir_caract_efluent_secundari(binaryData);
         else if (type === 'usos')
@@ -1004,6 +1030,7 @@ export default {
 
       if(Object.keys(_this.Trens_info).length !== 0 && _this.usos_seleccionats.length !== 0 && _this.tractament_secundari !== ""){
         _this.trens_multicriteris = [];
+        _this.llest_monitoratge = false;
         for (const [key, tren] of Object.entries(dict_trens)) {
           let array_tractaments = tren['array_tractaments'];
           let primer_tractament = array_tractaments[0];
@@ -1067,6 +1094,8 @@ export default {
           return;
       }
 
+      _this.llest_monitoratge = false;
+
       // Es pot haver modificat els costos o el temps d'operació de planta, així que cal recalcular el 'capex_min' i 'capex_max'.
       Object.keys(_this.Multicriteri_info).map((key, index) => {
           Object.keys(_this.Multicriteri_info[key]).map((key2, index2) => {
@@ -1103,15 +1132,39 @@ export default {
 
     },
 
+    //funció que s'executa des del component avaluació per a transmetre els resultats.
+    resultatAvaluacio(trens_cc){
+        const _this = this;
+
+        const trens_monitoratge = [];
+        let counter = 1; 
+        for(const tren of trens_cc){
+            const cc = Math.round((tren.cc + Number.EPSILON) * 100) / 100
+            const tren_obj = {
+                ...tren, 
+                codi: tren.id, 
+                selector: counter+". "+_this.Trens_info[tren.id].nom+" ("+cc+")",
+                array_tractaments: _this.Trens_info[tren.id].array_tractaments
+            };
+            trens_monitoratge.push(tren_obj);
+            counter += 1;
+        }
+        _this.llest_monitoratge = true;
+        _this.tren_monitoratge = "";
+        _this.selector_monitoratge = trens_monitoratge;
+    },
+
     //reseteja el ranquing de trens (array buit)
     eliminar_avaluacio(){
       this.ranquing_trens = [];
       this.trens_multicriteris = [];
+      this.llest_monitoratge = false;
     },
 
     //reseteja el ranquing d'avaluacions multicriteri (array buit)
     eliminar_avaluacio_multicriteri(){
       this.trens_multicriteris = [];
+      this.llest_monitoratge = false;
     },
 
     modificar_vps(){
@@ -1293,10 +1346,14 @@ export default {
     tractament_secundari: function (newUse, oldUse){
       let _this = this;
       _this.user.corrent.qualitat = Usuari.info_tractaments_secundaris[newUse].qualitat;
-    },
-
-    visio_multicriteri: function(newUse, oldUse){
-        
+      if(!_this.llest_monitoratge){
+        _this.tren_monitoratge = "";
+        _this.selector_monitoratge = Object.values(_this.Trens_info).filter(tren => {
+            return (newUse.includes('FAC_DS') && tren.array_tractaments[0] !== 'BRM') ||
+                (newUse.includes('BRM') && tren.array_tractaments[0] === 'BRM') ||
+                (newUse.includes('DP') && tren.array_tractaments[0] === 'BRM');
+        });
+      }
     }
   }
 }
