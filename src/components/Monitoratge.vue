@@ -43,7 +43,7 @@ export default {
         const array_tractaments = ['DP'];
         if (vm.tractament_secundari !== 'DP') array_tractaments.push(vm.tractament_secundari);
         for(const tractament of vm.tren_monitoratge.array_tractaments){
-            if(tractament !== "BRM") array_tractaments.push(tractament)
+            if(!vm.tractament_secundari.includes('BRM') || tractament !== "BRM") array_tractaments.push(tractament)
         }
 
         const namespace = joint.shapes;

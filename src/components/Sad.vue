@@ -899,7 +899,7 @@ export default {
     this.read_file('/20211004_SUGGEREIX_Taula_B5.xlsx', 'tractaments_micro');
 
     // llegir excel 'trens'
-    this.read_file('/20220314_SUGGEREIX_Taula_Trens.xlsx', 'trens');
+    this.read_file('/20220314_SUGGEREIX_Taula_Trens_v2.xlsx', 'trens');
 
     // llegir excel 'efluent secundari' (característiques infraestructura existent)
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
