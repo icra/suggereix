@@ -276,7 +276,8 @@
                 </ul>
                 </div>
             </div>
-          <table border="1">
+          <div class="sticky">
+          <table class="sticky evenodd" border="1">
             <tr>
               <th colspan="2" rowspan="2">Tren</th>
               <th rowspan="2">id</th>
@@ -288,6 +289,7 @@
               <th
                 v-for="(val, key) in info_qualitats"
                 :key="key"
+                class="sticky2"
                 style="
                   font-family: monospace;
                   text-align: left;
@@ -296,7 +298,7 @@
               >
                 <div class="tooltip" style="color: inherit">
                   {{ key }}
-                  <span class="tooltiptext_ind" style="font-size: 10px">{{
+                  <span class="tooltiptext_ind" style="font-size: 10px; margin-top: 20px">{{
                     val.nom
                   }}</span>
                 </div>
@@ -381,19 +383,6 @@
               </tr>
             </template>
           </table>
-          <div class='my-legend'>
-            <div class='legend-scale'>
-                <ul class='legend-labels'>
-                    <li>
-                        <span class="color" style='background:#baffc9;'></span>
-                        <span class="legend" style='width:65px;'>VP assolit</span>
-                        <span class="color" style='background:#ffdfba;'></span>
-                        <span class="legend">VP no assolit (no regulat)</span>
-                        <span class="color" style='background:#ffb3ba;'></span>
-                        <span class="legend">VP no assolit (regulat)</span>
-                    </li>
-                </ul>
-            </div>
           </div>
         </div>
       </div>
@@ -547,7 +536,8 @@
                 Priorització dels trens viables
             </div>
           <div v-if="this.visio_multicriteri === 0">
-            <table border="1">
+            <div class="sticky">
+            <table class="sticky evenodd" border="1">
                 <tr>
                 <th rowspan="2">Tren</th>
                 <th rowspan="2">id</th>
@@ -555,7 +545,7 @@
                     Mitjana del % d'eliminació (I. químics) 
                     <div class="tooltip">
                         <button :id="'eliminacio_quimics'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext">Sort columns</span>
+                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                     
                 </th>
@@ -563,42 +553,42 @@
                     Mitjana del % d'eliminació (I. microbiològics)
                     <div class="tooltip">
                         <button :id="'eliminacio_microbiologics'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext">Sort columns</span>
+                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th colspan="2" rowspan="2" class="doubletd">
                     Cost total (€)
                     <div class="tooltip">
                         <button :id="'cost_total'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext">Sort columns</span>
+                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
                     Consum energètic mitjà (kWh/m3)
                     <div class="tooltip">
                         <button :id="'cons_ene_mitja'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext">Sort columns</span>
+                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
                     Petjada de carboni (kg CO2 eq./m3)
                     <div class="tooltip">
                         <button :id="'hc'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext">Sort columns</span>
+                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
                     Petjada hídrica (L eq./m3)
                     <div class="tooltip">
                         <button :id="'hh'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext">Sort columns</span>
+                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
                     Espai ocupat (m2)
                     <div class="tooltip">
                         <button :id="'espai_ocupat'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext">Sort columns</span>
+                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="td" style="padding: 10px">
@@ -702,6 +692,7 @@
                 </tr>
                 </template>
             </table>
+            </div>
           </div>
           <div v-else-if="this.visio_multicriteri === 1">
               <Graph v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
@@ -1445,7 +1436,7 @@ input[type="number"] {
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
-  z-index: 1;
+  z-index: 20;
 }
 
 .viables {
@@ -1470,7 +1461,7 @@ input[type="number"] {
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
-  z-index: 1;
+  z-index: 20;
 }
 
 .tooltip .tooltiptext_ind {
@@ -1484,19 +1475,23 @@ input[type="number"] {
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
-  z-index: 1;
+  z-index: 20;
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext,
 .tooltip:hover .tooltiptext_ind {
   visibility: visible;
+  display: block;
+  z-index: 20;
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext2,
 .tooltip:hover .tooltiptext_ind {
   visibility: visible;
+  display: block;
+  z-index: 20;
 }
 
 .outline-blue{
@@ -1564,6 +1559,44 @@ input[type="number"] {
 
 .my-legend a {
     color: #777;
+}
+
+/* Sticky table style*/
+div.sticky {
+  display: inline-block;
+  height: 600px;
+  overflow: auto;
+  width: 100%;
+}
+
+table.sticky {
+    padding-left: 2px; padding-right: 2px; margin-left: 2px; margin-right: 2px;
+}
+
+table.sticky th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #d4e9fd;
+}
+
+table.sticky th.sticky2 {
+  position: sticky;
+  top: 21px;
+  z-index: 1;
+  background-color: #d4e9fd;
+}
+
+table.evenodd tr:nth-child(odd) {
+    border-bottom: 1px dashed black;
+}
+
+table.evenodd tr:nth-child(even) {
+    border-bottom: 2px solid black;
+}
+
+table.evenodd tr:nth-child(2) {
+    border-bottom: 4px solid black;
 }
 
 </style>
