@@ -73,27 +73,29 @@ const getDistance= (a,b) => {
 
 // This main method applies fuzzy topsis from an alternative rating matrix (dictionary), the criteria weightage 
 //  and if the criteria is beneficial or not.
-export const fuzzyTopsis = (alternative_rating, criteria_weightage, criteria_benefit_cost) => {
+export const fuzzyTopsis = (alternative_rating, criteria_weightage, criteria_benefit_cost, criteria_to_consider) => {
 
     // Step 1: FUZZY MULTI CRITERIA GROUP DECISION MAKING (GDM) AND PROCESS OF NORMALIZING.
     const normalized_alternative_rating = {};
 
     for(const criterion of Object.keys(alternative_rating)){
-        normalized_alternative_rating[criterion] = {};
-        const [w_a,w_b,w_c] = QAWeightsFuzzyRatings[criteria_weightage[criterion]];
-        for(const alternative of Object.keys(alternative_rating[criterion])){
-            // Apply different procedure depending if the criteria is beneficial or cost.
-            const a = alternative_rating[criterion][alternative][A];
-            const b = alternative_rating[criterion][alternative][B];
-            const c = alternative_rating[criterion][alternative][C];
-            const [min, max] = getMinMax(alternative_rating[criterion]);
-            if(criteria_benefit_cost[criterion]){
-                // Beneficial criteria.
-                normalized_alternative_rating[criterion][alternative] = [(a/max)*w_a,(b/max)*w_b,(c/max)*w_c];
-            }
-            else{
-                // Cost criteria.
-                normalized_alternative_rating[criterion][alternative] = [(min/c)*w_a,(min/b)*w_b,(min/a)*w_c];
+        if(criteria_to_consider[criterion]){
+            normalized_alternative_rating[criterion] = {};
+            const [w_a,w_b,w_c] = QAWeightsFuzzyRatings[criteria_weightage[criterion]];
+            for(const alternative of Object.keys(alternative_rating[criterion])){
+                // Apply different procedure depending if the criteria is beneficial or cost.
+                const a = alternative_rating[criterion][alternative][A];
+                const b = alternative_rating[criterion][alternative][B];
+                const c = alternative_rating[criterion][alternative][C];
+                const [min, max] = getMinMax(alternative_rating[criterion]);
+                if(criteria_benefit_cost[criterion]){
+                    // Beneficial criteria.
+                    normalized_alternative_rating[criterion][alternative] = [(a/max)*w_a,(b/max)*w_b,(c/max)*w_c];
+                }
+                else{
+                    // Cost criteria.
+                    normalized_alternative_rating[criterion][alternative] = [(min/c)*w_a,(min/b)*w_b,(min/a)*w_c];
+                }
             }
         }
     }

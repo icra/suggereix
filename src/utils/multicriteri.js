@@ -42,6 +42,7 @@ export const DICT_CRI_NOMS = {
     cost_opex: "Cost OPEX (€)"
 }
 
+// Diccionari de pesos.
 export const DICT_PES_CRITERIS = {
     eliminacio_quimics: 'M',
     eliminacio_microbiologics: 'M',
@@ -53,6 +54,20 @@ export const DICT_PES_CRITERIS = {
     puntuacio: 'M',
     cost_capex: 'M',
     cost_opex: 'M'
+}
+
+// Diccionari dels criteris a considerar.
+export const DICT_CRITERIS_A_CONSIDERAR = {
+    eliminacio_quimics: false,
+    eliminacio_microbiologics: false,
+    cost_total: true,
+    cons_ene_mitja: true,
+    espai_ocupat: true,
+    hc: true,
+    hh: true,
+    puntuacio: true,
+    cost_capex: false,
+    cost_opex: false
 }
 
 // Variable constant amb la paleta de colors.

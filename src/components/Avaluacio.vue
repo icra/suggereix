@@ -3,7 +3,8 @@
         <table border="1">
             <tr>
                 <th>Criteri</th>
-                <th>Prioritat Fuzzy</th>
+                <th>Prioritat Fuzzy <button v-on:click="reset_pes_criteris">Reset</button></th>
+                <th>Avaluar <button v-on:click="reset_criteris_a_considerar">Reset</button></th>
             </tr>
             <template v-for="(cri,id) in DICT_CRI_NOMS">
                 <tr :key="id+'_selec_weights'">
@@ -19,6 +20,12 @@
                             </option>
                         </select>
                     </td>
+                    <td class="doubletd" style="text-align: center; padding: 0px 10px 0px 10px;">
+                        <input
+                            type="checkbox"
+                            v-model="criteris_a_considerar[id]"
+                        />
+                    </td>
                 </tr>
             </template>
         </table>
@@ -31,7 +38,7 @@
 
 import Chart from 'chart.js/auto';
 import {fuzzifyMatrix,fuzzyTopsis} from "../utils/fuzzy_topsis";
-import {DICT_CRI_NOMS,DICT_PES_CRITERIS} from "../utils/multicriteri";
+import {DICT_CRI_NOMS, DICT_PES_CRITERIS, DICT_CRITERIS_A_CONSIDERAR} from "../utils/multicriteri";
 
 export default {
   name: "Avaluacio",
@@ -39,7 +46,7 @@ export default {
   data: function(){
     return {
         DICT_CRI_NOMS: DICT_CRI_NOMS,
-        pes_criteris: DICT_PES_CRITERIS,
+        pes_criteris: JSON.parse(JSON.stringify(DICT_PES_CRITERIS)),
         pes_criteris_info: {
             'VL': 'Molt baixa (MB)',
             'L': 'Baixa (B)',
@@ -47,6 +54,7 @@ export default {
             'H': 'Alta (A)',
             'VH': 'Molt alta (MA)'
         },
+        criteris_a_considerar: JSON.parse(JSON.stringify(DICT_CRITERIS_A_CONSIDERAR)),
         trens_avaluats: [],
         chart: undefined
     }
@@ -60,6 +68,12 @@ export default {
     });
   },
   methods:{
+    reset_criteris_a_considerar(){
+        this.criteris_a_considerar = JSON.parse(JSON.stringify(DICT_CRITERIS_A_CONSIDERAR));
+    },
+    reset_pes_criteris(){
+        this.pes_criteris = JSON.parse(JSON.stringify(DICT_PES_CRITERIS));
+    },
     computeFuzzyTopsis(trens_multicriteris){
         // Es crea el diccionari de fuzzy topsis a partir de posar els criteris com a claus, i valor té una clau amb la alternativa (ID tren) 
         //  i valor el valor normalitzat.
@@ -73,18 +87,10 @@ export default {
         // Fuzzifica els valors del diccionari (matriu) de criteris.
         fuzzy_dict = fuzzifyMatrix(fuzzy_dict);
         // Aquest diccionari marca tots els criteris com a beneficiosos, ja que partim de la normalització que ja s'ha invertit els no beneficiosos.
-        const dict_beneficiosos ={
-            eliminacio_quimics: true,
-            eliminacio_microbiologics: true,
-            cons_ene_mitja: true,
-            cost_total: true,
-            espai_ocupat: true,
-            hc: true,
-            hh: true,
-            puntuacio: true
-        }
+        const dict_beneficiosos = Object.fromEntries(Object.keys(DICT_PES_CRITERIS).map((key) => [key, true]));
+
         // Aplica fuzzy topsis al diccionari (matriu) de criteris i alternatives creada, juntament amb la matriu de decisió.
-		const cc_dict = fuzzyTopsis(fuzzy_dict, this.pes_criteris, dict_beneficiosos);
+		const cc_dict = fuzzyTopsis(fuzzy_dict, this.pes_criteris, dict_beneficiosos, this.criteris_a_considerar);
         
         // Ordenar els trens de 'trens_multicriteris' en funció del CC obtingut.
         const trens_multicriteris_avaluat = trens_multicriteris.map(tren => ({...tren, cc: cc_dict[tren.id]}));
@@ -115,6 +121,13 @@ export default {
     },
     //cada vegada que s'actualitzin els pesos, es re-computa el fuzzy topsis.
     pes_criteris:{
+        handler: function(newVal, oldVal) {
+            this.computeFuzzyTopsis(this.trens_multicriteris.filter(tren => tren.avaluar));
+        },
+        deep: true
+    },
+    //cada vegada que s'actualitzin els criteris a considerar, computar el fuzzy topsis.
+    criteris_a_considerar:{
         handler: function(newVal, oldVal) {
             this.computeFuzzyTopsis(this.trens_multicriteris.filter(tren => tren.avaluar));
         },
