@@ -31,7 +31,7 @@
 
 import Chart from 'chart.js/auto';
 import {fuzzifyMatrix,fuzzyTopsis} from "../utils/fuzzy_topsis";
-import {DICT_CRI_NOMS} from "../utils/multicriteri";
+import {DICT_CRI_NOMS,DICT_PES_CRITERIS} from "../utils/multicriteri";
 
 export default {
   name: "Avaluacio",
@@ -39,15 +39,7 @@ export default {
   data: function(){
     return {
         DICT_CRI_NOMS: DICT_CRI_NOMS,
-        pes_criteris: {
-            eliminacio_quimics: 'M',
-            eliminacio_microbiologics: 'M',
-            cost_total: 'H',
-            cons_ene_mitja: 'H',
-            espai_ocupat: 'M',
-            hc: 'M',
-            hh: 'M'
-        },
+        pes_criteris: DICT_PES_CRITERIS,
         pes_criteris_info: {
             'VL': 'Molt baixa (MB)',
             'L': 'Baixa (B)',
@@ -88,7 +80,8 @@ export default {
             cost_total: true,
             espai_ocupat: true,
             hc: true,
-            hh: true
+            hh: true,
+            puntuacio: true
         }
         // Aplica fuzzy topsis al diccionari (matriu) de criteris i alternatives creada, juntament amb la matriu de decisió.
 		const cc_dict = fuzzyTopsis(fuzzy_dict, this.pes_criteris, dict_beneficiosos);

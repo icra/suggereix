@@ -22,7 +22,10 @@ const DICT_CRI_BENEFICIOSOS = {
     cost_total: false,
     espai_ocupat: false,
     hc: false,
-    hh: false
+    hh: false,
+    puntuacio: true,
+    cost_capex: false,
+    cost_opex: false
 }
 
 // Diccionari constant amb el ID del criteri i el seu nom.
@@ -33,7 +36,23 @@ export const DICT_CRI_NOMS = {
     cost_total: "Mitjana del cost total (€)",
     espai_ocupat: "Espai ocupat (m2)",
     hc: "Petjada de carboni (kg CO2 eq./dia)",
-    hh: "Petjada hídrica (L eq./dia)"
+    hh: "Petjada hídrica (L eq./dia)",
+    puntuacio: "Compliment (%)",
+    cost_capex: "Mitjana del cost CAPEX (€)",
+    cost_opex: "Cost OPEX (€)"
+}
+
+export const DICT_PES_CRITERIS = {
+    eliminacio_quimics: 'M',
+    eliminacio_microbiologics: 'M',
+    cost_total: 'H',
+    cons_ene_mitja: 'H',
+    espai_ocupat: 'M',
+    hc: 'M',
+    hh: 'M',
+    puntuacio: 'M',
+    cost_capex: 'M',
+    cost_opex: 'M'
 }
 
 // Variable constant amb la paleta de colors.
@@ -177,6 +196,42 @@ const costTotal = (tren, info_trens, info_multicriteris, type) => {
     return cost_total;
 }
 
+// Aquesta funció calcula el cost OPEX del tren.
+const costOpex = (tren, info_trens, info_multicriteris) => {
+
+    // Creació de la variable que emmagatzema el cost total i s'anirà incrementant per a cada tractament del tren.
+    let cost = 0;
+    const capacitat = tren.concentracio.max.Q;
+    const tren_info = Object.values(info_trens).find(info_tren => Number(info_tren.codi) === Number(tren.id));
+
+    for(const tractament of tren_info.array_tractaments){
+        // Per cada tren obtenim els rangs de criteris en funció de la capacitat, a partir d'aquí executem la fuzzyficació.
+        const tractament_criteris = obtenirCriterisTractament(tractament, info_multicriteris);
+        const cost_opex = applyFuzzy(capacitat, tractament_criteris, 'opex');
+        // El cost total és el OPEX i el CAPEX (diaris) multiplicat per el temps de vida de la planta.
+        cost += (cost_opex*capacitat*365*30);
+    }
+    return cost;
+}
+
+// Aquesta funció calcula el cost CAPEX (mínim o màxim depenent de 'type') del tren.
+const costCapex = (tren, info_trens, info_multicriteris, type) => {
+
+    // Creació de la variable que emmagatzema el cost total i s'anirà incrementant per a cada tractament del tren.
+    let cost = 0;
+    const capacitat = tren.concentracio.max.Q;
+    const tren_info = Object.values(info_trens).find(info_tren => Number(info_tren.codi) === Number(tren.id));
+
+    for(const tractament of tren_info.array_tractaments){
+        // Per cada tren obtenim els rangs de criteris en funció de la capacitat, a partir d'aquí executem la fuzzyficació.
+        const tractament_criteris = obtenirCriterisTractament(tractament, info_multicriteris);
+        const cost_capex = applyFuzzy(capacitat, tractament_criteris, 'capex_'+type);
+        // El cost total és el OPEX i el CAPEX (diaris) multiplicat per el temps de vida de la planta.
+        cost += (cost_capex*capacitat*365*30);
+    }
+    return cost;
+}
+
 // Aplica fuzzy en un array de tractaments per un criteri determinat.
 const applyFuzzyTractaments = (tren, info_trens, info_multicriteris, criteri) => {
 
@@ -209,7 +264,11 @@ export const avaluar_multicriteris = (tren, info_trens, info_multicriteris) => {
         cons_ene_mitja: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'cons_ene_mitja'),
         espai_ocupat: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'espai_ocupat'),
         hc: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'hc'),
-        hh: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'hh')
+        hh: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'hh'),
+        puntuacio: tren.puntuacio,
+        cost_opex: costOpex(tren, info_trens, info_multicriteris),
+        cost_capex_min: costCapex(tren, info_trens, info_multicriteris, "min"),
+        cost_capex_max: costCapex(tren, info_trens, info_multicriteris, "max")
     }
 
 }
@@ -236,7 +295,10 @@ export const agregaCriteris = (criteris) => {
         cons_ene_mitja: criteris.cons_ene_mitja,
         espai_ocupat: criteris.espai_ocupat,
         hc: criteris.hc,
-        hh: criteris.hh
+        hh: criteris.hh,
+        puntuacio: criteris.puntuacio,
+        cost_opex: criteris.cost_opex,
+        cost_capex: mitjana([criteris.cost_capex_min,criteris.cost_capex_max])
     }
 } 
 

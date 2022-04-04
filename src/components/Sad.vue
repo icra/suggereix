@@ -541,6 +541,7 @@
                 <tr>
                 <th rowspan="2">Tren</th>
                 <th rowspan="2">id</th>
+                <th rowspan="2" class="doubletd">Compliment (%)</th>
                 <th colspan="2" rowspan="2" class="doubletd">
                     Mitjana del % d'eliminació (I. químics) 
                     <div class="tooltip">
@@ -617,6 +618,11 @@
                     style="text-align: left; padding: 0px 10px 0px 10px"
                     >
                     {{ tren.id }}
+                    </td>
+                    <td
+                    rowspan="2"
+                    v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('puntuacio',tren.criteris_agregats['puntuacio']))">
+                    {{ tren.criteris_agregats['puntuacio'] }}
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
                     min:
