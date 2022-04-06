@@ -1,5 +1,18 @@
 <template data-vuetify>
   <div id="intro">
+    <a id="downloadAnchorElem" style="display:none"></a>
+    <details class="seccio">
+        <summary class="seccio">0. Gestió de dades (descarregar, carregar, restaurar) </summary>
+        <div>
+            <p><b>A. Descarregar l'estat actual</b></p> 
+            <button @click="descarregar_estat">Descarregar</button>
+            <p>Descarrega l'estat actual de la pàgina per tal de poder-lo carregar en properes sessions.</p>
+            <p><b>B. Carregar estat</b></p> 
+            <input id="estat-file" type="file" />
+            <button @click="carregar_estat">Carregar</button>
+            <p>Carrega un estat previ de la pàgina a la sessió actual.</p>
+        </div>
+    </details>
     <details class="seccio" open>
       <summary class="seccio">1. Definició del projecte de reutilització i requeriments de qualitat </summary>
       <div>
@@ -999,6 +1012,75 @@ export default {
         }
       }
 
+    },
+
+    // funcio per a descarregar l'estat actual de la pàgina.
+    descarregar_estat: function () {
+        // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info"];
+        const data_to_save = {};
+        for(const [key, value] of Object.entries(this._data)){
+            if(to_save.includes(key)){
+                data_to_save[key] = value;
+            }
+        }
+
+        // 2. Crear el nom del fitxer a descarregar.
+        let date = new Date();
+        date = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toJSON().slice(0,16);
+        date = date.replace(":","-");
+        const nom_fitxer = "suggereix_"+date+".data";
+
+        // Descarregar el fitxer.
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data_to_save));
+        const dlAnchorElem = document.getElementById('downloadAnchorElem');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", nom_fitxer);
+        dlAnchorElem.click();
+    },
+
+    // funcio per a carregar l'estat (es fa 2 vegades perquè funcioni).
+    carregar_estat_intern: function(){
+        const _this = this;
+        const estat_file = document.getElementById("estat-file").files[0];
+        if(!estat_file){
+            alert("Primer cal seleccionar un fitxer d'estat del SAD Suggereix.");
+            return;
+        }
+        const fr = new FileReader();
+        fr.readAsText(estat_file, "UTF-8");
+        fr.onload = function (evt) {
+            try{
+                const data = JSON.parse(evt.target.result);
+                for(const [key,value] of Object.entries(data)){
+                    if(key !== "user") _this[key] = value;
+                }
+                // Processar usuari.
+                const usuari = new Usuari();
+                for(const [key, value] of Object.entries(data.user.corrent)){
+                    //_this.user.corrent[key] = value;
+                    usuari.corrent[key] = value;
+                }
+                for(const [key, value] of Object.entries(data.user.corrent_objectiu)){
+                    //_this.user.corrent_objectiu[key] = value;
+                    usuari.corrent_objectiu[key] = value;
+                }
+                _this.user = JSON.parse(JSON.stringify(usuari));
+            } catch(err){
+                alert("Error al llegir el fitxer.");
+                return;
+            }
+        }
+        fr.onerror = function (evt) {
+            alert("Error al llegir el fitxer.");
+            return;
+        }
+    },
+
+    // funcio per a carregar un estat de la pàgina a la sessió actual.
+    carregar_estat: function () {
+        this.carregar_estat_intern();
+        this.carregar_estat_intern();
     },
 
     //actualitza  l'array amb el rànquing de trens, ordenats de més grau de compliment, a menys.
