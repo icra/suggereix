@@ -27,11 +27,29 @@ const DICT_CRI_BENEFICIOSOS = {
     cost_capex: false,
     cost_opex: false
 }
+const DICT_CRI_BENEFICIOSOS_NO_AGREGATS = {
+    eliminacio_quimics_min: true,
+    eliminacio_quimics_max: true,
+    eliminacio_microbiologics_min: true,
+    eliminacio_microbiologics_max: true,
+    cost_total_min: false,
+    cost_total_max: false,
+    cost_capex_min: false,
+    cost_capex_max: false
+}
+
+// Diccionari constant amb els criteris que poden ser intervals de màxims i mínims.
+export const DICT_CRI_INTERVAL = {
+    eliminacio_quimics: true,
+    eliminacio_microbiologics: true,
+    cost_total: true,
+    cost_capex: true
+}
 
 // Diccionari constant amb el ID del criteri i el seu nom.
 export const DICT_CRI_NOMS = {
-    eliminacio_quimics: '% d\'eliminació mínim (I. químics)',
-    eliminacio_microbiologics: "% d'eliminació mínim (I. microbiològics)",
+    eliminacio_quimics: 'Mitjana % d\'eliminació (I. químics)',
+    eliminacio_microbiologics: "Mitjana % d'eliminació (I. microbiològics)",
     cons_ene_mitja: "Consum energètic mitjà (kWh/dia)",
     cost_total: "Mitjana del cost total (€)",
     espai_ocupat: "Espai ocupat (m2)",
@@ -270,10 +288,10 @@ const applyFuzzyTractaments = (tren, info_trens, info_multicriteris, criteri) =>
 export const avaluar_multicriteris = (tren, info_trens, info_multicriteris) => {
 
     return{
-        eliminacio_min_quimics: perElimMitja(tren.concentracio.min.eliminacio,"quimics"),
-        eliminacio_max_quimics: perElimMitja(tren.concentracio.max.eliminacio,"quimics"),
-        eliminacio_min_microbiologics: perElimMitja(tren.concentracio.min.eliminacio,"microbiologics"),
-        eliminacio_max_microbiologics: perElimMitja(tren.concentracio.max.eliminacio,"microbiologics"),
+        eliminacio_quimics_min: perElimMitja(tren.concentracio.min.eliminacio,"quimics"),
+        eliminacio_quimics_max: perElimMitja(tren.concentracio.max.eliminacio,"quimics"),
+        eliminacio_microbiologics_min: perElimMitja(tren.concentracio.min.eliminacio,"microbiologics"),
+        eliminacio_microbiologics_max: perElimMitja(tren.concentracio.max.eliminacio,"microbiologics"),
         cost_total_min: costTotal(tren, info_trens, info_multicriteris, "min"),
         cost_total_max: costTotal(tren, info_trens, info_multicriteris, "max"),
         cons_ene_mitja: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'cons_ene_mitja'),
@@ -288,13 +306,12 @@ export const avaluar_multicriteris = (tren, info_trens, info_multicriteris) => {
 
 }
 
-// Aquesta funció obté el màxim o mínim (extrem) de cada criteri per un array de trens, depenent de si elñ criteri és beneficiós o no.
-export const obtenirExtremCriteris = (criteris_trens) => {
+// Aquesta funció obté el màxim o mínim (extrem) de cada criteri per un array de trens, depenent de si el criteri és beneficiós o no.
+export const obtenirExtremCriteris = (tren_criteris) => {
     const extrem_criteris = {};
-    // S'obté un array amb clau criteri i valor valor del criteri (un element per cada tren).
-    const tren_criteris = criteris_trens.map(criteris_tren => criteris_tren.criteris_agregats);
     // Per cada criteri, si és beneficiós s'afegeix a 'extrem_criteris' amb el valor màxim, en cas de ser no beneficiós amb el valor mínim.
-    for (const [criteri, es_beneficios] of Object.entries(DICT_CRI_BENEFICIOSOS)) {
+    for(const criteri of Object.keys(tren_criteris[0])){
+        const es_beneficios = DICT_CRI_BENEFICIOSOS[criteri] !== undefined ? DICT_CRI_BENEFICIOSOS[criteri] : DICT_CRI_BENEFICIOSOS_NO_AGREGATS[criteri];
         if(es_beneficios) extrem_criteris[criteri] = Math.max(...tren_criteris.map(criteris => criteris[criteri]));
         else extrem_criteris[criteri] = Math.min(...tren_criteris.map(criteris => criteris[criteri]));
     }
@@ -304,8 +321,8 @@ export const obtenirExtremCriteris = (criteris_trens) => {
 // Agregació de criteris.
 export const agregaCriteris = (criteris) => {
     return {
-        eliminacio_quimics: criteris.eliminacio_min_quimics,
-        eliminacio_microbiologics: criteris.eliminacio_min_microbiologics,
+        eliminacio_quimics: mitjana([criteris.eliminacio_quimics_min,criteris.eliminacio_quimics_max]),
+        eliminacio_microbiologics: mitjana([criteris.eliminacio_microbiologics_min,criteris.eliminacio_microbiologics_max]),
         cost_total: mitjana([criteris.cost_total_min,criteris.cost_total_max]),
         cons_ene_mitja: criteris.cons_ene_mitja,
         espai_ocupat: criteris.espai_ocupat,
@@ -317,16 +334,17 @@ export const agregaCriteris = (criteris) => {
     }
 } 
 
-// Aquesta funció rep els criteris ja calculats i agregats, i els normalitza 
+// Aquesta funció rep els criteris ja calculats, i els normalitza 
 //  a partir del diccionari d'extrems prèviament calculat per cada criteri.
-export const normalitzaCriteris = (criteris_agregats, extrem_criteris) => {
+export const normalitzaCriteris = (criteris, extrem_criteris) => {
     // Normalització.
     const criteris_normalitzats = {};
-    for(const [criteri, valor_agregat] of Object.entries(criteris_agregats)){
+    for(const [criteri, valor] of Object.entries(criteris)){
         // Si és beneficiós: cal dividir cada valor per el valor màxim.
-        if(DICT_CRI_BENEFICIOSOS[criteri]) criteris_normalitzats[criteri] = valor_agregat / extrem_criteris[criteri];
+        const es_beneficios = DICT_CRI_BENEFICIOSOS[criteri] !== undefined ? DICT_CRI_BENEFICIOSOS[criteri] : DICT_CRI_BENEFICIOSOS_NO_AGREGATS[criteri];
+        if(es_beneficios) criteris_normalitzats[criteri] = valor / extrem_criteris[criteri];
         // Si no és beneficiós: cal dividir el valor mínim per cada valor.
-        else criteris_normalitzats[criteri] = extrem_criteris[criteri] / valor_agregat;
+        else criteris_normalitzats[criteri] = extrem_criteris[criteri] / valor;
     }
     return criteris_normalitzats;
 }

@@ -641,13 +641,13 @@
                     min:
                     </td>
                     <td v-bind:style="'text-align: left; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
-                    {{ Math.round((tren.criteris.eliminacio_min_quimics + Number.EPSILON) * 100) / 100 }}
+                    {{ Math.round((tren.criteris.eliminacio_quimics_min + Number.EPSILON) * 100) / 100 }}
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
                     min:
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
-                    {{ Math.round((tren.criteris.eliminacio_min_microbiologics + Number.EPSILON) * 100) / 100 }}
+                    {{ Math.round((tren.criteris.eliminacio_microbiologics_min + Number.EPSILON) * 100) / 100 }}
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cost_total',tren.criteris_agregats['cost_total']))">
                     min:
@@ -694,13 +694,13 @@
                     max:
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
-                    {{ Math.round((tren.criteris.eliminacio_max_quimics + Number.EPSILON) * 100) / 100 }}
+                    {{ Math.round((tren.criteris.eliminacio_quimics_max + Number.EPSILON) * 100) / 100 }}
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
                     max:
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
-                    {{ Math.round((tren.criteris.eliminacio_max_microbiologics + Number.EPSILON) * 100) / 100 }}
+                    {{ Math.round((tren.criteris.eliminacio_microbiologics_max + Number.EPSILON) * 100) / 100 }}
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cost_total',tren.criteris_agregats['cost_total']))">
                     max:
@@ -1197,14 +1197,18 @@ export default {
 
       // Agregació i normalització de criteris.
       const trens_criteris_norm = {};
-      const extrem_criteris = obtenirExtremCriteris(criteris_trens);
+      const trens_criteris_no_agregats_norm = {};
+      const extrem_criteris = obtenirExtremCriteris(criteris_trens.map(criteris_tren => criteris_tren.criteris_agregats));
+      const extrem_criteris_no_agregats = obtenirExtremCriteris(criteris_trens.map(criteris_tren => criteris_tren.criteris));
       for(const criteri_tren of criteris_trens) {
           trens_criteris_norm[criteri_tren.id] = normalitzaCriteris(criteri_tren.criteris_agregats, extrem_criteris);
+          trens_criteris_no_agregats_norm[criteri_tren.id] = normalitzaCriteris(criteri_tren.criteris, extrem_criteris_no_agregats);
       }
 
       // Guardar el resultat.
       _this.trens_multicriteris = criteris_trens.map(tren => {
           tren.criteris_norm = trens_criteris_norm[tren.id];
+          tren.criteris_no_agregats_norm = trens_criteris_no_agregats_norm[tren.id];
           tren.avaluar = true;
           return tren;
       });

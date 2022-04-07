@@ -9,6 +9,7 @@
   "dependencies": {
     "@thi.ng/fuzzy": "^2.0.8",
     "chart.js": "^3.6.0",
+    "chartjs-chart-error-bars": "^3.7.1",
     "core-js": "^3.6.5",
     "exceljs": "^4.2.1",
     "jointjs": "^3.5.4",
