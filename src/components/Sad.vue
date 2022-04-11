@@ -840,7 +840,8 @@
               </select>
           </p>
           <div v-if="tren_monitoratge">
-              <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" />
+              <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:info_rich="Info_rich" />
           </div>
       </div>
     </details>

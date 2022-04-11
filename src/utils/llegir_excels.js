@@ -362,14 +362,15 @@ function llegir_monitoratge(binaryData) {
                 // Si no existeix encara el tractament, crea'l.
                 if(!monitoratge_tractaments[tractament]) monitoratge_tractaments[tractament] = {};
 
-                // Crea una property per l'indicador i posa dins el codi.
-                monitoratge_tractaments[tractament][indicador] = [];
-
-                // Mira els llocs on cal monitorar.
+                // Crea un array on es posaran els llocs de monitoratge de l'indicador per el tractament.
+                const llocs = [];
                 for(let i = 0; i < llocs_on_potser_cal_monitorar.length; i++){
                     const a_considerar = worksheet.getRow(start_row).getCell(header_column + i).value;
-                    if(a_considerar) monitoratge_tractaments[tractament][indicador].push(llocs_on_potser_cal_monitorar[i]);
+                    if(a_considerar) llocs.push(llocs_on_potser_cal_monitorar[i]);
                 }
+
+                // Només crea l'entrada del inddicador si cal monitorar.
+                if(llocs.length) monitoratge_tractaments[tractament][indicador] = llocs;
 
                 // Augmenta el comptador.
                 start_row += 1;

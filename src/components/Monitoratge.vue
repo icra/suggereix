@@ -31,8 +31,8 @@
               <tr />
 
               <template v-for="tractament of array_tractaments">
-                <tr :key="tractament+'_tab_mon_trac'">
-                  <td>{{tractament}}</td>
+                <tr :key="tractament+'_tab_mon_trac'" style="max-width: 10px; max-heigth: 20px;">
+                  <td style="max-width: 10px; max-heigth: 20px;"><div :ref="tractament+'_ini_graph'" /></td>
                   <td>{{tractament}}</td>
                   <td>{{tractament}}</td>
                   <td>{{tractament}}</td>
@@ -53,7 +53,7 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari"],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich'],
   data: function(){
     return {
       visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
@@ -67,6 +67,41 @@ export default {
     },
     tractament_secundari: function(newVal, oldVal) {
         this.render_graph();
+    },
+    array_tractaments: function(newVal, oldVal) {
+        const _this = this;
+        _this.$nextTick(function () {
+            const _this = this;
+            // Dibuixar graph per cada tractament.
+            for(const tractament of _this.array_tractaments){
+                
+                const doc = _this.$refs[tractament+'_ini_graph'];
+                console.log(doc)
+                const namespace = joint.shapes;
+                const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+                const paper = new joint.dia.Paper({
+                    el: doc,
+                    model: graph,
+                    gridSize: 1,
+                    width: 50,
+                    heigth: 50,
+                    interactive: false,
+                    cellViewNamespace: namespace
+                });
+                const rect = new joint.shapes.standard.Rectangle();
+                rect.position(0, 0);
+                rect.resize(50, 50);
+                rect.attr({
+                    body: {
+                        fill: '#4472c4'
+                    },
+                    label: {
+                        fill: 'white'
+                    }
+                });
+                rect.addTo(graph);
+            }
+        })   
     }
   },
   mounted() {
