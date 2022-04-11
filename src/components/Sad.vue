@@ -894,6 +894,7 @@ export default {
       Info_indicadors: {},         //diccionari amb informació sobre els indicadors.
       Info_indicadors_types: [],   //array amb informació sobre els tipus indicadors.
       Info_monitoratge: {},        //objecte amb informació sobre el monitoratge dels indicadors per determinats tractaments.
+      Info_rich: {},           //objecte amb informació sobre els textos enriquits per mostrar amb sup sub o italic.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -1027,7 +1028,9 @@ export default {
           _this.Info_indicadors_types = res[1];
         }
         else if (type === 'monitoratge'){
-          _this.Info_monitoratge = await llegir_monitoratge(binaryData);
+          const res = await llegir_monitoratge(binaryData);
+          _this.Info_monitoratge = res[0];
+          _this.Info_rich = res[1];
         }
       }
 
@@ -1036,7 +1039,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){

@@ -321,7 +321,98 @@ function llegir_indicadors(binaryData) {
 }
 
 function llegir_monitoratge(binaryData) {
-    return {}
+
+    let workbook = new ExcelJS.Workbook();
+    return workbook.xlsx.load(binaryData).then(wb => {
+        let worksheet = wb.worksheets[0];
+
+        // Diccionari clau=tractament, valor=objecte{clau=parametre,valor={array_punts_a_moritorar}}.
+        const monitoratge_tractaments = {};
+        // Ens permetrà accedir a un text enriquit a partir del text normal.
+        const dict_enriquit = {};
+
+        // Comencem amb els headers.
+        let header_column = 3;
+        let indicador = valor_nom(worksheet.getRow(4).getCell(header_column).value);
+        let indicador_rich = valor_nom_enriquit(worksheet.getRow(4).getCell(header_column).value);
+        let unitats_indicador = valor_nom(worksheet.getRow(6).getCell(header_column).value);
+        let unitats_rich_indicador = valor_nom_enriquit(worksheet.getRow(6).getCell(header_column).value);
+        let group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
+        while(group !== "Eficiència"){
+            dict_enriquit[indicador] = indicador_rich;
+            dict_enriquit[unitats_indicador] = unitats_rich_indicador;
+
+            // Mirar quins llocs podria ser que calguès monitorar.
+            let start_column = header_column;
+            const llocs_on_potser_cal_monitorar = [valor_nom(worksheet.getRow(7).getCell(start_column).value)];
+            let next_indicador = valor_nom(worksheet.getRow(4).getCell(start_column+1).value);
+            while(next_indicador === ""){
+                start_column += 1;
+                llocs_on_potser_cal_monitorar.push(valor_nom(worksheet.getRow(7).getCell(start_column).value));
+                next_indicador = valor_nom(worksheet.getRow(4).getCell(start_column+1).value);
+            }
+
+            // Ara per a cada grup que calgui monitorar llegir els tractaments.
+            let start_row = 9;
+            let tractament = valor_nom(worksheet.getRow(start_row).getCell(1).value);
+            let tractament_rich = valor_nom_enriquit(worksheet.getRow(start_row).getCell(1).value);
+            while(tractament){
+                dict_enriquit[tractament] = tractament_rich;
+
+                // Si no existeix encara el tractament, crea'l.
+                if(!monitoratge_tractaments[tractament]) monitoratge_tractaments[tractament] = {};
+
+                // Crea una property per l'indicador i posa dins el codi.
+                monitoratge_tractaments[tractament][indicador] = [];
+
+                // Mira els llocs on cal monitorar.
+                for(let i = 0; i < llocs_on_potser_cal_monitorar.length; i++){
+                    const a_considerar = worksheet.getRow(start_row).getCell(header_column + i).value;
+                    if(a_considerar) monitoratge_tractaments[tractament][indicador].push(llocs_on_potser_cal_monitorar[i]);
+                }
+
+                // Augmenta el comptador.
+                start_row += 1;
+                tractament = valor_nom(worksheet.getRow(start_row).getCell(1).value);
+                tractament_rich = valor_nom_enriquit(worksheet.getRow(start_row).getCell(1).value);
+            }
+
+            // Incrementar comptador.
+            header_column += llocs_on_potser_cal_monitorar.length;
+            indicador = valor_nom(worksheet.getRow(4).getCell(header_column).value);
+            indicador_rich = valor_nom_enriquit(worksheet.getRow(4).getCell(header_column).value);
+            unitats_indicador = valor_nom(worksheet.getRow(6).getCell(header_column).value);
+            unitats_rich_indicador = valor_nom_enriquit(worksheet.getRow(6).getCell(header_column).value);
+            group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
+        }
+
+        return [monitoratge_tractaments, dict_enriquit];
+
+
+        /* let title = worksheet.getCell('A' + rowNumber.toString()).value;
+        while(title){
+            type_indicadors.push(title);
+            rowNumber += 1;
+            let indicador_id = worksheet.getCell('A' + rowNumber.toString()).value;
+            let indicador_name = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+            let indicador_name_rich = valor_nom_enriquit(worksheet.getCell('B' + rowNumber.toString()).value);
+            let indicador_unitats = valor_nom(worksheet.getCell('C' + rowNumber.toString()).value);
+            let indicador_unitats_rich = valor_nom_enriquit(worksheet.getCell('C' + rowNumber.toString()).value);
+            while(indicador_id){
+                desc_indicadors[indicador_id] = {name: indicador_name, name_rich: indicador_name_rich, type: title, unitats_rich: indicador_unitats_rich, unitats: indicador_unitats};
+                rowNumber += 1;
+                indicador_id = worksheet.getCell('A' + rowNumber.toString()).value;
+                indicador_name = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+                indicador_name_rich = valor_nom_enriquit(worksheet.getCell('B' + rowNumber.toString()).value);
+                indicador_unitats = valor_nom(worksheet.getCell('C' + rowNumber.toString()).value);
+                indicador_unitats_rich = valor_nom_enriquit(worksheet.getCell('C' + rowNumber.toString()).value);
+            }
+            rowNumber += 1;
+            title = worksheet.getCell('A' + rowNumber.toString()).value;
+        }
+
+        return [desc_indicadors,type_indicadors]; */
+    });
 }
 
 // llegeix excel de tractaments pel punt de referència 1 (microbiològics) i guarda les dades.
