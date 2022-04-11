@@ -178,7 +178,7 @@
               />
             </td>
             <td>
-              {{ Corrent.info_qualitat[key].unitat }}
+              <div v-html="Info_indicadors[key] ? Info_indicadors[key].unitats_rich : ''"></div>
             </td>
             <td class="doubletd2">
               {{ user.corrent_objectiu.refs[key] }}
@@ -852,7 +852,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
@@ -893,6 +893,7 @@ export default {
       Multicriteri_info: {},       //diccionari amb la informació de l'avaluació multicriteri.
       Info_indicadors: {},         //diccionari amb informació sobre els indicadors.
       Info_indicadors_types: [],   //array amb informació sobre els tipus indicadors.
+      Info_monitoratge: {},        //objecte amb informació sobre el monitoratge dels indicadors per determinats tractaments.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -930,6 +931,9 @@ export default {
     // llegir excel 'descripcio_indicadors'
     this.read_file('/20220407_SUGGEREIX_Taula_C7.xlsx', 'descripcio_indicadors');
 
+    // llegir excel 'monitoratge'.
+    this.read_file('/20220323_SUGGEREIX_Taula_C1.xlsx', 'monitoratge');
+    
   },
   methods:{
     sort_multicriteri(event) {
@@ -1022,6 +1026,9 @@ export default {
           _this.Info_indicadors = res[0];
           _this.Info_indicadors_types = res[1];
         }
+        else if (type === 'monitoratge'){
+          _this.Info_monitoratge = await llegir_monitoratge(binaryData);
+        }
       }
 
     },
@@ -1029,7 +1036,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){

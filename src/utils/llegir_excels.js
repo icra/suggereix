@@ -301,12 +301,16 @@ function llegir_indicadors(binaryData) {
             let indicador_id = worksheet.getCell('A' + rowNumber.toString()).value;
             let indicador_name = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
             let indicador_name_rich = valor_nom_enriquit(worksheet.getCell('B' + rowNumber.toString()).value);
+            let indicador_unitats = valor_nom(worksheet.getCell('C' + rowNumber.toString()).value);
+            let indicador_unitats_rich = valor_nom_enriquit(worksheet.getCell('C' + rowNumber.toString()).value);
             while(indicador_id){
-                desc_indicadors[indicador_id] = {name: indicador_name, name_rich: indicador_name_rich, type: title};
+                desc_indicadors[indicador_id] = {name: indicador_name, name_rich: indicador_name_rich, type: title, unitats_rich: indicador_unitats_rich, unitats: indicador_unitats};
                 rowNumber += 1;
                 indicador_id = worksheet.getCell('A' + rowNumber.toString()).value;
                 indicador_name = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
                 indicador_name_rich = valor_nom_enriquit(worksheet.getCell('B' + rowNumber.toString()).value);
+                indicador_unitats = valor_nom(worksheet.getCell('C' + rowNumber.toString()).value);
+                indicador_unitats_rich = valor_nom_enriquit(worksheet.getCell('C' + rowNumber.toString()).value);
             }
             rowNumber += 1;
             title = worksheet.getCell('A' + rowNumber.toString()).value;
@@ -314,6 +318,10 @@ function llegir_indicadors(binaryData) {
 
         return [desc_indicadors,type_indicadors];
     });
+}
+
+function llegir_monitoratge(binaryData) {
+    return {}
 }
 
 // llegeix excel de tractaments pel punt de referència 1 (microbiològics) i guarda les dades.
@@ -409,5 +417,6 @@ export {
     llegir_vp_usos,
     llegir_qualitat_micro,
     llegir_multicriteri,
-    llegir_indicadors
+    llegir_indicadors,
+    llegir_monitoratge
 }
