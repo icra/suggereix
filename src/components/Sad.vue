@@ -19,7 +19,7 @@
         <table border="1">
           <tr>
             <th colspan="2">
-              Capacitat tractament (m3/d):
+              Capacitat tractament (m<sup>3</sup>/d):
               <input
                 type="number"
                 v-model.number="user.corrent.Q"
@@ -88,7 +88,7 @@
 
           <tr v-for="(val, key) in user.corrent.qualitat" :key="key">
             <td style="text-align: right; padding: 0px 10px 0px 10px">
-              {{ Corrent.info_qualitat[key].nom }}
+              <div v-html="Info_indicadors[key] ? Info_indicadors[key].name_rich : ''"></div>
             </td>
             <td style="font-family: monospace">
               {{ key }}
@@ -211,7 +211,7 @@
           </tr>
           <tr v-for="(val, ind) in user.corrent.qualitat" :key="ind+'_modVP'">
             <td class="doubletd" style="text-align: right; padding: 0px 10px 0px 10px">
-              {{ Corrent.info_qualitat[ind].nom }}
+              <div v-html="Info_indicadors[ind] ? Info_indicadors[ind].name_rich : ''"></div>
             </td>
             <td style="font-family: monospace">
               {{ ind }}
@@ -439,7 +439,7 @@
                         <tr v-for="(obj, id) in pre" :key="id+'_'+nom_tra+'_'+nom_pre">
                           <td style="font-family: monospace">{{ id }}</td>
                           <td>
-                            {{ Corrent.info_qualitat[id].nom.substring(0, 20) }}
+                            <div v-html="Info_indicadors[id] ? Info_indicadors[id].name_rich : ''"></div>
                           </td>
                           <td>
                             <input
@@ -491,7 +491,9 @@
               </tr>
               <tr v-for="ind in Object.keys(obj)" :key="ind">
                 <td style="font-family: monospace">{{ ind }}</td>
-                <td>{{ Corrent.info_qualitat[ind].nom.substring(0, 20) }}</td>
+                <td>
+                    <div v-html="Info_indicadors[ind] ? Info_indicadors[ind].name_rich : ''"></div>
+                </td>
                 <td>
                   <input
                     type="number"
@@ -850,7 +852,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
@@ -889,6 +891,8 @@ export default {
       Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
 	  Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
       Multicriteri_info: {},       //diccionari amb la informació de l'avaluació multicriteri.
+      Info_indicadors: {},         //diccionari amb informació sobre els indicadors.
+      Info_indicadors_types: [],   //array amb informació sobre els tipus indicadors.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -922,6 +926,9 @@ export default {
 
     // llegir excel 'Avaluació multicriteri', que mostra els criteris a considerar amb cadascun dels tractaments.
 	this.read_file('/20211111_SUGGEREIX_Criteris_add.xlsx', 'multicriteri');
+
+    // llegir excel 'descripcio_indicadors'
+    this.read_file('/20220407_SUGGEREIX_Taula_C7.xlsx', 'descripcio_indicadors');
 
   },
   methods:{
@@ -1010,6 +1017,11 @@ export default {
 		  _this.Multicriteri_info = res[0];
           _this.anys_operacio = res[1];
         }
+        else if (type === 'descripcio_indicadors'){
+          const res = await llegir_indicadors(binaryData);
+          _this.Info_indicadors = res[0];
+          _this.Info_indicadors_types = res[1];
+        }
       }
 
     },
@@ -1017,7 +1029,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){

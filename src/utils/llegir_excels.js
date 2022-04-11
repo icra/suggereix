@@ -239,6 +239,83 @@ function llegir_multicriteri(binaryData) {
     });
 }
 
+// Retorna un nom que pot contenir sub o sup valors i cursives.
+function valor_nom_enriquit(nom){
+    if(nom === null) return "";
+    if(typeof nom === 'object'){
+        if(nom.richText){
+            let string = "";
+            for(const element of nom.richText){
+                if(element.font){
+                    if(element.font.vertAlign === "subscript"){
+                        string += "<sub>"+element.text+"</sub>"
+                    }
+                    else if(element.font.vertAlign === "superscript"){
+                        string += "<sup>"+element.text+"</sup>"
+                    }
+                    else if(element.font.italic === true){
+                        string += "<i>"+element.text+"</i>"
+                    }
+                    else string += element.text;
+                }
+                else string += element.text;
+            }
+            return string;
+        }
+        else return "";
+    }
+    else return nom;
+}
+
+// Retorna un nom que pot contenir sub o sup valors i cursives (només text).
+function valor_nom(nom){
+    if(nom === null) return "";
+    if(typeof nom === 'object'){
+        if(nom.richText){
+            let string = "";
+            for(const element of nom.richText){
+                string += element.text;
+            }
+            return string;
+        }
+        else return "";
+    }
+    else return nom;
+}
+
+// llegeix excel d'informació d'indicadors.
+function llegir_indicadors(binaryData) {
+
+    let _this = this;
+    let workbook = new ExcelJS.Workbook();
+    return workbook.xlsx.load(binaryData).then(wb => {
+        let worksheet = wb.worksheets[0];
+        let rowNumber = 3; //ignore first column (header)
+        const type_indicadors = [];
+        const desc_indicadors = {};
+
+        let title = worksheet.getCell('A' + rowNumber.toString()).value;
+        while(title){
+            type_indicadors.push(title);
+            rowNumber += 1;
+            let indicador_id = worksheet.getCell('A' + rowNumber.toString()).value;
+            let indicador_name = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+            let indicador_name_rich = valor_nom_enriquit(worksheet.getCell('B' + rowNumber.toString()).value);
+            while(indicador_id){
+                desc_indicadors[indicador_id] = {name: indicador_name, name_rich: indicador_name_rich, type: title};
+                rowNumber += 1;
+                indicador_id = worksheet.getCell('A' + rowNumber.toString()).value;
+                indicador_name = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+                indicador_name_rich = valor_nom_enriquit(worksheet.getCell('B' + rowNumber.toString()).value);
+            }
+            rowNumber += 1;
+            title = worksheet.getCell('A' + rowNumber.toString()).value;
+        }
+
+        return [desc_indicadors,type_indicadors];
+    });
+}
+
 // llegeix excel de tractaments pel punt de referència 1 (microbiològics) i guarda les dades.
 function llegir_tractaments_micro(binaryData) {
 
@@ -331,5 +408,6 @@ export {
     llegir_trens,
     llegir_vp_usos,
     llegir_qualitat_micro,
-    llegir_multicriteri
+    llegir_multicriteri,
+    llegir_indicadors
 }
