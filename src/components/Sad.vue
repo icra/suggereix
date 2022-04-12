@@ -1714,4 +1714,8 @@ table.evenodd tr:nth-child(2) {
     border-bottom: 4px solid black;
 }
 
+table.extraborder tr:nth-child(2) {
+    border-bottom: 4px solid black;
+}
+
 </style>

@@ -19,8 +19,8 @@
           Monitoratge de la qualitat de l'aigua
       </div>
       <div v-if="this.visio_monitoratge === 0">
-        <div>
-            <table border="1">
+        <div class="sticky">
+            <table class="sticky extraborder" border="1">
               <tr>
                 <th rowspan="2" class="doubletd">Tractament</th>
                 <th rowspan="2" class="doubletd">Paràmetre/Indicador</th>
@@ -31,12 +31,14 @@
               <tr />
 
               <template v-for="tractament of array_tractaments">
-                <tr :key="tractament+'_tab_mon_trac'" style="max-width: 10px; max-heigth: 20px;">
-                  <td style="max-width: 10px; max-heigth: 20px;"><div :ref="tractament+'_ini_graph'" /></td>
-                  <td>{{tractament}}</td>
-                  <td>{{tractament}}</td>
-                  <td>{{tractament}}</td>
-                  <td>{{tractament}}</td>
+                <tr :key="tractament+'_tab_mon_trac'">
+                  <td :rowspan="Object.keys(info_monitoratge[tractament]).length+1" class="doubletd12"><div style="height:200px;overflow:hidden"><div :ref="tractament+'_ini_graph'" /></div></td>
+                </tr>
+                <tr v-for="parameter in Object.keys(info_monitoratge[tractament])" :key="parameter+'_tab_rec_'+tractament" style="height: 40px;">
+                  <td><div v-html="info_rich[parameter] || parameter" style="padding: 2px;" /></td>
+                  <td><div style="height:30px;overflow:hidden"><div :ref="'punts_'+tractament+'_'+parameter" /></div></td>
+                  <td style="padding: 2px;">WIP</td>
+                  <td style="padding: 2px;">WIP</td>
                 </tr>
               </template>
             </table>
@@ -71,36 +73,7 @@ export default {
     array_tractaments: function(newVal, oldVal) {
         const _this = this;
         _this.$nextTick(function () {
-            const _this = this;
-            // Dibuixar graph per cada tractament.
-            for(const tractament of _this.array_tractaments){
-                
-                const doc = _this.$refs[tractament+'_ini_graph'];
-                console.log(doc)
-                const namespace = joint.shapes;
-                const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
-                const paper = new joint.dia.Paper({
-                    el: doc,
-                    model: graph,
-                    gridSize: 1,
-                    width: 50,
-                    heigth: 50,
-                    interactive: false,
-                    cellViewNamespace: namespace
-                });
-                const rect = new joint.shapes.standard.Rectangle();
-                rect.position(0, 0);
-                rect.resize(50, 50);
-                rect.attr({
-                    body: {
-                        fill: '#4472c4'
-                    },
-                    label: {
-                        fill: 'white'
-                    }
-                });
-                rect.addTo(graph);
-            }
+            _this.render_diagrama_tractament();
         })   
     }
   },
@@ -246,6 +219,158 @@ export default {
         link.addTo(graph);
         pre_rect = last_rect;
 
+    },
+    render_diagrama_tractament: function(){
+      const _this = this;
+      // Dibuixar graph per cada tractament.
+      let monitor_counter = 1;
+      for(const tractament of _this.array_tractaments){
+          
+          const doc = _this.$refs[tractament+'_ini_graph'];
+          const namespace = joint.shapes;
+          const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+          const paper = new joint.dia.Paper({
+              el: doc,
+              model: graph,
+              gridSize: 1,
+              width: 200,
+              heigth: 60,
+              interactive: false,
+              restrictTranslate: true,
+              cellViewNamespace: namespace
+          });
+
+          // Crea el primer link.
+          const rect_init = new joint.shapes.standard.Rectangle();
+          rect_init.position(0, 5);
+          rect_init.resize(10,40);
+          rect_init.attr('label/text', '');
+          rect_init.attr('body/strokeWidth', 0);
+          rect_init.attr('body/fill', '#eff5fb');
+          rect_init.addTo(graph);
+
+          const rect = new joint.shapes.standard.Rectangle();
+          rect.position(50, 5);
+          rect.resize(100, 40);
+          rect.attr({
+              body: {
+                  fill: '#4472c4'
+              },
+              label: {
+                  fill: 'white'
+              }
+          });
+          rect.attr('label/text', _this.info_rich[tractament]);
+          rect.addTo(graph);
+
+          let link = new joint.shapes.standard.Link();
+          link.source(rect_init);
+          link.target(rect);
+          link.addTo(graph);
+
+          const rect_final = rect_init.clone();
+          rect_final.translate(190,0);
+          rect_final.addTo(graph);
+          link = new joint.shapes.standard.Link();
+          link.source(rect);
+          link.target(rect_final);
+          link.addTo(graph);
+
+          const primer_circle = new joint.shapes.standard.Circle();
+          primer_circle.position(15,35);
+          primer_circle.resize(25,25);
+          primer_circle.attr('label/text', monitor_counter);
+          primer_circle.attr('label/fill', 'white');
+          primer_circle.attr('body/strokeWidth', 1);
+          primer_circle.attr('body/fill', '#4472c4');
+          primer_circle.addTo(graph);
+
+          const segon_circle = primer_circle.clone();
+          segon_circle.translate(145,0);
+          segon_circle.attr('label/text', monitor_counter+1);
+          segon_circle.addTo(graph);
+
+          monitor_counter += 1;
+
+          // Per a cada indicador renderitza els punts de mostreig.
+          for(const indicador of Object.keys(_this.info_monitoratge[tractament])){
+            _this.render_punt(indicador, tractament);
+          }
+      }
+    },
+    render_punt: function(indicador, tractament){
+      const _this = this;
+
+      // Primer crea el diagrama.
+      const doc = _this.$refs['punts_'+tractament+'_'+indicador];
+      const namespace = joint.shapes;
+      const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+      const paper = new joint.dia.Paper({
+          el: doc,
+          model: graph,
+          gridSize: 1,
+          width: 200,
+          heigth: 30,
+          interactive: false,
+          restrictTranslate: true,
+          cellViewNamespace: namespace
+      });
+
+      // Ara mirar quins elements cal afegir.
+      let translate = 0;
+      const pos_tractament = _this.array_tractaments.indexOf(tractament)+1;
+      for(const element of _this.info_monitoratge[tractament][indicador]){
+        if(element === 'Entrada' || element === 'Sortida' ){
+          // Crea bombolla d'entrada.
+          const circle = new joint.shapes.standard.Circle();
+          circle.position(2,2);
+          circle.resize(25,25);
+          circle.translate(translate,0);
+          circle.attr('label/text', element === 'Entrada' ? pos_tractament : (pos_tractament+1));
+          circle.attr('label/fill', 'white');
+          circle.attr('body/strokeWidth', 1);
+          circle.attr('body/fill', '#4472c4');
+          circle.addTo(graph);
+
+          // Detecta si cal dibuixar una creu.
+          let duplicated = false;
+          if(element === 'Entrada' && pos_tractament > 1){
+            const tractament_previ = _this.array_tractaments[pos_tractament-2];
+            if(_this.info_monitoratge[tractament_previ][indicador] && _this.info_monitoratge[tractament_previ][indicador].includes('Sortida')){
+              duplicated = true;
+            }
+          }
+          if(duplicated){
+            const bar = new joint.shapes.standard.Rectangle();
+            bar.position(2, 12.5);
+            bar.resize(25, 1);
+            bar.rotate(45);
+            bar.addTo(graph);
+            const bar2 = bar.clone();
+            bar2.rotate(90);
+            bar2.addTo(graph);
+          }
+
+          translate += 30;
+        }
+        else if(element === 'Tractament'){
+          const rect = new joint.shapes.standard.Rectangle();
+          rect.position(2, 2);
+          rect.resize(70, 25);
+          rect.translate(translate,0);
+          rect.attr({
+              body: {
+                  fill: '#4472c4'
+              },
+              label: {
+                  fill: 'white'
+              }
+          });
+          rect.attr('label/text', _this.info_rich[tractament]);
+          rect.addTo(graph);
+          translate += 75;
+        }
+      }
     }
   }
 };
