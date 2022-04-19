@@ -170,18 +170,19 @@ export default {
         // Aquest diccionari agregarà els valors mínim i màxim agregats de tots els criteris per cada tren.
         const tren_min_max_dict = {};
 
-        // Per cada criteri que s'hagi de considerar
+        // Per cada criteri que s'hagi de considerar.
+        const length_criteris = Object.keys(_this.trens_multicriteris[0]['criteris_norm']).length;
         for(const criteri of Object.keys(_this.trens_multicriteris[0]['criteris_norm'])){
             if(_this.criteris_a_considerar[criteri]){
                 // Anar tren per tren calculant el valor de cada criteri: criteri normalitzat * pes puzzy numeralitzat (pesos_dict).
                 const data_values = [];
                 for(const tren of trens){
-                    const criteri_value = tren['criteris_norm'][criteri] * pesos_dict[_this.pes_criteris[criteri]];
+                    const criteri_value = tren['criteris_norm'][criteri] * pesos_dict[_this.pes_criteris[criteri]] / length_criteris;
                     if(!tren_min_max_dict[tren.id]) tren_min_max_dict[tren.id] = {min: 0, max: 0};
                     // Ara si és un criteri interval cal calcular el seu màxim i mínim, en cas contrari tant el màxim com el mínim són el mateix que el valor del criteri. 
                     if(criteris_interval_a_considerar.includes(criteri)){
-                        tren_min_max_dict[tren.id].min += tren['criteris_no_agregats_norm'][criteri+'_min'] * pesos_dict[_this.pes_criteris[criteri]];
-                        tren_min_max_dict[tren.id].max += tren['criteris_no_agregats_norm'][criteri+'_max'] * pesos_dict[_this.pes_criteris[criteri]];
+                        tren_min_max_dict[tren.id].min += tren['criteris_no_agregats_norm'][criteri+'_min'] * pesos_dict[_this.pes_criteris[criteri]] / length_criteris;
+                        tren_min_max_dict[tren.id].max += tren['criteris_no_agregats_norm'][criteri+'_max'] * pesos_dict[_this.pes_criteris[criteri]] / length_criteris;
                     }
                     else{
                         tren_min_max_dict[tren.id].min += criteri_value;
