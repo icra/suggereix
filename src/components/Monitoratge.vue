@@ -309,7 +309,7 @@ export default {
           el: doc,
           model: graph,
           gridSize: 1,
-          width: 200,
+          width: 150,
           heigth: 30,
           interactive: false,
           restrictTranslate: true,
