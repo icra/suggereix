@@ -1,9 +1,20 @@
 <template>
     <div id="intro">
+        <p><b>Mètode de priorització: </b>
+            <select v-model="metode" style="max-width: 200px">
+                <option
+                  v-for="obj of selector_metode"
+                  :value="obj.codi"
+                  :key="obj.codi"
+                >
+                  {{ obj.nom }}
+                </option>
+            </select>
+        </p>
         <table border="1">
             <tr>
                 <th>Criteri</th>
-                <th>Prioritat Fuzzy <button v-on:click="reset_pes_criteris">Reset</button></th>
+                <th>Prioritat <button v-on:click="reset_pes_criteris">Reset</button></th>
                 <th>Avaluar <button v-on:click="reset_criteris_a_considerar">Reset</button></th>
             </tr>
             <template v-for="(cri,id) in DICT_CRI_NOMS">
@@ -29,8 +40,8 @@
                 </tr>
             </template>
         </table>
+        <br>
         <canvas id="avaluacio_multicriteri_chart" width="700" height="300"></canvas>
-        <canvas id="avaluacio_multicriteri_chart2" width="700" height="300"></canvas>
     </div>
 </template>
 
@@ -78,10 +89,9 @@ export default {
         },
         criteris_a_considerar: JSON.parse(JSON.stringify(DICT_CRITERIS_A_CONSIDERAR)),
         trens_avaluats: [],
-        // chart is the fuzzy chart.
-        chart: undefined,
-        // chart2 is the fixed weight chart (with contributions).
-        chart2: undefined
+        metode: 'agregar',
+        selector_metode: [{codi: 'agregar', nom: 'Agregació i normalització'},{codi: 'fuzzy', nom: 'IA: Lògica Fuzzy'}],
+        chart: undefined
     }
   },
   mounted() {
@@ -139,13 +149,15 @@ export default {
         const trens_multicriteris_avaluat = trens_multicriteris.map(tren => ({...tren, cc: cc_dict[tren.id], cc_min: Math.min(...[cc_dict_int.min[tren.id], cc_dict_int.max[tren.id]]), cc_max: Math.max(...[cc_dict_int.min[tren.id], cc_dict_int.max[tren.id]])}));
         trens_multicriteris_avaluat.sort((tren_a, tren_b) => tren_b.cc - tren_a.cc);
         this.trens_avaluats = trens_multicriteris_avaluat;
-        this.$emit('resultats', this.trens_avaluats);
     },
     // obté les dades del graph fuzzy.
     obtenirDadesGraphTrens(){
         const _this = this;
         const trens = _this.trens_avaluats;
-        return {
+
+        _this.$emit('resultats', trens);
+
+        const data = {
             labels: trens.map(tren => _this.trens_info[tren.id].nom),
             datasets: [{
                 label: 'Valor Fuzzy',
@@ -154,14 +166,36 @@ export default {
                 borderColor: 'rgb(54, 162, 235)',
                 borderWidth: 2
             }]
-        };
+        }
+
+        if(_this.chart) _this.chart.destroy();
+        const ctx = document.getElementById('avaluacio_multicriteri_chart').getContext('2d');
+        if(ctx){
+            const config = {
+                data: data,
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins:{
+                        legend: {
+                            onClick: null
+                        }
+                    }
+                },
+            };
+            return new BarWithErrorBarsChart(ctx, config);
+        }
     },
     // calcula i obté les dades per les contribucions fixes.
     obtenirDadesGraphTrens2(){
         const _this = this;
 
         // Llistat de trens a avaluar i els criteris amb intervals.
-        const trens = _this.trens_avaluats;
+        let trens = _this.trens_avaluats;
+        const pre_trens = JSON.parse(JSON.stringify(_this.trens_avaluats));
         const criteris_interval_a_considerar = Object.keys(DICT_CRI_INTERVAL).filter(criteri => _this.criteris_a_considerar[criteri]);
         
         // Aquí emmagatzemarem els datasets per chart.js.
@@ -169,6 +203,9 @@ export default {
 
         // Aquest diccionari agregarà els valors mínim i màxim agregats de tots els criteris per cada tren.
         const tren_min_max_dict = {};
+
+        // Aquest diccionari contindrà el tren i el valor agregat i normalitzat de tots els criteris.
+        const tren_valors = {};
 
         // Per cada criteri que s'hagi de considerar.
         const length_criteris = Object.keys(_this.trens_multicriteris[0]['criteris_norm']).length;
@@ -189,6 +226,10 @@ export default {
                         tren_min_max_dict[tren.id].max += criteri_value;
                     }
                     data_values.push({y: criteri_value});
+
+                    // Actualitzar valor tren.
+                    if(!tren_valors[tren.id]) tren_valors[tren.id] = 0;
+                    tren_valors[tren.id] += criteri_value;
                 }
                 // Crear la ED que requereix chart.js amb el color que toqui.
                 datasets.push({
@@ -199,22 +240,71 @@ export default {
             }
         }
         // Ara per cada tren cal modicar els valors de chart.js de l'ultim criteri perquè el graph mostri l'interval.
-        let i = 0;
-        for(const tren of trens){
-            datasets[datasets.length-1].data[i] = {y: datasets[datasets.length-1].data[i].y, yMin: Math.round((tren_min_max_dict[tren.id].min + Number.EPSILON) * 1000) / 1000, yMax: Math.round((tren_min_max_dict[tren.id].max + Number.EPSILON) * 1000) / 1000}
+        let i = -1;
+        trens = trens.map(tren => {
             i += 1;
+            datasets[datasets.length-1].data[i] = {y: datasets[datasets.length-1].data[i].y, yMin: Math.round((tren_min_max_dict[tren.id].min + Number.EPSILON) * 1000) / 1000, yMax: Math.round((tren_min_max_dict[tren.id].max + Number.EPSILON) * 1000) / 1000}
+            return {
+                ...tren,
+                cc: tren_valors[tren.id],
+                cc_min: Math.round((tren_min_max_dict[tren.id].min + Number.EPSILON) * 1000) / 1000,
+                cc_max: Math.round((tren_min_max_dict[tren.id].max + Number.EPSILON) * 1000) / 1000
+            }
+        });
+        trens = trens.sort((tren_a, tren_b) => tren_b.cc - tren_a.cc);
+        let index_1 = 0;
+        for(const tren of trens){
+            const index_2 = pre_trens.findIndex(tren_2 => tren_2.id === tren.id);
+            if(index_1 < index_2){
+                for(let i=0; i<datasets.length;i++){
+                    [datasets[i].data[index_1], datasets[i].data[index_2]] = [datasets[i].data[index_2], datasets[i].data[index_1]]
+                }
+            }
+            index_1 += 1; 
         }
+
+        _this.$emit('resultats', trens);
+
         // Retorna la ED requerida per chart.js. 
-        return {
+        const data = {
             labels: trens.map(tren => _this.trens_info[tren.id].nom),
             datasets: datasets
+        }
+
+        if(_this.chart) _this.chart.destroy();
+        const ctx = document.getElementById('avaluacio_multicriteri_chart').getContext('2d');
+        if(ctx){
+            return new BarWithErrorBarsChart(ctx, {
+                data: data,
+                options: {
+                    plugins: {
+                        legend: {
+                            onClick: null
+                        }
+                    },
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
         }
     }
   },
   watch: {
-    //cada vegada que canviin les props dels trens multicriteri, computar el fuzzy topsis. 
+    //cada vegada que canviin les props dels trens multicriteri, computar la priorització. 
     trens_multicriteris: function(newVal, oldVal) {
         this.computeFuzzyTopsis(newVal.filter(tren => tren.avaluar));
+    },
+    //cada vegada que canvii el mètode de càlcul, computar la priorització. 
+    metode: function(newVal, oldVal) {
+        this.computeFuzzyTopsis(this.trens_multicriteris.filter(tren => tren.avaluar));
     },
     //cada vegada que s'actualitzin els pesos, es re-computa el fuzzy topsis.
     pes_criteris:{
@@ -233,54 +323,8 @@ export default {
     //cada vegada que canviin els trens avaluats, actualitza els gràfics.
     trens_avaluats:{
         handler: function(newVal, oldVal) {
-            // Primer mostra el graph del fuzzy.
-            if(this.chart) this.chart.destroy();
-            const ctx = document.getElementById('avaluacio_multicriteri_chart').getContext('2d');
-            if(ctx){
-                const config = {
-                    data: this.obtenirDadesGraphTrens(),
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        },
-                        plugins:{
-                            legend: {
-                                onClick: null
-                            }
-                        }
-                    },
-                };
-                this.chart = new BarWithErrorBarsChart(ctx, config);
-            }
-            // Ara mostra el graph de contribucions fixes.
-            if(this.chart2) this.chart2.destroy();
-            const ctx2 = document.getElementById('avaluacio_multicriteri_chart2').getContext('2d');
-            this.chart2 = new BarWithErrorBarsChart(ctx2, {
-                data: this.obtenirDadesGraphTrens2(),
-                options: {
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Valor Agregat (contribucions fixes)'
-                        },
-                        legend: {
-                            onClick: null
-                        }
-                    },
-                    responsive: true,
-                    scales: {
-                        x: {
-                            stacked: true
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+            // Mostra el graph de priorització.
+            this.chart = this.metode === 'fuzzy' ? this.obtenirDadesGraphTrens() : this.obtenirDadesGraphTrens2();
         },
         deep: true
     }
