@@ -32,12 +32,12 @@
 
               <template v-for="tractament of array_tractaments">
                 <tr :key="tractament+'_tab_mon_trac'">
-                  <td :rowspan="Object.keys(info_monitoratge[tractament]).length+1" class="doubletd12"><div style="height:200px;overflow:hidden"><div :ref="tractament+'_ini_graph'" /></div></td>
+                  <td :rowspan="Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length).length+1" class="doubletd12"><div style="height:200px;overflow:hidden"><div :ref="tractament+'_ini_graph'" /></div></td>
                 </tr>
-                <tr v-for="parameter in Object.keys(info_monitoratge[tractament])" :key="parameter+'_tab_rec_'+tractament" style="height: 40px;">
+                <tr v-for="parameter in Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length)" :key="parameter+'_tab_rec_'+tractament" style="height: 40px;">
                   <td><div v-html="info_rich[parameter] || parameter" style="padding: 2px;" /></td>
                   <td><div style="height:30px;overflow:hidden"><div :ref="'punts_'+tractament+'_'+parameter" /></div></td>
-                  <td style="padding: 2px;">WIP</td>
+                  <td style="padding: 2px;">{{info_monitoratge[tractament][parameter].frequencia || 'No definida'}}</td>
                   <td style="padding: 2px;">WIP</td>
                 </tr>
               </template>

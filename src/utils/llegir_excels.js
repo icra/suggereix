@@ -394,8 +394,6 @@ function llegir_monitoratge(binaryData) {
             indicador_rich = valor_nom_enriquit(worksheet.getRow(4).getCell(header_column).value);
         }
         while(indicador !== ""){
-            // Processar indicador.
-            dict_enriquit[indicador] = indicador_rich;
 
             // Mirar quins llocs podria ser que calguès monitorar.
             let start_column = header_column;
