@@ -370,7 +370,7 @@ function llegir_monitoratge(binaryData) {
                 }
 
                 // Només crea l'entrada del inddicador si cal monitorar.
-                if(llocs.length) monitoratge_tractaments[tractament][indicador] = llocs;
+                if(llocs.length) monitoratge_tractaments[tractament][indicador] = {llocs: llocs};
 
                 // Augmenta el comptador.
                 start_row += 1;
@@ -384,6 +384,58 @@ function llegir_monitoratge(binaryData) {
             indicador_rich = valor_nom_enriquit(worksheet.getRow(4).getCell(header_column).value);
             unitats_indicador = valor_nom(worksheet.getRow(6).getCell(header_column).value);
             unitats_rich_indicador = valor_nom_enriquit(worksheet.getRow(6).getCell(header_column).value);
+            group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
+        }
+        while(group !== "Freqüències monitoratge"){
+            // Incrementar comptador.
+            header_column += 1;
+            group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
+            indicador = valor_nom(worksheet.getRow(4).getCell(header_column).value);
+            indicador_rich = valor_nom_enriquit(worksheet.getRow(4).getCell(header_column).value);
+        }
+        while(indicador !== ""){
+            // Processar indicador.
+            dict_enriquit[indicador] = indicador_rich;
+
+            // Mirar quins llocs podria ser que calguès monitorar.
+            let start_column = header_column;
+            const llocs_on_potser_cal_monitorar = [valor_nom(worksheet.getRow(7).getCell(start_column).value)];
+            let next_indicador = valor_nom(worksheet.getRow(4).getCell(start_column+1).value);
+            while(next_indicador === "" && valor_nom(worksheet.getRow(7).getCell(start_column).value)){
+                start_column += 1;
+                llocs_on_potser_cal_monitorar.push(valor_nom(worksheet.getRow(7).getCell(start_column).value));
+                next_indicador = valor_nom(worksheet.getRow(4).getCell(start_column+1).value);
+            }
+
+            // Ara per a cada grup que calgui monitorar llegir els tractaments.
+            let start_row = 9;
+            let tractament = valor_nom(worksheet.getRow(start_row).getCell(1).value);
+            while(tractament){
+
+                // Si no existeix encara el tractament, crea'l.
+                if(!monitoratge_tractaments[tractament]) monitoratge_tractaments[tractament] = {};
+
+                // Crea un array on es posaran les freqüències de monitoratge de l'indicador per el tractament.
+                const frequencia = undefined;
+                for(let i = 0; i < llocs_on_potser_cal_monitorar.length; i++){
+                    const a_considerar = worksheet.getRow(start_row).getCell(header_column + i).value;
+                    if(a_considerar) frequencia = valor_nom(a_considerar);
+                }
+                if(frequencia){
+                    if(!monitoratge_tractaments[tractament][indicador]) {
+                        monitoratge_tractaments[tractament][indicador] = {llocs: []};
+                    }
+                    monitoratge_tractaments[tractament][indicador].frequencia = frequencia;
+                }
+
+                // Augmenta el comptador.
+                start_row += 1;
+                tractament = valor_nom(worksheet.getRow(start_row).getCell(1).value);
+            }
+
+            // Incrementar comptador.
+            header_column += llocs_on_potser_cal_monitorar.length;
+            indicador = valor_nom(worksheet.getRow(4).getCell(header_column).value);
             group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
         }
 

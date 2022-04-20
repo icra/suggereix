@@ -319,7 +319,7 @@ export default {
       // Ara mirar quins elements cal afegir.
       let translate = 0;
       const pos_tractament = _this.array_tractaments.indexOf(tractament)+1;
-      for(const element of _this.info_monitoratge[tractament][indicador]){
+      for(const element of _this.info_monitoratge[tractament][indicador].llocs){
         if(element === 'Entrada' || element === 'Sortida' ){
           // Crea bombolla d'entrada.
           const circle = new joint.shapes.standard.Circle();
@@ -336,7 +336,7 @@ export default {
           let duplicated = false;
           if(element === 'Entrada' && pos_tractament > 1){
             const tractament_previ = _this.array_tractaments[pos_tractament-2];
-            if(_this.info_monitoratge[tractament_previ][indicador] && _this.info_monitoratge[tractament_previ][indicador].includes('Sortida')){
+            if(_this.info_monitoratge[tractament_previ][indicador] && _this.info_monitoratge[tractament_previ][indicador].llocs.includes('Sortida')){
               duplicated = true;
             }
           }
