@@ -438,31 +438,37 @@ function llegir_monitoratge(binaryData) {
         }
 
         return [monitoratge_tractaments, dict_enriquit];
+    });
+}
 
+function llegir_metodes_monitoratge(binaryData) {
 
-        /* let title = worksheet.getCell('A' + rowNumber.toString()).value;
-        while(title){
-            type_indicadors.push(title);
-            rowNumber += 1;
-            let indicador_id = worksheet.getCell('A' + rowNumber.toString()).value;
-            let indicador_name = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
-            let indicador_name_rich = valor_nom_enriquit(worksheet.getCell('B' + rowNumber.toString()).value);
-            let indicador_unitats = valor_nom(worksheet.getCell('C' + rowNumber.toString()).value);
-            let indicador_unitats_rich = valor_nom_enriquit(worksheet.getCell('C' + rowNumber.toString()).value);
-            while(indicador_id){
-                desc_indicadors[indicador_id] = {name: indicador_name, name_rich: indicador_name_rich, type: title, unitats_rich: indicador_unitats_rich, unitats: indicador_unitats};
-                rowNumber += 1;
-                indicador_id = worksheet.getCell('A' + rowNumber.toString()).value;
-                indicador_name = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
-                indicador_name_rich = valor_nom_enriquit(worksheet.getCell('B' + rowNumber.toString()).value);
-                indicador_unitats = valor_nom(worksheet.getCell('C' + rowNumber.toString()).value);
-                indicador_unitats_rich = valor_nom_enriquit(worksheet.getCell('C' + rowNumber.toString()).value);
+    let _this = this;
+    let workbook = new ExcelJS.Workbook();
+    return workbook.xlsx.load(binaryData).then(wb => {
+        let worksheet = wb.worksheets[0];
+        let rowNumber = 4; //ignore first column (header)
+        const metodes_monitoratge = {};
+
+        let parameter = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
+        while(parameter){
+            const desc_enriquit = valor_nom_enriquit(worksheet.getCell('C' + rowNumber.toString()).value);
+            const frequencia = valor_nom(worksheet.getCell('D' + rowNumber.toString()).value);
+            const estandard = valor_nom(worksheet.getCell('E' + rowNumber.toString()).value);
+            const type = estandard === 'Mètode estàndard' ? 2 : estandard === 'Mètode desenvolupat no estàndard' ? 1 : 0;
+            const ref_enriquit = valor_nom_enriquit(worksheet.getCell('F' + rowNumber.toString()).value);
+            if(!metodes_monitoratge[parameter]) metodes_monitoratge[parameter] = {};
+            metodes_monitoratge[parameter][frequencia] = {
+                desc_enriquit: desc_enriquit,
+                type: type,
+                ref_enriquit: ref_enriquit
             }
+
             rowNumber += 1;
-            title = worksheet.getCell('A' + rowNumber.toString()).value;
+            parameter = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
         }
 
-        return [desc_indicadors,type_indicadors]; */
+        return metodes_monitoratge;
     });
 }
 
@@ -560,5 +566,6 @@ export {
     llegir_qualitat_micro,
     llegir_multicriteri,
     llegir_indicadors,
-    llegir_monitoratge
+    llegir_monitoratge,
+    llegir_metodes_monitoratge
 }

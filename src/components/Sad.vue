@@ -841,7 +841,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:info_rich="Info_rich" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" />
           </div>
       </div>
     </details>
@@ -853,7 +853,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
@@ -896,6 +896,7 @@ export default {
       Info_indicadors_types: [],   //array amb informació sobre els tipus indicadors.
       Info_monitoratge: {},        //objecte amb informació sobre el monitoratge dels indicadors per determinats tractaments.
       Info_rich: {},           //objecte amb informació sobre els textos enriquits per mostrar amb sup sub o italic.
+      Metodes_monitoratge: {},     //objecte que conté la informació dels mètodes que s'utilitzen per a cada parametre i tipus de freqüència.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -934,7 +935,10 @@ export default {
     this.read_file('/20220407_SUGGEREIX_Taula_C7.xlsx', 'descripcio_indicadors');
 
     // llegir excel 'monitoratge'.
-    this.read_file('/20220323_SUGGEREIX_Taula_C1.xlsx', 'monitoratge');
+    this.read_file('/20220421_SUGGEREIX_Taula_C1.xlsx', 'monitoratge');
+
+    // llegir excel 'metodes_monitoratge'.
+    this.read_file('/20220421_SUGGEREIX_Taula_A4.xlsx', 'metodes_monitoratge');
     
   },
   methods:{
@@ -1033,6 +1037,9 @@ export default {
           _this.Info_monitoratge = res[0];
           _this.Info_rich = res[1];
         }
+        else if (type === 'metodes_monitoratge'){
+            _this.Metodes_monitoratge = await llegir_metodes_monitoratge(binaryData);
+        }
       }
 
     },
@@ -1040,7 +1047,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){

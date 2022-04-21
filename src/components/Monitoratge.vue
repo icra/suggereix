@@ -26,19 +26,24 @@
                 <th rowspan="2" class="doubletd">Paràmetre/Indicador</th>
                 <th rowspan="2" class="doubletd">Punt Monitoratge</th>
                 <th rowspan="2" class="doubletd">Freqüència</th>
-                <th rowspan="2" class="doubletd">Mètode</th>
+                <th rowspan="2" class="doubletd3">Mètode</th>
               </tr>
               <tr />
 
               <template v-for="tractament of array_tractaments">
-                <tr :key="tractament+'_tab_mon_trac'">
+                <tr :key="((Math.random() + 1).toString(36).substring(7))+tractament+'_tab_mon_trac'">
                   <td :rowspan="Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length).length+1" class="doubletd12"><div style="height:200px;overflow:hidden"><div :ref="tractament+'_ini_graph'" /></div></td>
                 </tr>
-                <tr v-for="parameter in Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length)" :key="parameter+'_tab_rec_'+tractament" style="height: 40px;">
+                <tr v-for="parameter in Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length)" :key="((Math.random() + 1).toString(36).substring(7))+parameter+'_tab_rec_'+tractament" style="height: 40px;">
                   <td><div v-html="info_rich[parameter] || parameter" style="padding: 2px;" /></td>
                   <td><div style="height:30px;overflow:hidden"><div :ref="'punts_'+tractament+'_'+parameter" /></div></td>
-                  <td style="padding: 2px;">{{info_monitoratge[tractament][parameter].frequencia || 'No definida'}}</td>
-                  <td style="padding: 2px;">WIP</td>
+                  <td style="padding: 2px;"><div v-html="getFrequencia(tractament,parameter)"></div></td>
+                  <td style="padding: 2px;">
+                      <div class="tooltip" style="color:#2c3e50">
+                        <div v-html="getMetodes(tractament,parameter)"></div>
+                        <span v-if="mostrar_estandard(tractament,parameter)" :key="((Math.random() + 1).toString(36).substring(7))" class="tooltiptext">{{ mostra_estandard(tractament,parameter) }}</span>
+                      </div>
+                  </td>
                 </tr>
               </template>
             </table>
@@ -55,7 +60,7 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich'],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge'],
   data: function(){
     return {
       visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
@@ -219,6 +224,40 @@ export default {
         link.addTo(graph);
         pre_rect = last_rect;
 
+    },
+    getFrequencia: function(tractament,parameter) {
+        return this.info_monitoratge[tractament][parameter].frequencia || '<i style="color:red">No definida</i>'
+    },
+    getMetodes: function(tractament,parameter) {
+        let frequencia = this.info_monitoratge[tractament][parameter].frequencia;
+        if(!frequencia || !this.metodes_monitoratge[parameter]) return '<i style="color:red">No definit</i>';
+        frequencia = frequencia.replace(/ *\([^)]*\) */g, "");
+        const value = this.metodes_monitoratge[parameter][frequencia];
+        if(value){
+            let res = value.desc_enriquit;
+            if(value.ref_enriquit !== "nd") res += " ("+value.ref_enriquit+")";
+            return res;
+        }
+        return '<i style="color:red">No definit</i>';
+    },
+    mostrar_estandard: function(tractament,parameter) {
+        let frequencia = this.info_monitoratge[tractament][parameter].frequencia;
+        if(!frequencia || !this.metodes_monitoratge[parameter]) return false;
+        frequencia = frequencia.replace(/ *\([^)]*\) */g, "");
+        const value = this.metodes_monitoratge[parameter][frequencia];
+        if(value){
+            if(value.type === 2 || value.type === 1) return true;
+        }
+        return false;
+    },
+    mostra_estandard: function(tractament,parameter) {
+        const frequencia = this.info_monitoratge[tractament][parameter].frequencia.replace(/ *\([^)]*\) */g, "");
+        const value = this.metodes_monitoratge[parameter][frequencia];
+        if(value){
+            if(value.type === 2) return 'Mètode estàndard';
+            else return 'Mètode desenvolupat no estàndard';
+        }
+        return "";
     },
     render_diagrama_tractament: function(){
       const _this = this;
