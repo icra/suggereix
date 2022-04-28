@@ -49,7 +49,7 @@
               </select>
               <br>
               <div>
-                <img src="/img/fase1.png" alt="Diagrama de la infraestructura existent" class="center" style="margin-top:1cm;"> 
+                <img src="/img/fase1.png" alt="Diagrama de la infraestructura existent" class="center" style="margin-top:10px;width: 400px;"> 
               </div>
             </td>
 
