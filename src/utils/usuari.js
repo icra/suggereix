@@ -2,13 +2,13 @@ import Corrent from './corrent';
 
 //infraestructura existent de l'usuari
 export default class Usuari{
-  constructor(){
-    this.corrent = new Corrent(); //qualitat actual
-    this.corrent_objectiu = new Corrent(); //qualitat desitjada
+  constructor(info_indicadors){
+    this.corrent = new Corrent(info_indicadors); //qualitat actual
+    this.corrent_objectiu = new Corrent(info_indicadors); //qualitat desitjada
   }
 
-  reseteja_corrent_objectiu(){
-    this.corrent_objectiu = new Corrent();
+  reseteja_corrent_objectiu(info_indicadors){
+    this.corrent_objectiu = new Corrent(info_indicadors);
   }
 
   static get info_tractaments_secundaris(){
@@ -38,9 +38,7 @@ export default class Usuari{
           I18 : {min: 37.2,        max: 81},
           I19 : I19,
           I20 : I20,
-          I21 : I21,
-          I22 : {},
-          I23 : {} 
+          I21 : I21
         },
       },
       "FAC_DS1":{tipus:"secundari", nom:"Llots actius convencionals sense nitrificació",
@@ -65,9 +63,7 @@ export default class Usuari{
           I18 : {min: 0.3,    max: 81},
           I19 : I19,
           I20 : I20,
-          I21 : I21,
-          I22 : {},
-          I23 : {} 
+          I21 : I21
         },
       },
       "FAC_DS2":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació",
@@ -92,9 +88,7 @@ export default class Usuari{
           I18 : {min: 0.3,    max: 81},
           I19 : I19,
           I20 : I20,
-          I21 : I21,
-          I22 : {},
-          I23 : {} 
+          I21 : I21
         },
       },
       "FAC_DS3":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació, desnitrificació biològica i eliminació biològica de PO4",
@@ -119,9 +113,7 @@ export default class Usuari{
           I18 : {min: 0.3,    max: 81},
           I19 : I19,
           I20 : I20,
-          I21 : I21,
-          I22 : {},
-          I23 : {} 
+          I21 : I21
         },
       },
       "BRM1":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació",
@@ -146,9 +138,7 @@ export default class Usuari{
           I18 : {min: 0.3,    max: 81},
           I19 : I19,
           I20 : I20,
-          I21 : I21,
-          I22 : {},
-          I23 : {} 
+          I21 : I21
         },
       },
       "BRM2":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació, desnitrificació biològica i eliminació biològica de PO4",
@@ -173,101 +163,9 @@ export default class Usuari{
           I18 : {min: 0.3,    max: 81},
           I19 : I19,
           I20 : I20,
-          I21 : I21,
-          I22 : {},
-          I23 : {} 
+          I21 : I21
         },
       },
     };
   }
-  /*static get info_usos(){
-    return{
-      // Valors protectors (tipus 1 o 2 o 3 segons indicador)
-      "D1":{nom:"Urbà residencial: reg de jardins privats", codi:"Dummy1",
-        qualitat:{
-          I1  : 6,
-          I2  : 1000,
-          I3  : 2,
-          I4  : 10,
-          I5  : 'nd',
-          I6  : 600,
-          I7  : 10000,
-          I8  : 30,
-          I9  : 4,
-          I10 : 0.05,
-          I11 : 0.1,
-          I12 : 88,
-          I13 : 0.14,
-          I14 : 29000,
-          I15 : 0.038,
-          I16 : 87,
-          I17 : 0.00065,
-          I18 : 1.3,
-          I19 : 0,
-          I20 : 'nd',
-          I21 : 'nd',
-          I22 : 43,
-        },
-        trens_acceptats:[1,2] //Cas inventat
-
-      },
-      "D2":{nom:"Urbà residencial: descàrrega cisternes vàter", codi:"Dummy2",
-        qualitat:{
-          I1  : 'nd',
-          I2  : 'nd',
-          I3  : 2,
-          I4  : 10,
-          I5  : 'nd',
-          I6  : 27000,
-          I7  : 'nd',
-          I8  : 'nd',
-          I9  : 'nd',
-          I10 : 'nd',
-          I11 : 'nd',
-          I12 : 'nd',
-          I13 : 'nd',
-          I14 : 6700,
-          I15 : 'nd',
-          I16 : 'nd',
-          I17 : 'nd',
-          I18 : 'nd',
-          I19 : 0,
-          I20 : 'nd',
-          I21 : 'nd',
-          I22 : 5.7,
-        },
-        trens_acceptats:[1,2] //Cas inventat
-
-      },
-      // Valors protectors (tipus 1)
-      "D14":{nom:"Ambiental: altres usos (manteniment aiguamolls, cabals mínims i similars)", codi:"Dummy14",
-        qualitat:{
-          I1  : 6,
-          I2  : 1000,
-          I3  : 0,
-          I4  : 35,
-          I5  : 0,
-          I6  : 600,
-          I7  : 25000,
-          I8  : 30,
-          I9  : 4,
-          I10 : 0.05,
-          I11 : 0.1,
-          I12 : 88,
-          I13 : 0.14,
-          I14 : 58000,
-          I15 : 0.038,
-          I16 : 87,
-          I17 : 0.00065,
-          I18 : 1.3,
-          I19 : 0,
-          I20 : 0,
-          I21 : 0,
-          I22 : 43,
-        },
-        trens_acceptats:[1,2] //Cas inventat
-
-      },
-    };
-  }*/
 }

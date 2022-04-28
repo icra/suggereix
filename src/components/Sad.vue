@@ -93,7 +93,7 @@
             <td style="font-family: monospace">
               {{ key }}
             </td>
-            <td v-if="key !== 'I22' && key !== 'I23'">
+            <td>
               <input
                 v-if="key !== 'I1' && selected_input !== key + '_min'"
                 type="text"
@@ -110,7 +110,7 @@
                 v-on:blur="handleBlur"
               />
             </td>
-            <td v-if="key !== 'I22' && key !== 'I23'">
+            <td>
               <input
                 v-if="key !== 'I1' && selected_input !== key + '_max'"
                 type="text"
@@ -127,17 +127,8 @@
                 v-on:blur="handleBlur"
               />
             </td>
-            <td v-else-if="key === 'I22'" colspan="2" class="doubletd">
-              L’I22 (N-nitrosodimetilamina) es pot formar en tractaments de
-              desinfecció amb cloramines, amb clor si al medi també hi ha amoni,
-              i en tractaments amb ozó.
-            </td>
-            <td v-else colspan="2" class="doubletd">
-              L’I23 (triclorometà) es pot formar en tractaments de desinfecció
-              amb clor lliure.
-            </td>
             <td style="text-align: left" class="doubletd">
-                <div v-if="key !== 'I22' && key !== 'I23' && key !== 'I1'">
+                <div v-if="key !== 'I1'">
                     <input
                         type="checkbox"
                         v-model="user.corrent.seleccionat[key]"
@@ -302,7 +293,7 @@
               <th
                 v-for="(val, key) in info_qualitats"
                 :key="key"
-                class="sticky2"
+                class="sticky2 indlength"
                 style="
                   font-family: monospace;
                   text-align: left;
@@ -311,12 +302,15 @@
               >
                 <div class="tooltip" style="color: inherit">
                   {{ key }}
-                  <span class="tooltiptext_ind" style="font-size: 10px; margin-top: 20px">{{
-                    val.nom
-                  }}</span>
+                  <span class="tooltiptext_ind" style="font-size: 10px; margin-top: 30px">
+                    <div v-html="val.name_rich"></div>
+                  </span>
                 </div>
-                <div style="font-size: 10px; font-family: monospace">
-                  ({{ val.unitat }})
+                <div class="tooltip" style="color: inherit">
+                  <div v-html="'('+val.unitats_rich+')'" style="font-size: 10px; font-family: monospace; word-wrap: break-word;"></div>
+                  <span class="tooltiptext_ind" style="font-size: 10px; margin-top: 15px">
+                    <div v-html="val.name_rich"></div>
+                  </span>
                 </div>
               </th>
             </tr>
@@ -864,7 +858,7 @@ export default {
   components: { Graph, Avaluacio, Monitoratge },
   data: function(){
     return {
-      user: new Usuari(),       //objecte
+      user: new Usuari({}),       //objecte
       selected_input: "",
 	  grau_informacio: 0,		// grau d'informació dels VP pels usos seleccionats.
       tractament_secundari: "", //tractament secundari infraestructura
@@ -886,11 +880,11 @@ export default {
       Usuari,                   //classe
       Corrent,                  //classe
       Tractaments_info: {},     //diccionari tots els tractaments
-	  Tractaments_m_info: {},   //diccionari tractaments amb punt de referència 1 (microbiològics).
+	    Tractaments_m_info: {},   //diccionari tractaments amb punt de referència 1 (microbiològics).
       Trens_info: {},           //diccionari tots els trens
       Usos_info: {},              //diccionari tots els usos
       Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
-	  Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
+	    Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
       Multicriteri_info: {},       //diccionari amb la informació de l'avaluació multicriteri.
       Info_indicadors: {},         //diccionari amb informació sobre els indicadors.
       Info_indicadors_types: [],   //array amb informació sobre els tipus indicadors.
@@ -1086,7 +1080,7 @@ export default {
                     if(key !== "user") _this[key] = value;
                 }
                 // Processar usuari.
-                const usuari = new Usuari();
+                const usuari = new Usuari(_this.Info_indicadors);
                 for(const [key, value] of Object.entries(data.user.corrent)){
                     //_this.user.corrent[key] = value;
                     usuari.corrent[key] = value;
@@ -1148,7 +1142,7 @@ export default {
               (efluent_secundari.includes('DP') && primer_tractament === 'BRM');
         
           if(tren_aplicable){
-            let min_max = _this.user.corrent.aplica_tren_tractaments(array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari,key);
+            let min_max = _this.user.corrent.aplica_tren_tractaments(_this.Info_indicadors, array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari,key);
 
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
             const n_indicadors = Object.values(_this.ind_seleccionats).filter(selected => selected).length;
@@ -1348,7 +1342,7 @@ export default {
                     _this.user.corrent_objectiu.qualitat[ind] = _this.mod_ind_vps[ind][0];
                     _this.user.corrent_objectiu.refs[ind] = _this.mod_ind_vps[ind][1];
                     _this.user.corrent_objectiu.regulat[ind] = _this.mod_ind_vps[ind][4];
-                    if(_this.mod_ind_vps[ind][0] !== 'nd' && ind !== 'I22' && ind !== 'I23') vp_assigned.add(ind);
+                    if(_this.mod_ind_vps[ind][0] !== 'nd') vp_assigned.add(ind);
                 }
                 else{
                     // Cal agafar el valor mínim de tots els usos seleccionats. Buscar el el diccionari de usos.
@@ -1359,7 +1353,7 @@ export default {
                         for (const [key, value] of Object.entries(_this.Usos_info[us].qualitat[ind])) {
                             if(value.vp !== 'nd'){
                                 if(vp_value === 'nd' || value.vp < vp_value){
-                                    if(ind !== 'I22' && ind !== 'I23') vp_assigned.add(ind);
+                                    vp_assigned.add(ind);
                                     vp_value = value.vp;
                                     vp_ref = value.ref;
                                     vp_regulat = value.regulat;
@@ -1375,7 +1369,7 @@ export default {
         }
         else{
             // Posa els valors inicials.
-            _this.user.reseteja_corrent_objectiu();
+            _this.user.reseteja_corrent_objectiu(_this.Info_indicadors);
         }
 
         // 2. Actualitzem el valor del grau d'informació sobre els VP.
@@ -1414,10 +1408,20 @@ export default {
   computed: {
     // Variable que conté la informació de qualitats filtrades sense els indicadors desactivats.
     info_qualitats: function () {
-        return Object.fromEntries(Object.entries(this.Corrent.info_qualitat).filter(([key]) => this.ind_seleccionats[key]));
+        console.log(Object.entries(this.Info_indicadors).filter(([key]) => this.ind_seleccionats[key]))
+        return Object.fromEntries(Object.entries(this.Info_indicadors).filter(([key]) => this.ind_seleccionats[key]));
     }
   },
   watch: {
+    // crea l'usuari un cop es tingui informació dels indicadors.
+    Info_indicadors:{
+        handler: function(newVal, oldVal) {
+            if(newVal && Object.keys(oldVal).length === 0){
+              this.user = new Usuari(newVal);
+            }
+        },
+        deep: true
+    },
     //actualitza la qualitat del corrent_objectiu (usuari), en funció de si es modifica un valor de la taula dels VP.
     Usos_info:{
         handler: function(newVal, oldVal) {
@@ -1592,7 +1596,7 @@ input[type="number"] {
   background-color: black;
   color: #fff;
   text-align: center;
-  padding: 5px 10px;
+  padding: 5px 5px;
   border-radius: 6px;
 
   /* Position the tooltip text - see examples below! */
@@ -1700,6 +1704,10 @@ table.sticky th {
   top: 0;
   z-index: 1;
   background-color: #d4e9fd;
+}
+
+th.indlength {
+  width: 30px;
 }
 
 table.sticky th.sticky2 {

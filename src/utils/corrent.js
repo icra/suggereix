@@ -3,105 +3,8 @@
 //la classe Corrent representa un corrent d'aigua (un cabal) amb les seves
 //característiques de qualitat
 export default class Corrent {
-    //info items qualitat
-    static get info_qualitat() {
-        return {
-            "I1": {
-                nom: "(pH): unitats de pH",
-                unitat: "∅"
-            },
-            "I2": {
-                nom: "Conductivitat elèctrica",
-                unitat: "μS/cm"
-            },
-            "I3": {
-                nom: "Terbolesa",
-                unitat: "NTU"
-            },
-            "I4": {
-                nom: "Sòlids en Suspensió Totals (SST)",
-                unitat: "mg/L"
-            },
-            "I5": {
-                nom: "Carboni Orgànic Total (COT)",
-                unitat: "mg/L"
-            },
-            "I6": {
-                nom: "Amoni (NH4+)",
-                unitat: "mg/L"
-            },
-            "I7": {
-                nom: "Nitrat (NO3-)",
-                unitat: "mg/L"
-            },
-            "I8": {
-                nom: "Zinc (Zn)",
-                unitat: "μg/L"
-            },
-            "I9": {
-                nom: "Níquel (Ni)",
-                unitat: "μg/L"
-            },
-            "I10": {
-                nom: "Carbamazepina",
-                unitat: "μg/L"
-            },
-            "I11": {
-                nom: "Diclofenac",
-                unitat: "μg/L"
-            },
-            "I12": {
-                nom: "N,N-Dietil-m-toluamida (DEET)",
-                unitat: "μg/L"
-            },
-            "I13": {
-                nom: "Iopromida",
-                unitat: "μg/L"
-            },
-            "I14": {
-                nom: "1,4-Dioxà",
-                unitat: "μg/L"
-            },
-            "I15": {
-                nom: "Venlafaxina",
-                unitat: "μg/L"
-            },
-            "I16": {
-                nom: "Cafeïna",
-                unitat: "μg/L"
-            },
-            "I17": {
-                nom: "Àcid perfluorooctanosulfònic (PFOS)",
-                unitat: "μg/L"
-            },
-            "I18": {
-                nom: "Bis(2-etilhexil) ftalat (DEHP)",
-                unitat: "μg/L"
-            },
-            "I19": {
-                nom: "E. coli",
-                unitat: "CFU/100mL"
-            },
-            "I20": {
-                nom: "Colífags",
-                unitat: "PFU/100mL"
-            },
-            "I21": {
-                nom: "Espores Clostridium perfringens",
-                unitat: "CFU/100mL"
-            },
-            "I22": {
-                nom: "N-nitrosodimethylamine (NDMA)",
-                unitat: "μg/L"
-            },
-            "I23": {
-                nom: "Triclorometà",
-                unitat: "μg/L"
-            }
-        };
-    }
 
-    constructor() {
+    constructor(info_indicadors) {
         //característiques corrent (diccionari)
         this.Q = 2000; //m3
 
@@ -110,22 +13,24 @@ export default class Corrent {
         this.refs = {};
         this.regulat = {};
         this.seleccionat = {};
-        Object.keys(Corrent.info_qualitat).forEach(id => {
-            this.qualitat[id] = 0;
-            this.refs[id] = "";
-            this.eliminacio[id] = 0;
-            this.seleccionat[id] = (id !== 'I22' && id !== 'I23' && id !== 'I1') ? true : false;
-        });
+        for(const id of Object.keys(info_indicadors)){
+            if(id !== 'OT1' && id !== 'OT2'){
+                this.qualitat[id] = 0;
+                this.refs[id] = "";
+                this.eliminacio[id] = 0;
+                this.seleccionat[id] = id !== 'I1' ? true : false;
+            }
+        }
     }
 
     //aplica un carro de tecnologies/tractaments
     //genera 2 nous corrents "min" i "max"
-    aplica_tren_tractaments(array_tractaments, tractaments_dict, dict_tractaments_m, tractament_secundari, key) {
+    aplica_tren_tractaments(info_indicadors, array_tractaments, tractaments_dict, dict_tractaments_m, tractament_secundari, key) {
 
         //retorna dos corrents nous
         let _this = this;
-        let min = new Corrent(); //eliminació mínima
-        let max = new Corrent(); //eliminació màxima
+        let min = new Corrent(info_indicadors); //eliminació mínima
+        let max = new Corrent(info_indicadors); //eliminació màxima
 
         //copia el cabal actual al cabal dels nous corrents
         min.Q = _this.Q;
