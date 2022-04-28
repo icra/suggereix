@@ -74,7 +74,7 @@
                 />
                 <label :for="key" :key="key+'_'+obj.nom">{{ obj.nom }}</label>
                 <div v-if="mostrar_nota_dummy(obj.codi)" class="tooltip" :key="key+'_'+obj.codi">
-                  *
+                  <i class="fa-regular fa-circle-question"></i>
                   <span class="tooltiptext2">{{ nota_dummy(obj.codi) }}</span>
                 </div>
                 <br :key="key+'_'+obj.codi+obj.nom"/>
@@ -151,7 +151,7 @@
             </td>
             <td style="text-align: right">
               <div v-if="mostrar_nota_vp(key)" class="tooltip">
-                *
+                <i class="fa-regular fa-circle-question"></i>
                 <span class="tooltiptext">{{ nota_rang_vp(key) }}</span>
               </div>
               <input
@@ -1559,6 +1559,7 @@ input[type="number"] {
   display: inline-block;
   color: maroon;
   padding: 0px 5px 0px 5px;
+  cursor: help;
 }
 
 /* Tooltip text */
@@ -1621,6 +1622,7 @@ input[type="number"] {
   visibility: visible;
   display: block;
   z-index: 20;
+  cursor: help;
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
@@ -1629,6 +1631,7 @@ input[type="number"] {
   visibility: visible;
   display: block;
   z-index: 20;
+  cursor: help;
 }
 
 .outline-blue{

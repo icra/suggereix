@@ -35,7 +35,19 @@
                   <td :rowspan="Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length).length+1" class="doubletd12"><div style="height:200px;overflow:hidden"><div :ref="tractament+'_ini_graph'" /></div></td>
                 </tr>
                 <tr v-for="parameter in Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length)" :key="((Math.random() + 1).toString(36).substring(7))+parameter+'_tab_rec_'+tractament" style="height: 40px;">
-                  <td><div v-html="info_rich[parameter] || parameter" style="padding: 2px;" /></td>
+                  <td>
+                    <div v-html="info_rich[parameter] || parameter" style="padding: 2px;" />
+                    <div v-if="parameter === 'N-nitrosodimetilamina (NDMA)'" class="tooltip" :key="key+'_helper'">
+                      <i class="fa-regular fa-circle-question"></i>
+                      <span class="tooltiptext2">
+                        La N-nitrosodimetilamina es pot formar en tractaments de desinfecció amb cloramines, amb clor si al medi també hi ha amoni, i en tractaments amb ozó.</span>
+                    </div>
+                    <div v-else-if="parameter === 'Triclorometà'" class="tooltip" :key="key+'_helper'">
+                      <i class="fa-regular fa-circle-question"></i>
+                      <span class="tooltiptext2">
+                        El Triclorometà es pot formar en tractaments de desinfecció amb clor lliure.</span>
+                    </div>
+                  </td>
                   <td><div style="height:30px;overflow:hidden"><div :ref="'punts_'+tractament+'_'+parameter" /></div></td>
                   <td style="padding: 2px;"><div v-html="getFrequencia(tractament,parameter)"></div></td>
                   <td style="padding: 2px;">
