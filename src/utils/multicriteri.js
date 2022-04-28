@@ -215,7 +215,7 @@ const costTotal = (tren, info_trens, info_multicriteris, type) => {
 
     // Creació de la variable que emmagatzema el cost total i s'anirà incrementant per a cada tractament del tren.
     let cost_total = 0;
-    const capacitat = tren.concentracio.max.Q;
+    const capacitat = tren.concentracio.max.Q * tren.concentracio.max.F / 100;
     const tren_info = Object.values(info_trens).find(info_tren => Number(info_tren.codi) === Number(tren.id));
 
     for(const tractament of tren_info.array_tractaments){

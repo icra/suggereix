@@ -7,6 +7,7 @@ export default class Corrent {
     constructor(info_indicadors) {
         //característiques corrent (diccionari)
         this.Q = 2000; //m3
+        this.F = 90;   //%
 
         this.qualitat = {};
         this.eliminacio = {};

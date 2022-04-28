@@ -26,6 +26,14 @@
                 min="1" step="1"
                 style="max-width: 75px"
               />
+              <br>
+              Factor sobre el cabal màxim (%):
+              <input
+                type="number"
+                v-model.number="user.corrent.F"
+                min="1" step="1" max=100
+                style="max-width: 40px"
+              />
             </th>
             <th colspan="2">Descripció infraestructura existent</th>
             <th colspan="2">Ús d'aigua regenerada</th>
@@ -1123,6 +1131,10 @@ export default {
           alert("Capacitat de tractament invàlida");
           return;
       }
+      else if(isNaN(_this.user.corrent.F) || _this.user.corrent.F < 1 || _this.user.corrent.F > 100 || !Number.isInteger(_this.user.corrent.F)){
+          alert("Factor de la capacitat de tractament invàlid");
+          return;
+      }
 
 	  // Actualitza valors de la reducció microbiològica. 
 	  for(const [id, obj] of Object.entries(_this.Qualitat_microbiologica)){
@@ -1408,7 +1420,6 @@ export default {
   computed: {
     // Variable que conté la informació de qualitats filtrades sense els indicadors desactivats.
     info_qualitats: function () {
-        console.log(Object.entries(this.Info_indicadors).filter(([key]) => this.ind_seleccionats[key]))
         return Object.fromEntries(Object.entries(this.Info_indicadors).filter(([key]) => this.ind_seleccionats[key]));
     }
   },
