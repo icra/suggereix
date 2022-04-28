@@ -26,7 +26,7 @@
                 <th rowspan="2" class="doubletd">Paràmetre/Indicador</th>
                 <th rowspan="2" class="doubletd">Punt Monitoratge</th>
                 <th rowspan="2" class="doubletd">Freqüència</th>
-                <th rowspan="2" class="doubletd3">Mètode</th>
+                <th rowspan="2" class="doubletd3">Mètode(s)</th>
               </tr>
               <tr />
 
@@ -232,11 +232,31 @@ export default {
         let frequencia = this.info_monitoratge[tractament][parameter].frequencia;
         if(!frequencia || !this.metodes_monitoratge[parameter]) return '<i style="color:red">No definit</i>';
         frequencia = frequencia.replace(/ *\([^)]*\) */g, "");
-        const value = this.metodes_monitoratge[parameter][frequencia];
-        if(value){
-            let res = value.desc_enriquit;
-            if(value.ref_enriquit !== "nd") res += " ("+value.ref_enriquit+")";
+        const values = this.metodes_monitoratge[parameter][frequencia];
+        if(values){
+          let i = 1;
+          let res = "";
+          for(const value of values){
+            let value_res = value.desc_enriquit;
+            if(value.ref_enriquit !== "nd") value_res += " ("+value.ref_enriquit+")";
+            res += '<b>'+i+'.</b> '+value_res+'<br>';
+            i+=1;
+          }
+          return res;
+        }
+        else if(frequencia === 'Continu o periòdic'){
+          const alt_values = this.metodes_monitoratge[parameter]['Continu'] || this.metodes_monitoratge[parameter]['Periòdic']
+          if(alt_values){
+            let i = 1;
+            let res = "";
+            for(const value of alt_values){
+              let value_res = value.desc_enriquit;
+              if(value.ref_enriquit !== "nd") value_res += " ("+value.ref_enriquit+")";
+              res += '<b>'+i+'.</b> '+value_res+'<br>';
+              i+=1;
+            }
             return res;
+          }
         }
         return '<i style="color:red">No definit</i>';
     },
@@ -244,18 +264,27 @@ export default {
         let frequencia = this.info_monitoratge[tractament][parameter].frequencia;
         if(!frequencia || !this.metodes_monitoratge[parameter]) return false;
         frequencia = frequencia.replace(/ *\([^)]*\) */g, "");
-        const value = this.metodes_monitoratge[parameter][frequencia];
-        if(value){
+        const values = this.metodes_monitoratge[parameter][frequencia];
+        if(values){
+          for(const value of values){
             if(value.type === 2 || value.type === 1) return true;
+          }
         }
         return false;
     },
     mostra_estandard: function(tractament,parameter) {
         const frequencia = this.info_monitoratge[tractament][parameter].frequencia.replace(/ *\([^)]*\) */g, "");
-        const value = this.metodes_monitoratge[parameter][frequencia];
-        if(value){
-            if(value.type === 2) return 'Mètode estàndard';
-            else return 'Mètode desenvolupat no estàndard';
+        const values = this.metodes_monitoratge[parameter][frequencia];
+        if(values){
+          let i = 1;
+          let res = "";
+          for(const value of values){
+            if(value.type === 2) res+= i+'. Mètode estàndard; ';
+            else if(value.type === 1) res+= i+'. Mètode desenvolupat no estàndard; ';
+            else res+= i+'. No definit; '
+            i+=1;
+          }
+          return res;
         }
         return "";
     },

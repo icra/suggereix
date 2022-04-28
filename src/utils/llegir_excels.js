@@ -458,11 +458,12 @@ function llegir_metodes_monitoratge(binaryData) {
             const type = estandard === 'Mètode estàndard' ? 2 : estandard === 'Mètode desenvolupat no estàndard' ? 1 : 0;
             const ref_enriquit = valor_nom_enriquit(worksheet.getCell('F' + rowNumber.toString()).value);
             if(!metodes_monitoratge[parameter]) metodes_monitoratge[parameter] = {};
-            metodes_monitoratge[parameter][frequencia] = {
+            if(!metodes_monitoratge[parameter][frequencia]) metodes_monitoratge[parameter][frequencia] = [];
+            metodes_monitoratge[parameter][frequencia].push({
                 desc_enriquit: desc_enriquit,
                 type: type,
                 ref_enriquit: ref_enriquit
-            }
+            });
 
             rowNumber += 1;
             parameter = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
