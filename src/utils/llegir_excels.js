@@ -104,6 +104,7 @@ function llegir_trens(binaryData) {
         let startingRow = 5; //ignore first 3 columns (headers)
         let maxRows = worksheet.rowCount
         let trains = {}
+        let richDict = {};
 
         worksheet.eachRow({
             includeEmpty: false
@@ -111,13 +112,19 @@ function llegir_trens(binaryData) {
             if (rowNumber >= startingRow) {
                 const row = rowData.values;
                 let trainId = row[3];
-                let trainName = row[1];
+                let trainName = valor_nom(row[1]);
+                let trainNameRich = valor_nom_enriquit(row[1]);
+                richDict[trainName] = trainNameRich;
                 let trainTreatments = [];
                 let references = [];
 
                 //read treatments in order (from column D(4) to J(10) = 7 in total)
                 for (let i = 4; i < 11; i++) {
-                    if (row[i] !== undefined) trainTreatments.push(row[i].replaceAll(" ", ""));
+                    if (row[i] !== undefined){
+                        const tractament = valor_nom(row[i]).replaceAll(" ","");
+                        trainTreatments.push(tractament);
+                        richDict[tractament] = valor_nom_enriquit(row[i]);
+                    }
                 }
 
                 //read references in order (from column K(11) to W(24) = 14 in total)
@@ -134,7 +141,7 @@ function llegir_trens(binaryData) {
             }
         });
 
-        return trains;
+        return [trains, richDict];
     });
 }
 
@@ -145,7 +152,7 @@ function llegir_tractaments(binaryData) {
     let _this = this;
     let workbook = new ExcelJS.Workbook();
     return workbook.xlsx.load(binaryData).then(wb => {
-        let worksheet = wb.worksheets[0];
+        let worksheet = wb.getWorksheet('Tractaments_dades_t');
         let rowNumber = 2; //ignore first column (header)
         let maxRows = worksheet.rowCount;
         let treatments = {};
@@ -529,29 +536,36 @@ function llegir_qualitat_micro(binaryData) {
     let _this = this;
     let workbook = new ExcelJS.Workbook();
     return workbook.xlsx.load(binaryData).then(wb => {
-        let worksheet = wb.worksheets[0];
+        let worksheet = wb.getWorksheet('A8');
         let rowNumber = 5; //ignore headers
         let maxRows = worksheet.rowCount;
         let quality_micro = {};
 
         for (rowNumber; rowNumber < maxRows; rowNumber += 3) {
             let i = rowNumber;
-            let usage_name = worksheet.getCell('B' + i.toString()); // DummyX.
-            if (quality_micro[usage_name] === undefined) {
-                quality_micro[usage_name] = {};
-            }
-            for (let j = 1; j <= 3; j++) {
-                let indicador = worksheet.getCell('E' + i.toString()).value;
-                let percent_eliminacio = worksheet.getCell('G' + i.toString()).value;
-                let lograritmic_eliminacio = worksheet.getCell('F' + i.toString()).value;
-                if (typeof percent_eliminacio === 'string') percent_eliminacio = 0;
-                else if (typeof percent_eliminacio === 'object') percent_eliminacio = percent_eliminacio.result;
-                if (typeof lograritmic_eliminacio === 'string') lograritmic_eliminacio = 0;
-                else if (typeof lograritmic_eliminacio === 'object') lograritmic_eliminacio = lograritmic_eliminacio.result;
+            let usage_name = worksheet.getCell('B' + i.toString()).value; // DummyX.
+            if(usage_name !== null){
+                if(typeof usage_name === 'number' || !usage_name.includes('Dummy')) usage_name = 'Dummy'+usage_name;
+                if (quality_micro[usage_name] === undefined) {
+                    quality_micro[usage_name] = {};
+                }
+                for (let j = 1; j <= 3; j++) {
+                    let indicador = worksheet.getCell('E' + i.toString()).value;
+                    let percent_eliminacio = worksheet.getCell('G' + i.toString()).value;
+                    let lograritmic_eliminacio = worksheet.getCell('F' + i.toString()).value;
+                    if(!percent_eliminacio) percent_eliminacio = 0;
+                    else if (typeof percent_eliminacio === 'string') percent_eliminacio = 0;
+                    else if (typeof percent_eliminacio === 'object') percent_eliminacio = percent_eliminacio.result;
+                    if(!lograritmic_eliminacio) lograritmic_eliminacio = 0;
+                    else if (typeof lograritmic_eliminacio === 'string') lograritmic_eliminacio = 0;
+                    else if (typeof lograritmic_eliminacio === 'object') lograritmic_eliminacio = lograritmic_eliminacio.result;
+                    lograritmic_eliminacio = Math.round(lograritmic_eliminacio)
 
-                quality_micro[usage_name][indicador] = [percent_eliminacio, lograritmic_eliminacio]
-                i++;
+                    quality_micro[usage_name][indicador] = [percent_eliminacio, lograritmic_eliminacio]
+                    i++;
+                }
             }
+            
         }
 
         return quality_micro;

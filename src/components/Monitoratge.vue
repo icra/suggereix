@@ -26,7 +26,13 @@
                 <th rowspan="2" class="doubletd">Paràmetre/Indicador</th>
                 <th rowspan="2" class="doubletd">Punt Monitoratge</th>
                 <th rowspan="2" class="doubletd">Freqüència</th>
-                <th rowspan="2" class="doubletd3">Mètode(s)</th>
+                <th rowspan="2" class="doubletd3">
+                    Mètode(s)
+                    <div class="tooltip">
+                        <i class="fa-regular fa-circle-question"></i>
+                        <span class="tooltiptext">Al passar el cursor per sobre dels mètodes, es mostrarà informació sobre si els mètodes són estàndard o desenvolupats.</span>
+                    </div>
+                </th>
               </tr>
               <tr />
 

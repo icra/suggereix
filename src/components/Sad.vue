@@ -296,7 +296,7 @@
                 </td>
                 <td class="doubletd3" :rowspan="4" v-if="ind === Object.keys(obj)[0]">
                     <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-if="id === 'Dummy11'">Els valors de reducció logarítmica definits per defecte són els mateixos valors que els definits per a l’ús recàrrega d'aqüífers per injecció directa sense tenir en compte l'atenuació natural del medi. Amb una avaluació específica del risc microbiològic, es podria avaluar la capacitat d'atenuació del medi i reduir els valors definits per defecte. </p>
-                    <p align="justify" v-else-if="id === 'Dummy14'">Manquen valors guia a la normativa, i el SAD conté valors de reducció logarítmica definits per defecte semblants als definits per a l'ús agrícola. Caldria assolir els valors de reducció necessaris per a l'ús prepotable si l’aigua s’utilitzés amb aquesta finalitat més avall.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy14'">Manquen valors guia a la normativa, i el SAD conté valors de reducció logarítmica definits per defecte semblants als definits per a l'ús agrícola. Caldria assolir els valors de reducció necessaris per a l'ús prepotable si l’aigua s’utilitzés amb aquesta finalitat més avall.</p>
                 </td>
               </tr>
             </tbody>
@@ -372,7 +372,7 @@
                   rowspan="2"
                   style="text-align: right; padding: 0px 10px 0px 10px"
                 >
-                  {{ Trens_info[tren.id].nom }}
+                    <div v-html="Trens_dict[Trens_info[tren.id].nom]"></div>
                 </td>
                 <td
                   rowspan="2"
@@ -461,12 +461,12 @@
             >
               <tr>
                 <td :rowspan="1 + Object.keys(tra).length">
-                  {{ nom_tra }}
+                    <div v-html="Trens_dict[nom_tra] || nom_tra"></div>
                 </td>
               </tr>
               <tr v-for="(pre, nom_pre) in tra" :key="nom_tra+'_'+nom_pre">
                 <td>
-                  {{ nom_pre }}
+                    <div v-html="Trens_dict[nom_pre] || nom_pre"></div>
                 </td>
                 <td>
                   <details>
@@ -890,7 +890,8 @@ export default {
       Corrent,                  //classe
       Tractaments_info: {},     //diccionari tots els tractaments
 	    Tractaments_m_info: {},   //diccionari tractaments amb punt de referència 1 (microbiològics).
-      Trens_info: {},           //diccionari tots els trens
+      Trens_info: {},           //diccionari tots els trens,
+      Trens_dict: {},           //diccionari dels rich names per trens i tractaments.
       Usos_info: {},              //diccionari tots els usos
       Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
 	    Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
@@ -929,7 +930,7 @@ export default {
     this.read_file('/20211214_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
 
 	// llegir excel 'monitoratge de la qualitat autobiològica', que mostra el % de reducció Rmin per a terns de tractament dels indicadors microbiològics.
-	this.read_file('20211004_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
+	this.read_file('20220605_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
 
     // llegir excel 'Avaluació multicriteri', que mostra els criteris a considerar amb cadascun dels tractaments.
 	this.read_file('/20211111_SUGGEREIX_Criteris_add.xlsx', 'multicriteri');
@@ -938,7 +939,7 @@ export default {
     this.read_file('/20220407_SUGGEREIX_Taula_C7.xlsx', 'descripcio_indicadors');
 
     // llegir excel 'monitoratge'.
-    this.read_file('/20220421_SUGGEREIX_Taula_C1.xlsx', 'monitoratge');
+    this.read_file('/20220506_SUGGEREIX_Taula_C1.xlsx', 'monitoratge');
 
     // llegir excel 'metodes_monitoratge'.
     this.read_file('/20220421_SUGGEREIX_Taula_A4.xlsx', 'metodes_monitoratge');
@@ -1017,7 +1018,9 @@ export default {
 		else if (type === 'tractaments_micro')
           _this.Tractaments_m_info = await llegir_tractaments_micro(binaryData);
         else if (type === 'trens'){
-            _this.Trens_info = await llegir_trens(binaryData);
+            const res = await llegir_trens(binaryData);
+            _this.Trens_info = res[0];
+            _this.Trens_dict = res[1];
         }
         else if (type === 'efluent')
           _this.Efluents_info = await llegir_caract_efluent_secundari(binaryData);
