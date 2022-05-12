@@ -336,7 +336,7 @@
               <th colspan="2" rowspan="2">Tren</th>
               <th rowspan="2">id</th>
               <th rowspan="2" colspan="2">Compliment (%)</th>
-              <th colspan="21">Indicadors</th>
+              <th colspan="21">Concentracions dels indicadors</th>
             </tr>
 
             <tr>
