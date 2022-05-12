@@ -36,6 +36,8 @@ export default class Corrent {
         //copia el cabal actual al cabal dels nous corrents
         min.Q = _this.Q;
         max.Q = _this.Q;
+        min.F = _this.F;
+        max.F = _this.F;
 
         let efluent_secundari = tractament_secundari;
 

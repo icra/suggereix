@@ -211,11 +211,10 @@ const applyFuzzy = (capacitat, tractament_criteris, criteri) => {
 }
 
 // Aquesta funció calcula el cost total (mínim o màxim depenent de 'type') del tren.
-const costTotal = (tren, info_trens, info_multicriteris, type) => {
+const costTotal = (tren, info_trens, info_multicriteris, capacitat, type) => {
 
     // Creació de la variable que emmagatzema el cost total i s'anirà incrementant per a cada tractament del tren.
     let cost_total = 0;
-    const capacitat = tren.concentracio.max.Q * tren.concentracio.max.F / 100;
     const tren_info = Object.values(info_trens).find(info_tren => Number(info_tren.codi) === Number(tren.id));
 
     for(const tractament of tren_info.array_tractaments){
@@ -230,11 +229,10 @@ const costTotal = (tren, info_trens, info_multicriteris, type) => {
 }
 
 // Aquesta funció calcula el cost OPEX del tren.
-const costOpex = (tren, info_trens, info_multicriteris) => {
+const costOpex = (tren, info_trens, capacitat, info_multicriteris) => {
 
     // Creació de la variable que emmagatzema el cost total i s'anirà incrementant per a cada tractament del tren.
     let cost = 0;
-    const capacitat = tren.concentracio.max.Q;
     const tren_info = Object.values(info_trens).find(info_tren => Number(info_tren.codi) === Number(tren.id));
 
     for(const tractament of tren_info.array_tractaments){
@@ -248,11 +246,10 @@ const costOpex = (tren, info_trens, info_multicriteris) => {
 }
 
 // Aquesta funció calcula el cost CAPEX (mínim o màxim depenent de 'type') del tren.
-const costCapex = (tren, info_trens, info_multicriteris, type) => {
+const costCapex = (tren, info_trens, info_multicriteris, capacitat, type) => {
 
     // Creació de la variable que emmagatzema el cost total i s'anirà incrementant per a cada tractament del tren.
     let cost = 0;
-    const capacitat = tren.concentracio.max.Q;
     const tren_info = Object.values(info_trens).find(info_tren => Number(info_tren.codi) === Number(tren.id));
 
     for(const tractament of tren_info.array_tractaments){
@@ -266,10 +263,9 @@ const costCapex = (tren, info_trens, info_multicriteris, type) => {
 }
 
 // Aplica fuzzy en un array de tractaments per un criteri determinat.
-const applyFuzzyTractaments = (tren, info_trens, info_multicriteris, criteri) => {
+const applyFuzzyTractaments = (tren, info_trens, info_multicriteris, capacitat, criteri) => {
 
     let valor_criteri_total = 0;
-    const capacitat = tren.concentracio.max.Q;
     const tren_info = Object.values(info_trens).find(info_tren => Number(info_tren.codi) === Number(tren.id));
     for(const tractament of tren_info.array_tractaments){
         // Per cada tren obtenim els rangs de criteris en funció de la capacitat, a partir d'aquí executem la fuzzyficació.
@@ -285,23 +281,23 @@ const applyFuzzyTractaments = (tren, info_trens, info_multicriteris, criteri) =>
 
 
 // Aquesta funció rep un tren de tractament, la informació dels trens, i la informació dels multicriteris per a retornar els seus multicriteris.
-export const avaluar_multicriteris = (tren, info_trens, info_multicriteris) => {
+export const avaluar_multicriteris = (tren, info_trens, info_multicriteris, capacitat) => {
 
     return{
         eliminacio_quimics_min: perElimMitja(tren.concentracio.min.eliminacio,"quimics"),
         eliminacio_quimics_max: perElimMitja(tren.concentracio.max.eliminacio,"quimics"),
         eliminacio_microbiologics_min: perElimMitja(tren.concentracio.min.eliminacio,"microbiologics"),
         eliminacio_microbiologics_max: perElimMitja(tren.concentracio.max.eliminacio,"microbiologics"),
-        cost_total_min: costTotal(tren, info_trens, info_multicriteris, "min"),
-        cost_total_max: costTotal(tren, info_trens, info_multicriteris, "max"),
-        cons_ene_mitja: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'cons_ene_mitja'),
-        espai_ocupat: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'espai_ocupat'),
-        hc: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'hc'),
-        hh: applyFuzzyTractaments(tren, info_trens, info_multicriteris, 'hh'),
+        cost_total_min: costTotal(tren, info_trens, info_multicriteris, capacitat, "min"),
+        cost_total_max: costTotal(tren, info_trens, info_multicriteris, capacitat, "max"),
+        cons_ene_mitja: applyFuzzyTractaments(tren, info_trens, info_multicriteris, capacitat, 'cons_ene_mitja'),
+        espai_ocupat: applyFuzzyTractaments(tren, info_trens, info_multicriteris, capacitat, 'espai_ocupat'),
+        hc: applyFuzzyTractaments(tren, info_trens, info_multicriteris, capacitat, 'hc'),
+        hh: applyFuzzyTractaments(tren, info_trens, info_multicriteris, capacitat, 'hh'),
         puntuacio: tren.puntuacio,
-        cost_opex: costOpex(tren, info_trens, info_multicriteris),
-        cost_capex_min: costCapex(tren, info_trens, info_multicriteris, "min"),
-        cost_capex_max: costCapex(tren, info_trens, info_multicriteris, "max")
+        cost_opex: costOpex(tren, info_trens, capacitat, info_multicriteris),
+        cost_capex_min: costCapex(tren, info_trens, info_multicriteris, capacitat, "min"),
+        cost_capex_max: costCapex(tren, info_trens, info_multicriteris, capacitat, "max")
     }
 
 }

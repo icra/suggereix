@@ -1226,7 +1226,8 @@ export default {
       // Ara cal calcular el valor de cadascun dels 10 criteris per cada tren i agregar els seus valors en 7 criteris.
       const criteris_trens = [];
       for(const tren of trens_viables){
-          const criteris = avaluar_multicriteris(tren, _this.Trens_info, _this.Multicriteri_info);
+          const capacitat = _this.user.corrent.Q * _this.user.corrent.F / 100
+          const criteris = avaluar_multicriteris(tren, _this.Trens_info, _this.Multicriteri_info, capacitat);
           const criteris_agregats = agregaCriteris(criteris);
           criteris_trens.push({
               id: tren.id,
