@@ -73,10 +73,6 @@
                   v-model="usos_seleccionats"
                 />
                 <label :for="key" :key="key+'_'+obj.nom">{{ obj.nom }}</label>
-                <div v-if="mostrar_nota_dummy(obj.codi)" class="tooltip" :key="key+'_'+obj.codi">
-                  <i class="fa-regular fa-circle-question"></i>
-                  <span class="tooltiptext2">{{ nota_dummy(obj.codi) }}</span>
-                </div>
                 <br :key="key+'_'+obj.codi+obj.nom"/>
               </template>
             </td>
@@ -260,6 +256,52 @@
             </td>
           </tr>
         </table>
+      </div>
+    </details>
+
+    <details class="seccio" close >
+      <summary class="seccio">1.2. Modificació de la reducció acumulada mínima requerida al llarg d'un tren
+        (opcional)
+      </summary>
+      <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i permet modificar els valors de reducció logarítmica per als indicadors microbiològics, p. ex., si es disposa d'una avaluació específica del risc microbiològic.</p>
+      <p>Per defecte, els valors de reducció logarítmica definits per a l'ús "recàrrega d'aqüífers per percolació" són els mateixos valors que els definits per a l’ús "recàrrega d'aqüífers per injecció directa" sense tenir en compte l'atenuació natural del medi. Amb una avaluació específica del risc microbiològic, es podria avaluar la capacitat d'atenuació del medi i reduir els valors definits per defecte.</p>
+      <div>
+        <div>
+          <table border="1">
+            <tr>
+              <th>Ús</th>
+              <th colspan="2">Indicador</th>
+              <th>Reducció logarítmica</th>
+              <th>Recomanació</th>
+            </tr>
+            <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
+              <tr>
+                <td :rowspan="4" class="doubletd2">
+                  {{ Usos_info[id] ? Usos_info[id].nom : id }}
+                </td>
+              </tr>
+              <tr v-for="ind in Object.keys(obj)" :key="ind">
+                <td style="font-family: monospace">{{ ind }}</td>
+                <td>
+                    <div v-html="Info_indicadors[ind] ? Info_indicadors[ind].name_rich : ''"></div>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    v-model.number="obj[ind][1]"
+                    :ref="id + '_' + ind"
+                    :id="id + '_' + ind"
+                    class="nd"
+                  />
+                </td>
+                <td class="doubletd3" :rowspan="4" v-if="ind === Object.keys(obj)[0]">
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-if="id === 'Dummy11'">Els valors de reducció logarítmica definits per defecte són els mateixos valors que els definits per a l’ús recàrrega d'aqüífers per injecció directa sense tenir en compte l'atenuació natural del medi. Amb una avaluació específica del risc microbiològic, es podria avaluar la capacitat d'atenuació del medi i reduir els valors definits per defecte. </p>
+                    <p align="justify" v-else-if="id === 'Dummy14'">Manquen valors guia a la normativa, i el SAD conté valors de reducció logarítmica definits per defecte semblants als definits per a l'ús agrícola. Caldria assolir els valors de reducció necessaris per a l'ús prepotable si l’aigua s’utilitzés amb aquesta finalitat més avall.</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </details>
 
@@ -463,47 +505,6 @@
                       </table>
                     </div>
                   </details>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-
-    <details class="seccio" close >
-      <summary class="seccio">2.2. Modificació de la reducció acumulada mínima requerida al llarg d'un tren
-        (opcional)
-      </summary>
-      <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i permet modificar els valors de reducció logarítmica per als indicadors microbiològics, p. ex., si es disposa d'una avaluació específica del risc microbiològic.</p>
-      <p>Per defecte, els valors de reducció logarítmica definits per a l'ús "recàrrega d'aqüífers per percolació" són els mateixos valors que els definits per a l’ús "recàrrega d'aqüífers per injecció directa" sense tenir en compte l'atenuació natural del medi. Amb una avaluació específica del risc microbiològic, es podria avaluar la capacitat d'atenuació del medi i reduir els valors definits per defecte.</p>
-      <div>
-        <div>
-          <table border="1">
-            <tr>
-              <th>Ús</th>
-              <th colspan="2">Indicador</th>
-              <th>Reducció logarítmica</th>
-            </tr>
-            <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
-              <tr>
-                <td :rowspan="4" class="doubletd2">
-                  {{ Usos_info[id] ? Usos_info[id].nom : id }}
-                </td>
-              </tr>
-              <tr v-for="ind in Object.keys(obj)" :key="ind">
-                <td style="font-family: monospace">{{ ind }}</td>
-                <td>
-                    <div v-html="Info_indicadors[ind] ? Info_indicadors[ind].name_rich : ''"></div>
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    v-model.number="obj[ind][1]"
-                    :ref="id + '_' + ind"
-                    :id="id + '_' + ind"
-                    class="nd"
-                  />
                 </td>
               </tr>
             </tbody>
