@@ -621,28 +621,28 @@
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
-                    Consum energètic mitjà (kWh/m3)
+                    Consum energètic mitjà (kWh/d)
                     <div class="tooltip">
                         <button :id="'cons_ene_mitja'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
                         <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
-                    Petjada de carboni (kg CO2 eq./m3)
+                    Petjada de carboni (kg CO<sub>2</sub> eq./d)
                     <div class="tooltip">
                         <button :id="'hc'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
                         <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
-                    Petjada hídrica (L eq./m3)
+                    Petjada hídrica (L eq./d)
                     <div class="tooltip">
                         <button :id="'hh'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
                         <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
                     </div>
                 </th>
                 <th rowspan="2" class="doubletd">
-                    Espai ocupat (m2)
+                    Espai ocupat (m<sup>2</sup>)
                     <div class="tooltip">
                         <button :id="'espai_ocupat'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
                         <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
@@ -683,7 +683,7 @@
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
                     min:
                     </td>
-                    <td v-bind:style="'text-align: left; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
+                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
                     {{ Math.round((tren.criteris.eliminacio_quimics_min + Number.EPSILON) * 100) / 100 }}
                     </td>
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
