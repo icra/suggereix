@@ -361,15 +361,19 @@ function llegir_monitoratge(binaryData) {
         const monitoratge_tractaments = {};
         // Ens permetrà accedir a un text enriquit a partir del text normal.
         const dict_enriquit = {};
+        // Diccionari que ens vincula els codis d'indicadors "Ix" amb els noms alguns indicadors.
+        const dict_indicadors = {};
 
         // Comencem amb els headers.
         let header_column = 3;
         let indicador = valor_nom(worksheet.getRow(4).getCell(header_column).value);
         let indicador_rich = valor_nom_enriquit(worksheet.getRow(4).getCell(header_column).value);
+        let code = valor_nom(worksheet.getRow(5).getCell(header_column).value);
         let unitats_indicador = valor_nom(worksheet.getRow(6).getCell(header_column).value);
         let unitats_rich_indicador = valor_nom_enriquit(worksheet.getRow(6).getCell(header_column).value);
         let group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
         while(group !== "Eficiència"){
+            if(code && code !== "I1") dict_indicadors[indicador] = code;
             dict_enriquit[indicador] = indicador_rich;
             dict_enriquit[unitats_indicador] = unitats_rich_indicador;
 
@@ -413,6 +417,7 @@ function llegir_monitoratge(binaryData) {
             header_column += llocs_on_potser_cal_monitorar.length;
             indicador = valor_nom(worksheet.getRow(4).getCell(header_column).value);
             indicador_rich = valor_nom_enriquit(worksheet.getRow(4).getCell(header_column).value);
+            code = valor_nom(worksheet.getRow(5).getCell(header_column).value);
             unitats_indicador = valor_nom(worksheet.getRow(6).getCell(header_column).value);
             unitats_rich_indicador = valor_nom_enriquit(worksheet.getRow(6).getCell(header_column).value);
             group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
@@ -468,7 +473,7 @@ function llegir_monitoratge(binaryData) {
             group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
         }
 
-        return [monitoratge_tractaments, dict_enriquit];
+        return [monitoratge_tractaments, dict_enriquit, dict_indicadors];
     });
 }
 

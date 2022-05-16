@@ -882,7 +882,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" />
           </div>
       </div>
     </details>
@@ -941,6 +941,7 @@ export default {
       Info_monitoratge: {},        //objecte amb informació sobre el monitoratge dels indicadors per determinats tractaments.
       Info_rich: {},           //objecte amb informació sobre els textos enriquits per mostrar amb sup sub o italic.
       Metodes_monitoratge: {},     //objecte que conté la informació dels mètodes que s'utilitzen per a cada parametre i tipus de freqüència.
+      Ind_to_code: {},             //diccionari per passar de noms a codis d'indicadors.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -1085,6 +1086,7 @@ export default {
           const res = await llegir_monitoratge(binaryData);
           _this.Info_monitoratge = res[0];
           _this.Info_rich = res[1];
+          _this.Ind_to_code = res[2];
         }
         else if (type === 'metodes_monitoratge'){
             _this.Metodes_monitoratge = await llegir_metodes_monitoratge(binaryData);

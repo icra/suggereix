@@ -38,9 +38,9 @@
 
               <template v-for="tractament of array_tractaments">
                 <tr :key="((Math.random() + 1).toString(36).substring(7))+tractament+'_tab_mon_trac'">
-                  <td :rowspan="Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length).length+1" class="doubletd12"><div style="height:200px;overflow:hidden"><div :ref="tractament+'_ini_graph'" /></div></td>
+                  <td :rowspan="Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length && (ind_to_code[key] ? indicadors_seleccionats[ind_to_code[key]] : true)).length+1" class="doubletd12"><div style="height:200px;overflow:hidden"><div :ref="tractament+'_ini_graph'" /></div></td>
                 </tr>
-                <tr v-for="parameter in Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length)" :key="((Math.random() + 1).toString(36).substring(7))+parameter+'_tab_rec_'+tractament" style="height: 40px;">
+                <tr v-for="parameter in Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length && (ind_to_code[key] ? indicadors_seleccionats[ind_to_code[key]] : true))" :key="((Math.random() + 1).toString(36).substring(7))+parameter+'_tab_rec_'+tractament" style="height: 40px;">
                   <td>
                     <div v-html="info_rich[parameter] || parameter" style="padding: 2px;" />
                     <div v-if="parameter === 'N-nitrosodimetilamina (NDMA)'" class="tooltip" :key="key+'_helper'">
@@ -78,7 +78,7 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge'],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code'],
   data: function(){
     return {
       visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
@@ -98,7 +98,17 @@ export default {
         _this.$nextTick(function () {
             _this.render_diagrama_tractament();
         })   
-    }
+    },
+    // crea l'usuari un cop es tingui informació dels indicadors.
+    indicadors_seleccionats: {
+        handler: function(newVal, oldVal) {
+            const _this = this;
+            _this.$nextTick(function () {
+                _this.render_diagrama_tractament();
+            });   
+        },
+        deep: true 
+    },
   },
   mounted() {
     let vm = this;      
@@ -380,7 +390,7 @@ export default {
 
           // Per a cada indicador renderitza els punts de mostreig.
           for(const indicador of Object.keys(_this.info_monitoratge[tractament])){
-            _this.render_punt(indicador, tractament);
+            if(_this.ind_to_code[indicador] ? _this.indicadors_seleccionats[_this.ind_to_code[indicador]] : true) _this.render_punt(indicador, tractament);
           }
       }
     },
