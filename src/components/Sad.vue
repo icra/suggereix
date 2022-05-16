@@ -865,7 +865,7 @@
       </div>
     </details>
     <details class="seccio" open>
-      <summary class="seccio">4. Monitoratge d'un tren de tractaments</summary>
+      <summary class="seccio">4. Monitoratge d'un tren de tractament</summary>
       <div>
           <p>Si s'ha computat la priorització de trens viables (fase 3), en aquest selector apareixeran els trens viables ponderats per puntuació.</p> 
           <p>En cas contrari, apareixeran tots els trens de tractaments considerant la infraestructura existent.</p>
@@ -1617,8 +1617,15 @@ input[type="number"] {
   cursor: help;
 }
 
+.tooltip2 {
+  color: maroon;
+  padding: 0px 5px 0px 5px;
+  cursor: help;
+}
+
 /* Tooltip text */
-.tooltip .tooltiptext {
+.tooltip .tooltiptext,
+.tooltip2 .tooltiptext {
   visibility: hidden;
   width: 140px;
   background-color: black;
@@ -1673,16 +1680,9 @@ input[type="number"] {
 
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext,
-.tooltip:hover .tooltiptext_ind {
-  visibility: visible;
-  display: block;
-  z-index: 20;
-  cursor: help;
-}
-
-/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext_ind,
 .tooltip:hover .tooltiptext2,
-.tooltip:hover .tooltiptext_ind {
+.tooltip2:hover .tooltiptext {
   visibility: visible;
   display: block;
   z-index: 20;

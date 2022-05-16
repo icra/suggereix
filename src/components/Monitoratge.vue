@@ -28,10 +28,6 @@
                 <th rowspan="2" class="doubletd">Freqüència</th>
                 <th rowspan="2" class="doubletd3">
                     Mètode(s)
-                    <div class="tooltip">
-                        <i class="fa-regular fa-circle-question"></i>
-                        <span class="tooltiptext">Al passar el cursor per sobre dels mètodes, es mostrarà informació sobre si els mètodes són estàndard o desenvolupats.</span>
-                    </div>
                 </th>
               </tr>
               <tr />
@@ -57,10 +53,13 @@
                   <td><div style="height:30px;overflow:hidden"><div :ref="'punts_'+tractament+'_'+parameter" /></div></td>
                   <td style="padding: 2px;"><div v-html="getFrequencia(tractament,parameter)"></div></td>
                   <td style="padding: 2px;">
-                      <div class="tooltip" style="color:#2c3e50">
-                        <div v-html="getMetodes(tractament,parameter)"></div>
-                        <span v-if="mostrar_estandard(tractament,parameter)" :key="((Math.random() + 1).toString(36).substring(7))" class="tooltiptext">{{ mostra_estandard(tractament,parameter) }}</span>
-                      </div>
+                      <div v-for="metode, ind in metodes_info[tractament][parameter]" :key="'_'+parameter+'_'+tractament+'_freq_'+ind">
+                        <div style="position: relative; display: inline-block;" v-html="getMetodeHtml(metode, ind+1)"></div>
+                        <div class="tooltip">
+                            <i class="fa-regular fa-circle-question"></i>
+                            <span v-if="mostrar_estandard(tractament,parameter)" :key="((Math.random() + 1).toString(36).substring(7))" class="tooltiptext">Aquí es mostrarà les descripcions de les abreviacions dels mètodes</span>
+                        </div>
+                       </div>
                   </td>
                 </tr>
               </template>
@@ -116,6 +115,41 @@ export default {
     vm.$nextTick(function () {      
         vm.render_graph();
     });
+  },
+  computed: {
+    // Variable que conté la informació dels mètodes per cada indicador de cada tractament.
+    metodes_info: function () {
+        const _this = this;
+        const metodes = {};
+        for(const tractament of _this.array_tractaments){
+            metodes[tractament] = {};
+            for(const parameter of Object.keys(_this.info_monitoratge[tractament]).filter(key => _this.info_monitoratge[tractament][key].llocs.length && (_this.ind_to_code[key] ? _this.indicadors_seleccionats[_this.ind_to_code[key]] : true))){
+                metodes[tractament][parameter] = [];
+                let frequencia = _this.info_monitoratge[tractament][parameter].frequencia;
+                if(frequencia && _this.metodes_monitoratge[parameter]){
+                    frequencia = frequencia.replace(/ *\([^)]*\) */g, "");
+                    const values = _this.metodes_monitoratge[parameter][frequencia];
+                    if(values){
+                        for(const value of values){
+                            metodes[tractament][parameter].push(value);
+                        }
+                    }
+                    else if(frequencia === 'Continu o periòdic'){
+                        const alt_values = _this.metodes_monitoratge[parameter]['Continu'] || _this.metodes_monitoratge[parameter]['Periòdic']
+                        if(alt_values){
+                            for(const value of alt_values){
+                                metodes[tractament][parameter].push(value);
+                            }
+                        }
+                        else metodes[tractament][parameter].push(undefined);
+                    }
+                    else metodes[tractament][parameter].push(undefined);
+                }
+                else metodes[tractament][parameter].push(undefined);
+            }
+        }
+        return metodes;
+    }
   },
   methods: {
     canviVisio(event){
@@ -287,6 +321,17 @@ export default {
           }
         }
         return '<i style="color:red">No definit</i>';
+    },
+    getMetodeHtml: function(metode, ind){
+        if(!metode) return '<i style="color:red">No definit</i>';
+        let value_res = metode.desc_enriquit;
+        if(metode.ref_enriquit !== "nd"){
+            value_res += " ("+metode.ref_enriquit;
+            if(metode.type === 2) value_res += "; <i><u>Mètode estàndard</u></i>)";
+            else if(metode.type === 1) value_res += "; <i><u>Mètode desenvolupat no estàndard</u></i>)";
+            else value_res += ")";
+        }
+        return '<b>'+ind+'.</b> '+value_res;
     },
     mostrar_estandard: function(tractament,parameter) {
         let frequencia = this.info_monitoratge[tractament][parameter].frequencia;
