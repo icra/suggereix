@@ -290,6 +290,30 @@ function valor_nom(nom){
     else return nom;
 }
 
+// llegeix excel d'abreviació de tractaments.
+function llegir_abreviacio_tractaments(binaryData) {
+    let _this = this;
+    let workbook = new ExcelJS.Workbook();
+    return workbook.xlsx.load(binaryData).then(wb => {
+        let worksheet = wb.worksheets[0];
+        let rowNumber = 4; //ignore first column (header)
+
+        const abreviacions = {};
+        const dict_rich= {};
+
+        let tractament = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
+        while(tractament){
+            const tractament_rich = valor_nom_enriquit(worksheet.getCell('A' + rowNumber.toString()).value);
+            dict_rich[tractament] = tractament_rich;
+            const desc = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+            abreviacions[tractament] = desc;
+            rowNumber += 1;
+            tractament = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
+        }
+        return [abreviacions, dict_rich];
+    }); 
+}
+
 // llegeix excel d'informació d'indicadors.
 function llegir_indicadors(binaryData) {
 
@@ -582,5 +606,6 @@ export {
     llegir_multicriteri,
     llegir_indicadors,
     llegir_monitoratge,
-    llegir_metodes_monitoratge
+    llegir_metodes_monitoratge,
+    llegir_abreviacio_tractaments
 }

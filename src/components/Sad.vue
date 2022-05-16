@@ -307,8 +307,46 @@
 
     <details class="seccio" open>
       <summary class="seccio">2. Selecció dels trens de tractament viables (avaluant el compliment dels VPs per tots els contaminants)</summary>
-      <div>
-        <img src="/img/fase2.png" alt="Diagrama de la selecció dels trens de tractament viables" style="margin-top:1cm;"> 
+      <div class="container">
+          <div class="item1">
+            <img src="/img/fase2.png" alt="Diagrama de la selecció dels trens de tractament viables" style="margin-top:1cm;"> 
+          </div>
+          <div class="item2">
+            <table border="1">
+                <tr style="background-color: #d4e9fd;">
+                    <th>Tractament</th>
+                    <th>Descripció</th>
+                </tr>
+                <tbody>
+                    <tr v-for="abr in Object.keys(Abreviacions_tractament).slice(0, Math.ceil(Object.keys(Abreviacions_tractament).length / 2)-1)" :key="abr+'_abr'">
+                        <td style="min-width: 90px;">
+                            <div v-html="Tractaments_dict[abr] || abr"></div>
+                        </td>
+                        <td class="doubletd3">
+                            <i>{{Abreviacions_tractament[abr]}}</i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+          </div>
+          <div class="item2">
+            <table border="1">
+                <tr style="background-color: #d4e9fd;">
+                    <th>Tractament</th>
+                    <th>Descripció</th>
+                </tr>
+                <tbody>
+                    <tr v-for="abr in Object.keys(Abreviacions_tractament).slice(-(Math.ceil(Object.keys(Abreviacions_tractament).length / 2)+1))" :key="abr+'_abr'">
+                        <td style="min-width: 90px;">
+                            <div v-html="Tractaments_dict[abr] || abr"></div>
+                        </td>
+                        <td class="doubletd3">
+                            <i>{{Abreviacions_tractament[abr]}}</i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+          </div>
       </div>
       <div style="text-align: left">
         <button @click="avaluacio_trens">Avaluació trens</button>
@@ -461,12 +499,12 @@
             >
               <tr>
                 <td :rowspan="1 + Object.keys(tra).length">
-                    <div v-html="Trens_dict[nom_tra] || nom_tra"></div>
+                    <div v-html="Tractaments_dict[nom_tra] || nom_tra"></div>
                 </td>
               </tr>
               <tr v-for="(pre, nom_pre) in tra" :key="nom_tra+'_'+nom_pre">
                 <td>
-                    <div v-html="Trens_dict[nom_pre] || nom_pre"></div>
+                    <div v-html="Tractaments_dict[nom_pre] || nom_pre"></div>
                 </td>
                 <td>
                   <details>
@@ -856,7 +894,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
@@ -891,7 +929,9 @@ export default {
       Tractaments_info: {},     //diccionari tots els tractaments
 	    Tractaments_m_info: {},   //diccionari tractaments amb punt de referència 1 (microbiològics).
       Trens_info: {},           //diccionari tots els trens,
-      Trens_dict: {},           //diccionari dels rich names per trens i tractaments.
+      Trens_dict: {},           //diccionari dels rich names per trens.
+      Tractaments_dict: {},     //diccionari dels rich names per tractaments.
+      Abreviacions_tractament: {}, //diccionari de les abreviacions dels tractaments.
       Usos_info: {},              //diccionari tots els usos
       Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
 	    Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
@@ -943,6 +983,9 @@ export default {
 
     // llegir excel 'metodes_monitoratge'.
     this.read_file('/20220421_SUGGEREIX_Taula_A4.xlsx', 'metodes_monitoratge');
+
+    // llegir excel 'abreviacions tractaments'.
+    this.read_file('/20220419_SUGGEREIX_Taula_C8.xlsx', 'abreviacio_tractaments');
     
   },
   methods:{
@@ -1045,6 +1088,11 @@ export default {
         }
         else if (type === 'metodes_monitoratge'){
             _this.Metodes_monitoratge = await llegir_metodes_monitoratge(binaryData);
+        }
+        else if (type === 'abreviacio_tractaments'){
+            const res = await llegir_abreviacio_tractaments(binaryData);
+            _this.Tractaments_dict = res[1];
+            _this.Abreviacions_tractament = res[0];
         }
       }
 
@@ -1750,6 +1798,20 @@ table.evenodd tr:nth-child(2) {
 
 table.extraborder tr:nth-child(2) {
     border-bottom: 4px solid black;
+}
+
+.container {
+  display: flex;
+}
+
+.item1 {
+  flex-basis: 500px;
+  margin: 5px;
+}
+
+.item2 {
+  flex-basis: 700px;
+  margin: 5px;
 }
 
 </style>
