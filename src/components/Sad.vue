@@ -1081,6 +1081,13 @@ export default {
         else if (type === 'descripcio_indicadors'){
           const res = await llegir_indicadors(binaryData);
           _this.Info_indicadors = res[0];
+          _this.Info_indicadors['Cabal'] = {
+            name: 'Cabal',
+            name_rich: 'Cabal',
+            type: "1.1. Paràmetres de monitoratge continu ",
+            unitats: "m3/d",
+            unitats_rich: "m<sup>3</sup>/d"
+          }
           _this.Info_indicadors_types = res[1];
         }
         else if (type === 'monitoratge'){

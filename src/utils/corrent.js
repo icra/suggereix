@@ -15,7 +15,7 @@ export default class Corrent {
         this.regulat = {};
         this.seleccionat = {};
         for(const id of Object.keys(info_indicadors)){
-            if(id !== 'OT1' && id !== 'OT2'){
+            if(id.startsWith('I')){
                 this.qualitat[id] = 0;
                 this.refs[id] = "";
                 this.eliminacio[id] = 0;
