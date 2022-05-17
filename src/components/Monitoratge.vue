@@ -302,6 +302,7 @@ export default {
         return '<b>'+ind+'.</b> '+value_res;
     },
     mostrar_abreviacio: function(metode) {
+      if(!metode || !metode.desc_enriquit) return false; 
         for(const [abreviacio,desc] of Object.entries(this.abreviacions_met_mon)){
           if(metode.desc_enriquit.includes(abreviacio)) return true;
         }
