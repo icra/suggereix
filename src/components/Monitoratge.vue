@@ -55,9 +55,9 @@
                   <td style="padding: 2px;">
                       <div v-for="metode, ind in metodes_info[tractament][parameter]" :key="'_'+parameter+'_'+tractament+'_freq_'+ind">
                         <div style="position: relative; display: inline-block;" v-html="getMetodeHtml(metode, ind+1)"></div>
-                        <div class="tooltip">
+                        <div v-if="mostrar_abreviacio(metode)" class="tooltip">
                             <i class="fa-regular fa-circle-question"></i>
-                            <span v-if="mostrar_estandard(tractament,parameter)" :key="((Math.random() + 1).toString(36).substring(7))" class="tooltiptext">Aquí es mostrarà les descripcions de les abreviacions dels mètodes</span>
+                            <span :key="((Math.random() + 1).toString(36).substring(7))" class="tooltiptext">{{mostra_abreviacio(metode)}}</span>
                         </div>
                        </div>
                   </td>
@@ -77,7 +77,7 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code'],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon'],
   data: function(){
     return {
       visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
@@ -290,38 +290,6 @@ export default {
     getFrequencia: function(tractament,parameter) {
         return this.info_monitoratge[tractament][parameter].frequencia || '<i style="color:red">No definida</i>'
     },
-    getMetodes: function(tractament,parameter) {
-        let frequencia = this.info_monitoratge[tractament][parameter].frequencia;
-        if(!frequencia || !this.metodes_monitoratge[parameter]) return '<i style="color:red">No definit</i>';
-        frequencia = frequencia.replace(/ *\([^)]*\) */g, "");
-        const values = this.metodes_monitoratge[parameter][frequencia];
-        if(values){
-          let i = 1;
-          let res = "";
-          for(const value of values){
-            let value_res = value.desc_enriquit;
-            if(value.ref_enriquit !== "nd") value_res += " ("+value.ref_enriquit+")";
-            res += '<b>'+i+'.</b> '+value_res+'<br>';
-            i+=1;
-          }
-          return res;
-        }
-        else if(frequencia === 'Continu o periòdic'){
-          const alt_values = this.metodes_monitoratge[parameter]['Continu'] || this.metodes_monitoratge[parameter]['Periòdic']
-          if(alt_values){
-            let i = 1;
-            let res = "";
-            for(const value of alt_values){
-              let value_res = value.desc_enriquit;
-              if(value.ref_enriquit !== "nd") value_res += " ("+value.ref_enriquit+")";
-              res += '<b>'+i+'.</b> '+value_res+'<br>';
-              i+=1;
-            }
-            return res;
-          }
-        }
-        return '<i style="color:red">No definit</i>';
-    },
     getMetodeHtml: function(metode, ind){
         if(!metode) return '<i style="color:red">No definit</i>';
         let value_res = metode.desc_enriquit;
@@ -333,33 +301,19 @@ export default {
         }
         return '<b>'+ind+'.</b> '+value_res;
     },
-    mostrar_estandard: function(tractament,parameter) {
-        let frequencia = this.info_monitoratge[tractament][parameter].frequencia;
-        if(!frequencia || !this.metodes_monitoratge[parameter]) return false;
-        frequencia = frequencia.replace(/ *\([^)]*\) */g, "");
-        const values = this.metodes_monitoratge[parameter][frequencia];
-        if(values){
-          for(const value of values){
-            if(value.type === 2 || value.type === 1) return true;
-          }
+    mostrar_abreviacio: function(metode) {
+        for(const [abreviacio,desc] of Object.entries(this.abreviacions_met_mon)){
+          if(metode.desc_enriquit.includes(abreviacio)) return true;
         }
         return false;
     },
-    mostra_estandard: function(tractament,parameter) {
-        const frequencia = this.info_monitoratge[tractament][parameter].frequencia.replace(/ *\([^)]*\) */g, "");
-        const values = this.metodes_monitoratge[parameter][frequencia];
-        if(values){
-          let i = 1;
-          let res = "";
-          for(const value of values){
-            if(value.type === 2) res+= i+'. Mètode estàndard; ';
-            else if(value.type === 1) res+= i+'. Mètode desenvolupat no estàndard; ';
-            else res+= i+'. No definit; '
-            i+=1;
+    mostra_abreviacio: function(metode) {
+        for(const [abreviacio,desc] of Object.entries(this.abreviacions_met_mon)){
+          if(metode.desc_enriquit.includes(abreviacio)){
+            return abreviacio+': '+desc;
           }
-          return res;
         }
-        return "";
+        return '';
     },
     render_diagrama_tractament: function(){
       const _this = this;

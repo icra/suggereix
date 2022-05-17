@@ -882,7 +882,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" />
           </div>
       </div>
     </details>
@@ -939,6 +939,7 @@ export default {
       Info_indicadors: {},         //diccionari amb informació sobre els indicadors.
       Info_indicadors_types: [],   //array amb informació sobre els tipus indicadors.
       Info_monitoratge: {},        //objecte amb informació sobre el monitoratge dels indicadors per determinats tractaments.
+      Abrevicions_met_mon: {}, //objecte amb les abreviacions dels metodes de monitoratge
       Info_rich: {},           //objecte amb informació sobre els textos enriquits per mostrar amb sup sub o italic.
       Metodes_monitoratge: {},     //objecte que conté la informació dels mètodes que s'utilitzen per a cada parametre i tipus de freqüència.
       Ind_to_code: {},             //diccionari per passar de noms a codis d'indicadors.
@@ -1089,7 +1090,9 @@ export default {
           _this.Ind_to_code = res[2];
         }
         else if (type === 'metodes_monitoratge'){
-            _this.Metodes_monitoratge = await llegir_metodes_monitoratge(binaryData);
+            const res = await llegir_metodes_monitoratge(binaryData);
+            _this.Metodes_monitoratge = res[0];
+            _this.Abrevicions_met_mon = res[1];
         }
         else if (type === 'abreviacio_tractaments'){
             const res = await llegir_abreviacio_tractaments(binaryData);

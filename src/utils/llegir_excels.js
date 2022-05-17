@@ -483,8 +483,10 @@ function llegir_metodes_monitoratge(binaryData) {
     let workbook = new ExcelJS.Workbook();
     return workbook.xlsx.load(binaryData).then(wb => {
         let worksheet = wb.worksheets[0];
+        let worksheet2 = wb.worksheets[2];
         let rowNumber = 4; //ignore first column (header)
         const metodes_monitoratge = {};
+        const abreviacions_monitoratge = {}; 
 
         let parameter = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
         while(parameter){
@@ -505,7 +507,15 @@ function llegir_metodes_monitoratge(binaryData) {
             parameter = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
         }
 
-        return metodes_monitoratge;
+        rowNumber = 4; //ignore first column (header)
+        let abreviacio = valor_nom(worksheet2.getCell('A' + rowNumber.toString()).value);
+        while(abreviacio){
+            const desc = valor_nom(worksheet2.getCell('B' + rowNumber.toString()).value);
+            abreviacions_monitoratge[abreviacio] = desc;
+            rowNumber += 1;
+            abreviacio = valor_nom(worksheet2.getCell('A' + rowNumber.toString()).value);
+        }
+        return [metodes_monitoratge, abreviacions_monitoratge];
     });
 }
 
