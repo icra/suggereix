@@ -393,22 +393,22 @@ export default {
                 cellViewNamespace: namespace
             });
             const type = info_indicadors[indicador].type;
-            if(type.includes("1.1. ")){
+            if(type.startsWith("1.1. ")){
                 // Monitoratge continu.
             }
-            else if(type.includes("2.1. ")){
+            else if(type.startsWith("2.1. ")){
                 // Nutrients.
             }
-            else if(type.includes("2.2. ")){
+            else if(type.startsWith("2.2. ")){
                 // Metalls.
             }
-            else if(type.includes("2.3. ")){
+            else if(type.startsWith("2.3. ")){
                 // Compostos orgànics.
             }
-            else if(type.includes("2.4. ")){
+            else if(type.startsWith("2.4. ")){
                 // Productes d'oxidació.
             }
-            else if(type.includes("3. ")){
+            else if(type.startsWith("3. ")){
                 // Indicadors microbiològics.
             }
             

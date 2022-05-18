@@ -1161,7 +1161,7 @@ export default {
                     //_this.user.corrent_objectiu[key] = value;
                     usuari.corrent_objectiu[key] = value;
                 }
-                _this.user = JSON.parse(JSON.stringify(usuari));
+                _this.user = usuari;
             } catch(err){
                 alert("Error al llegir el fitxer.");
                 return;
@@ -1222,8 +1222,8 @@ export default {
 
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
             const n_indicadors = Object.values(_this.ind_seleccionats).filter(selected => selected).length;
-            const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.ind_seleccionats,_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
-			const avaluacio_compliments_min = min_max.min.n_compliments('min',_this.ind_seleccionats,_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Usos_info);
+            const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.ind_seleccionats,_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Info_indicadors);
+			const avaluacio_compliments_min = min_max.min.n_compliments('min',_this.ind_seleccionats,_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Info_indicadors);
 			const max_length = Object.values(avaluacio_compliments_max).filter(value => value === 0);
             const max_length_noref = Object.values(avaluacio_compliments_max).filter(value => value === 0 || value === 1);
             const puntuacio = Math.round((((max_length.length / n_indicadors) * 100) + Number.EPSILON) * 100) / 100;
@@ -1287,7 +1287,7 @@ export default {
       const criteris_trens = [];
       for(const tren of trens_viables){
           const capacitat = _this.user.corrent.Q * _this.user.corrent.F / 100
-          const criteris = avaluar_multicriteris(tren, _this.Trens_info, _this.Multicriteri_info, capacitat);
+          const criteris = avaluar_multicriteris(tren, _this.Trens_info, _this.Multicriteri_info, _this.Info_indicadors, capacitat);
           const criteris_agregats = agregaCriteris(criteris);
           criteris_trens.push({
               id: tren.id,

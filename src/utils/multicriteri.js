@@ -8,12 +8,6 @@ import {
     or
 } from "@thi.ng/fuzzy";
 
-// Variable constant amb els indicadors químics.
-const IND_QUIMICS = ['I2','I3','I4','I5','I6','I7','I8','I9','I10','I11','I12','I13','I14','I15','I16','I17','I18']
-
-// Variable constant amb els indicadors microbiològics.
-const IND_MICRO = ['I19','I20','I21']
-
 // Diccionari constant amb el ID del criteri i si és beneficios o no.
 const DICT_CRI_BENEFICIOSOS = {
     eliminacio_quimics: true,
@@ -125,10 +119,10 @@ const mitjana = (array) => {
 }
 
 // Funció que calcula el percentatge d'eliminació mitjà.
-const perElimMitja = (eliminacions, tipus_ind) => {
+const perElimMitja = (eliminacions, info_indicadors,tipus_ind) => {
 
     // Obtenir el tipus d'indicador corresponent depenent del paràmetre 'tipus_ind'.
-    const indicadors = tipus_ind === 'quimics' ? IND_QUIMICS : IND_MICRO;
+    const indicadors = tipus_ind === 'quimics' ? info_indicadors.filter(ind => !ind.type.startsWith("3. ")) : info_indicadors.filter(ind => ind.type.startsWith("3. "));
 
     // Obtenir tots els % d'eliminació dels indicadors que ens interessa i calcular la mitjana.
     const array_eliminacions = [];
@@ -281,13 +275,13 @@ const applyFuzzyTractaments = (tren, info_trens, info_multicriteris, capacitat, 
 
 
 // Aquesta funció rep un tren de tractament, la informació dels trens, i la informació dels multicriteris per a retornar els seus multicriteris.
-export const avaluar_multicriteris = (tren, info_trens, info_multicriteris, capacitat) => {
+export const avaluar_multicriteris = (tren, info_trens, info_multicriteris, info_indicadors, capacitat) => {
 
     return{
-        eliminacio_quimics_min: perElimMitja(tren.concentracio.min.eliminacio,"quimics"),
-        eliminacio_quimics_max: perElimMitja(tren.concentracio.max.eliminacio,"quimics"),
-        eliminacio_microbiologics_min: perElimMitja(tren.concentracio.min.eliminacio,"microbiologics"),
-        eliminacio_microbiologics_max: perElimMitja(tren.concentracio.max.eliminacio,"microbiologics"),
+        eliminacio_quimics_min: perElimMitja(tren.concentracio.min.eliminacio,info_indicadors,"quimics"),
+        eliminacio_quimics_max: perElimMitja(tren.concentracio.max.eliminacio,info_indicadors,"quimics"),
+        eliminacio_microbiologics_min: perElimMitja(tren.concentracio.min.eliminacio,info_indicadors,"microbiologics"),
+        eliminacio_microbiologics_max: perElimMitja(tren.concentracio.max.eliminacio,info_indicadors,"microbiologics"),
         cost_total_min: costTotal(tren, info_trens, info_multicriteris, capacitat, "min"),
         cost_total_max: costTotal(tren, info_trens, info_multicriteris, capacitat, "max"),
         cons_ene_mitja: applyFuzzyTractaments(tren, info_trens, info_multicriteris, capacitat, 'cons_ene_mitja'),

@@ -68,7 +68,7 @@ export default class Corrent {
 
                 // En cas de tractar-se de indicadors microbiològics, aplicar primer els tractaments primari i secundari (si n'hi ha) fins a arribar al mateix punt de referència dels altres indicadors.
                 let n = array_tractaments.length; // número de tractaments aplicats en el tren
-                if (id === 'I19' || id === 'I20' || id === 'I21') {
+                if (info_indicadors[id].type.startsWith("3. ")) {
                     pretractament = 'na';
                     const array_pretractaments = ['DP'];
                     if (tractament_secundari !== 'DP') {
@@ -126,9 +126,7 @@ export default class Corrent {
     }
 
     //detecta els compliments i retorna un array amb els ids dels indicadors que compleixen.
-    n_compliments(type, ind_seleccionats, corrent, qualitat_micro, usos_seleccionats, qualitat_inicial, usos_info) {
-
-        const indicadors_microbiologics = ['I19', 'I20', 'I21'];
+    n_compliments(type, ind_seleccionats, corrent, qualitat_micro, usos_seleccionats, qualitat_inicial, info_indicadors) {
 
         // 0: compleix. 1: incompleix però indicador no és regulat, 2: incompleix indicador regulat.
         const compliments = {};
@@ -138,10 +136,11 @@ export default class Corrent {
             //mirar tots els indicadors excepte els no seleccionats.
             if (selected) {
                 //si el VP és 'nd', es considera que compleix (excepte els microbiològics).
-                if (!indicadors_microbiologics.includes(id) && corrent.qualitat[id] === 'nd') {
+                if (!info_indicadors[id].type.startsWith("3. ") && corrent.qualitat[id] === 'nd') {
                     compliments[id] = 0;
-                } else if (indicadors_microbiologics.includes(id)) {
-                    if (corrent.qualitat[id] === 'nd' || this.qualitat[id] <= corrent.qualitat[id]) {
+                } else if (info_indicadors[id].type.startsWith("3. ")) {
+                    if (corrent.qualitat[id] === 'nd') {
+                        // Si no hi ha VP definit, comprovar si s'aconsegueix la reducció mínima.
                         // Ara cal comprovar que s'ha aconseguit un Rmin de, com a mínim, el que s'especifica en la Taula A8 per els usos seleccionats.
                         let reduccio_requerida = 0;
                         for (const usage of usos_seleccionats) {
@@ -152,7 +151,14 @@ export default class Corrent {
                         } else {
                             compliments[id] = corrent.regulat[id] ? 2 : 1;
                         }
-                    } else compliments[id] = corrent.regulat[id] ? 2 : 1;
+                    } else{
+                        // Té VP definit, retorna VP.
+                        if (this.qualitat[id] <= corrent.qualitat[id]) {
+                            compliments[id] = 0;
+                        } else {
+                            compliments[id] = corrent.regulat[id] ? 2 : 1;
+                        }
+                    }
                 } else if (this.qualitat[id] <= corrent.qualitat[id]) {
                     compliments[id] = 0;
                 } else {
