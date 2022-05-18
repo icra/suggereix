@@ -12,7 +12,7 @@
           Monitoratge dels tractaments
       </div>
       <div 
-          :id="'monitoratge_qualitat'"
+          :id="'monitoratge_qualitats'"
           v-bind:class="visio_monitoratge === 1 ? 'click-chip-hover background-blue' : 'click-chip-hover outline-blue'"
           @click="canviVisio"
       >
@@ -67,6 +67,31 @@
         </div>
       </div>
       <div v-if="this.visio_monitoratge === 1">
+          <div class="sticky">
+            <table class="sticky extraborder" border="1">
+              <tr>
+                <th rowspan="2" class="doubletd">Paràmetre/Indicador</th>
+                <th rowspan="2" class="doubletd">Punt Monitoratge</th>
+                <th rowspan="2" class="doubletd">Freqüència</th>
+                <th rowspan="2" class="doubletd3">
+                    Mètode(s)
+                </th>
+              </tr>
+              <tr />
+              <template v-for="indicador in Object.keys(info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(indicadors_seleccionats).includes(indicador) ? indicadors_seleccionats[indicador] : true)))">
+                  <tr :key="indicador+'_q_aigua_1'">
+                      <td :rowspan="punts_qualitat[indicador].length+1">
+                          <div v-html="info_indicadors[indicador].name_rich" />
+                      </td>
+                  </tr>
+                  <tr v-for="punt of punts_qualitat[indicador]" :key="punt+'_'+indicador+'_q_aigua_2'">
+                      <td>a</td>
+                      <td>a</td>
+                      <td>a</td>
+                  </tr>
+              </template>
+            </table>
+          </div>
       </div>
   </div>
 </template>
@@ -77,7 +102,7 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon'],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors'],
   data: function(){
     return {
       visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
@@ -95,7 +120,8 @@ export default {
     array_tractaments: function(newVal, oldVal) {
         const _this = this;
         _this.$nextTick(function () {
-            _this.render_diagrama_tractament();
+            if(_this.visio_monitoratge === 0) _this.render_diagrama_tractament();
+            else if(_this.visio_monitoratge === 1) _this.render_diagrama_qualitat();
         })   
     },
     // crea l'usuari un cop es tingui informació dels indicadors.
@@ -103,7 +129,18 @@ export default {
         handler: function(newVal, oldVal) {
             const _this = this;
             _this.$nextTick(function () {
-                _this.render_diagrama_tractament();
+                if(_this.visio_monitoratge === 0) _this.render_diagrama_tractament();
+                else if(_this.visio_monitoratge === 1) _this.render_diagrama_qualitat();
+            });   
+        },
+        deep: true 
+    },
+    visio_monitoratge: {
+        handler: function(newVal, oldVal) {
+            const _this = this;
+            _this.$nextTick(function () {
+                if(_this.visio_monitoratge === 0) _this.render_diagrama_tractament();
+                else if(_this.visio_monitoratge === 1) _this.render_diagrama_qualitat();
             });   
         },
         deep: true 
@@ -117,6 +154,29 @@ export default {
     });
   },
   computed: {
+    // Variable que conté el nombre de punts de mostreig necessaris per a cada indicador.
+    punts_qualitat: function() {
+        const _this = this;
+        const qualitat = {}
+        for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
+            const type = _this.info_indicadors[indicador].type;
+            if(indicador === 'Cabal') qualitat[indicador] = ['entrada1','entrada2','sortida'];
+            else if(type.includes("1.1. ") || type.includes("2.1. ") || type.includes("2.2. ") || type.includes("2.3. ")){
+                // Monitoratge continu, Nutrients, Metalls, Compostos orgànics.
+                qualitat[indicador] = ['entrada2','sortida'];
+            }
+            else if(type.includes("2.4. ")){
+                // Productes d'oxidació.
+                qualitat[indicador] = ['sortida'];
+            }
+            else if(type.includes("3. ")){
+                // Indicadors microbiològics.
+                qualitat[indicador] = ['entrada1','sortida'];
+            }
+            else qualitat[indicador] = [];
+        }
+        return qualitat;
+    },
     // Variable que conté la informació dels mètodes per cada indicador de cada tractament.
     metodes_info: function () {
         const _this = this;
@@ -315,6 +375,44 @@ export default {
           }
         }
         return '';
+    },
+    render_diagrama_qualitat: function(){
+        const _this = this;
+        for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
+            const doc = _this.$refs['punts_qualitat_'+indicador];
+            const namespace = joint.shapes;
+            const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+            const paper = new joint.dia.Paper({
+                el: doc,
+                model: graph,
+                gridSize: 1,
+                width: 150,
+                heigth: 30,
+                interactive: false,
+                restrictTranslate: true,
+                cellViewNamespace: namespace
+            });
+            const type = info_indicadors[indicador].type;
+            if(type.includes("1.1. ")){
+                // Monitoratge continu.
+            }
+            else if(type.includes("2.1. ")){
+                // Nutrients.
+            }
+            else if(type.includes("2.2. ")){
+                // Metalls.
+            }
+            else if(type.includes("2.3. ")){
+                // Compostos orgànics.
+            }
+            else if(type.includes("2.4. ")){
+                // Productes d'oxidació.
+            }
+            else if(type.includes("3. ")){
+                // Indicadors microbiològics.
+            }
+            
+        }
     },
     render_diagrama_tractament: function(){
       const _this = this;

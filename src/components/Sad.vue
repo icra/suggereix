@@ -882,7 +882,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" />
           </div>
       </div>
     </details>
