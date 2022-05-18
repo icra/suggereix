@@ -50,14 +50,14 @@ export const DICT_CRI_INTERVAL = {
 export const DICT_CRI_NOMS = {
     eliminacio_quimics: 'Mitjana % d\'eliminació (I. químics)',
     eliminacio_microbiologics: "Mitjana % d'eliminació (I. microbiològics)",
-    cons_ene_mitja: "Consum energètic mitjà (kWh/dia)",
-    cost_total: "Mitjana del cost total (€)",
+    cons_ene_mitja: "Consum energètic mitjà (kWh/d)",
+    cost_total: "Mitjana del cost total (€/d)",
     espai_ocupat: "Espai ocupat (m2)",
-    hc: "Petjada de carboni (kg CO2 eq./dia)",
-    hh: "Petjada hídrica (L eq./dia)",
+    hc: "Petjada de carboni (kg CO2 eq./d)",
+    hh: "Petjada hídrica (L eq./d)",
     puntuacio: "Compliment (%)",
-    cost_capex: "Mitjana del cost CAPEX (€)",
-    cost_opex: "Cost OPEX (€)"
+    cost_capex: "Mitjana del cost CAPEX (€/d)",
+    cost_opex: "Cost OPEX (€/d)"
 }
 
 // Diccionari de pesos.
@@ -223,7 +223,7 @@ const costTotal = (tren, info_trens, info_multicriteris, capacitat, type) => {
         const cost_opex = applyFuzzy(capacitat, tractament_criteris, 'opex');
         const cost_capex = applyFuzzy(capacitat, tractament_criteris, 'capex_'+type);
         // El cost total és el OPEX i el CAPEX (diaris) multiplicat per el temps de vida de la planta.
-        cost_total += ((cost_opex + cost_capex)*capacitat*365*30);
+        cost_total += ((cost_opex + cost_capex)*capacitat);
     }
     return cost_total;
 }
@@ -240,7 +240,7 @@ const costOpex = (tren, info_trens, capacitat, info_multicriteris) => {
         const tractament_criteris = obtenirCriterisTractament(tractament, info_multicriteris);
         const cost_opex = applyFuzzy(capacitat, tractament_criteris, 'opex');
         // El cost total és el OPEX i el CAPEX (diaris) multiplicat per el temps de vida de la planta.
-        cost += (cost_opex*capacitat*365*30);
+        cost += (cost_opex*capacitat);
     }
     return cost;
 }
@@ -257,7 +257,7 @@ const costCapex = (tren, info_trens, info_multicriteris, capacitat, type) => {
         const tractament_criteris = obtenirCriterisTractament(tractament, info_multicriteris);
         const cost_capex = applyFuzzy(capacitat, tractament_criteris, 'capex_'+type);
         // El cost total és el OPEX i el CAPEX (diaris) multiplicat per el temps de vida de la planta.
-        cost += (cost_capex*capacitat*365*30);
+        cost += (cost_capex*capacitat);
     }
     return cost;
 }

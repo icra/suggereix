@@ -614,7 +614,7 @@
                     </div>
                 </th>
                 <th colspan="2" rowspan="2" class="doubletd">
-                    Cost total (€)
+                    Cost total (€/d)
                     <div class="tooltip">
                         <button :id="'cost_total'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
                         <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
@@ -787,14 +787,14 @@
             <tr>
               <th>Tractament</th>
               <th>Rang qualitatiu</th>
-              <th colspan="2">Rang de cabal (m3/d)</th>
-              <th>Consum energètic mitjà (kWh/m3)</th>
-              <th>Petjada de carboni (kg CO2 eq./m3)</th>
-              <th>Petjada hídrica (L eq./m3)</th>
-              <th>Espai ocupat (m2)</th>
-              <th>OPEX (€/m3)</th>
-              <th>CAPEX mínim (€/m3/d)</th>
-              <th>CAPEX màxim (€/m3/d)</th>
+              <th colspan="2">Rang de cabal (m<sup>3</sup>/d)</th>
+              <th>Consum energètic mitjà (kWh/m<sup>3</sup>)</th>
+              <th>Petjada de carboni (kg CO<sub>2</sub> eq./m<sup>3</sup>)</th>
+              <th>Petjada hídrica (L eq./m<sup>3</sup>)</th>
+              <th>Espai ocupat (m<sup>2</sup>)</th>
+              <th>OPEX (€/m<sup>3</sup>)</th>
+              <th>CAPEX mínim (€/m<sup>3</sup>/d)</th>
+              <th>CAPEX màxim (€/m<sup>3</sup>/d)</th>
             </tr>
             <tbody v-for="(obj, id) in this.Multicriteri_info" :key="id+'_multi'">
               <tr>
@@ -963,7 +963,7 @@ export default {
     this.read_file('/20211004_SUGGEREIX_Taula_B5.xlsx', 'tractaments_micro');
 
     // llegir excel 'trens'
-    this.read_file('/20220420_SUGGEREIX_Taula_Trens.xlsx', 'trens');
+    this.read_file('/20220518_SUGGEREIX_Taula_Trens_v2.xlsx', 'trens');
 
     // llegir excel 'efluent secundari' (característiques infraestructura existent)
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
