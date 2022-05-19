@@ -66,13 +66,14 @@
             </table>
         </div>
       </div>
-      <div v-if="this.visio_monitoratge === 1">
+      <div v-if="visio_monitoratge === 1 && usos_seleccionats.length">
           <div class="sticky">
             <table class="sticky extraborder" border="1">
               <tr>
                 <th rowspan="2" class="doubletd">Paràmetre/Indicador</th>
                 <th rowspan="2" class="smalltd">Punt Monitoratge</th>
-                <th rowspan="2" class="doubletd">Freqüència</th>
+                <th rowspan="2" class="doubletd">QR</th>
+                <th rowspan="2" class="doubletd3">Freqüència</th>
                 <th rowspan="2" class="doubletd3">
                     Mètode(s)
                 </th>
@@ -86,12 +87,16 @@
                   </tr>
                   <tr v-for="punt of punts_qualitat[indicador]" :key="punt+'_'+indicador+'_q_aigua_2'">
                       <td class="smalltd"><div style="height:30px;overflow:hidden" class="smalltd"><div class="smalltd" :ref="'punts_qualitat_'+indicador+'_'+punt" /></div></td>
-                      <td>A</td>
-                      <td>b</td>
+                      <td><div v-html="indicador_punt_freq &&  indicador_punt_freq[indicador] ? indicador_punt_freq[indicador][punt].qr || '--': '--'" /></td>
+                      <td><div v-html="indicador_punt_freq &&  indicador_punt_freq[indicador] ? indicador_punt_freq[indicador][punt].freq : ''"></div></td>
+                      <td></td>
                   </tr>
               </template>
             </table>
           </div>
+      </div>
+      <div v-else-if="visio_monitoratge === 1">
+          <p><i style="color:red">Cal seleccionar primer els usos d'aigua regenerada per a poder veure la taula del monitoratge de la qualitat de l'aigua.</i></p>
       </div>
   </div>
 </template>
@@ -102,7 +107,7 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors'],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors','tractaments_info','user','usos_seleccionats','mon_per_ind_quim'],
   data: function(){
     return {
       visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
@@ -154,6 +159,64 @@ export default {
     });
   },
   computed: {
+    // Diccionari que conté la freqüència per a cada indicador i punt.
+    indicador_punt_freq: function() {
+        const _this = this;
+        const dict_freq = {};
+        const array_tractaments = _this.tren_monitoratge['array_tractaments'];
+        const min_max = _this.user.corrent.aplica_tren_tractaments(_this.info_indicadors, array_tractaments, _this.tractaments_info, _this.tractament_secundari,_this.tren_monitoratge.codi);
+        for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
+            dict_freq[indicador] = {};
+            const full_indicador = _this.info_indicadors[indicador];
+            for(const punt of _this.punts_qualitat[indicador]){
+                dict_freq[indicador][punt] = {};
+                if(full_indicador.type.startsWith("1.1. ")){
+                    if(indicador === "I5") dict_freq[indicador][punt].freq = "Continu o periòdic";
+                    else dict_freq[indicador][punt].freq = "Continu";
+                }
+                else if(full_indicador.type.startsWith("2.")){
+                    if(full_indicador.type.startsWith("2.4.")) dict_freq[indicador][punt].freq = '<i style="color:red">No definida per a productes d\'oxidació</i>';
+                    else{
+                        const concentracio = min_max.max.qualitat[indicador];
+                        const VP = _this.user.corrent_objectiu.qualitat[indicador];
+                        const QRs = concentracio / VP;
+                        const QRe = QRs / (1-min_max.max.eliminacio[indicador]);
+                        const QR = punt === "sortida" ? QRs : QRe;
+                        dict_freq[indicador][punt].qr = QR;
+                        const tipus_vp = Number(_this.user.corrent_objectiu.tipus_vp[indicador]);
+
+                        // Depenent del rang i del QR obtingut, es posa el resultat que toca.
+                        for(const rang of _this.mon_per_ind_quim[tipus_vp]){
+                            if(rang.mes_gran && !rang.mes_petit){
+                                if(QR > rang.mes_gran){
+                                    dict_freq[indicador][punt].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                    dict_freq[indicador][punt].ref = rang.ref;
+                                }
+                            }
+                            else if(rang.mes_gran && rang.mes_petit){
+                                if(QR > rang.mes_gran && QR < rang.mes_petit){
+                                    dict_freq[indicador][punt].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                    dict_freq[indicador][punt].ref = rang.ref;
+                                }
+                            }
+                            else{
+                                if(QR < rang.mes_petit){
+                                    dict_freq[indicador][punt].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                    dict_freq[indicador][punt].ref = rang.ref;
+                                }
+                            }
+                        }
+                        // En el cas de no trobar coincidència.
+                        if(!dict_freq[indicador][punt].freq) dict_freq[indicador][punt].freq = '<i style="color:red">No definida</i>';
+                        else if(dict_freq[indicador][punt].ref) dict_freq[indicador][punt].freq += " (<i><u>" + dict_freq[indicador][punt].ref + "</u></i>)";
+                    }
+
+                }
+                else dict_freq[indicador][punt].freq = '<i style="color:red">No definida</i>';
+            }
+        }
+        return dict_freq;
+    },
     // Variable que conté el nombre de punts de mostreig necessaris per a cada indicador.
     punts_qualitat: function() {
         const _this = this;

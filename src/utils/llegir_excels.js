@@ -477,6 +477,47 @@ function llegir_monitoratge(binaryData) {
     });
 }
 
+// Taula C3: Monitoratge indicadors químics.
+function llegir_mon_per_ind_quim(binaryData){
+    let _this = this;
+    let workbook = new ExcelJS.Workbook();
+    return workbook.xlsx.load(binaryData).then(wb => {
+        let worksheet = wb.worksheets[0];
+        let rowNumber = 9; //ignore first column (header)
+        const tipus_rangs = {};
+
+        let mes_gran = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
+        let mes_petit = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+        while(mes_gran || mes_petit){
+            const tipus = valor_nom(worksheet.getCell('C' + rowNumber.toString()).value);
+            const text = valor_nom(worksheet.getCell('D' + rowNumber.toString()).value);
+            const text_nutrients = valor_nom(worksheet.getCell('E' + rowNumber.toString()).value);
+            const ref = valor_nom_enriquit(worksheet.getCell('G' + rowNumber.toString()).value);
+            if(!tipus_rangs[tipus]) tipus_rangs[tipus] = [];
+            if(!mes_gran) mes_gran = undefined;
+            else if(mes_gran.startsWith("≥")) mes_gran = Number(mes_gran.substring(1)) - 0.0001;
+            else mes_gran = Number(mes_gran.substring(1));
+            if(!mes_petit) mes_petit = undefined;
+            else if(mes_petit.startsWith("≤")) mes_petit = Number(mes_petit.substring(1)) + 0.0001;
+            else mes_petit = Number(mes_petit.substring(1));
+            tipus_rangs[tipus].push({
+                mes_gran: mes_gran,
+                mes_petit: mes_petit,
+                text: text,
+                text_nutrients: text_nutrients,
+                ref: ref
+            });
+
+
+            rowNumber += 1;
+            mes_gran = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
+            mes_petit = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+        }
+        console.log(tipus_rangs)
+        return tipus_rangs;
+    });
+}
+
 function llegir_metodes_monitoratge(binaryData) {
 
     let _this = this;
@@ -571,5 +612,6 @@ export {
     llegir_indicadors,
     llegir_monitoratge,
     llegir_metodes_monitoratge,
-    llegir_abreviacio_tractaments
+    llegir_abreviacio_tractaments,
+    llegir_mon_per_ind_quim
 }

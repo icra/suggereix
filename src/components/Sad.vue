@@ -882,7 +882,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" />
           </div>
       </div>
     </details>
@@ -894,7 +894,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments, llegir_mon_per_ind_quim} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
@@ -942,6 +942,7 @@ export default {
       Info_rich: {},           //objecte amb informació sobre els textos enriquits per mostrar amb sup sub o italic.
       Metodes_monitoratge: {},     //objecte que conté la informació dels mètodes que s'utilitzen per a cada parametre i tipus de freqüència.
       Ind_to_code: {},             //diccionari per passar de noms a codis d'indicadors.
+      Mon_per_ind_quim: {},       //diccionari del monitoratge periòdic d'indicadors químics.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -984,6 +985,9 @@ export default {
 
     // llegir excel 'abreviacions tractaments'.
     this.read_file('/20220419_SUGGEREIX_Taula_C8.xlsx', 'abreviacio_tractaments');
+
+    // llegir excel 'monitoratge periòdic dels indicadors químics'.
+    this.read_file('/20220323_SUGGEREIX_Taula_C3.xlsx', 'mon_per_ind_quim');
     
   },
   methods:{
@@ -1099,6 +1103,10 @@ export default {
             const res = await llegir_abreviacio_tractaments(binaryData);
             _this.Tractaments_dict = res[1];
             _this.Abreviacions_tractament = res[0];
+        }
+        else if (type === 'mon_per_ind_quim'){
+            _this.Mon_per_ind_quim = await llegir_mon_per_ind_quim(binaryData);
+            console.log(_this.Mon_per_ind_quim)
         }
       }
 
@@ -1411,7 +1419,9 @@ export default {
                 if(_this.mod_ind_vps[ind]){
                     _this.user.corrent_objectiu.qualitat[ind] = _this.mod_ind_vps[ind][0];
                     _this.user.corrent_objectiu.refs[ind] = _this.mod_ind_vps[ind][1];
+                    _this.user.corrent_objectiu.tipus_vp[ind] = _this.mod_ind_vps[ind][2];
                     _this.user.corrent_objectiu.regulat[ind] = _this.mod_ind_vps[ind][4];
+
                     if(_this.mod_ind_vps[ind][0] !== 'nd') vp_assigned.add(ind);
                 }
                 else{
@@ -1419,6 +1429,7 @@ export default {
                     let vp_value = 'nd';
                     let vp_ref = '';
                     let vp_regulat = false;
+                    let vp_tipus = 1;
                     for(const us of _this.usos_seleccionats){
                         for (const [key, value] of Object.entries(_this.Usos_info[us].qualitat[ind])) {
                             if(value.vp !== 'nd'){
@@ -1427,6 +1438,7 @@ export default {
                                     vp_value = value.vp;
                                     vp_ref = value.ref;
                                     vp_regulat = value.regulat;
+                                    vp_tipus = key;
                                 }
                             }
                         }
@@ -1434,6 +1446,7 @@ export default {
                     _this.user.corrent_objectiu.qualitat[ind] = vp_value;
                     _this.user.corrent_objectiu.refs[ind] = vp_ref;
                     _this.user.corrent_objectiu.regulat[ind] = vp_regulat;
+                    _this.user.corrent_objectiu.tipus_vp[ind] = vp_tipus;
                 }
             }
         }

@@ -14,6 +14,7 @@ export default class Corrent {
         this.refs = {};
         this.regulat = {};
         this.seleccionat = {};
+        this.tipus_vp = {};
         for(const id of Object.keys(info_indicadors)){
             if(id.startsWith('I')){
                 this.qualitat[id] = 0;
