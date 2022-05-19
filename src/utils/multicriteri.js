@@ -121,13 +121,15 @@ const mitjana = (array) => {
 // Funció que calcula el percentatge d'eliminació mitjà.
 const perElimMitja = (eliminacions, info_indicadors,tipus_ind) => {
 
-    // Obtenir el tipus d'indicador corresponent depenent del paràmetre 'tipus_ind'.
-    const indicadors = tipus_ind === 'quimics' ? info_indicadors.filter(ind => !ind.type.startsWith("3. ")) : info_indicadors.filter(ind => ind.type.startsWith("3. "));
-
     // Obtenir tots els % d'eliminació dels indicadors que ens interessa i calcular la mitjana.
     const array_eliminacions = [];
     for (const [indicador, eliminacio] of Object.entries(eliminacions)) {
-        if(indicadors.includes(indicador)) array_eliminacions.push(eliminacio);
+        if(tipus_ind === 'quimics' && !info_indicadors[indicador].type.startsWith("3. ")){
+            array_eliminacions.push(eliminacio);
+        }
+        else if(tipus_ind !== 'quimics' && info_indicadors[indicador].type.startsWith("3. ")) {
+            array_eliminacions.push(eliminacio);
+        }
     }
     return mitjana(array_eliminacions);
 }

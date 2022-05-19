@@ -71,7 +71,7 @@
             <table class="sticky extraborder" border="1">
               <tr>
                 <th rowspan="2" class="doubletd">Paràmetre/Indicador</th>
-                <th rowspan="2" class="doubletd">Punt Monitoratge</th>
+                <th rowspan="2" class="smalltd">Punt Monitoratge</th>
                 <th rowspan="2" class="doubletd">Freqüència</th>
                 <th rowspan="2" class="doubletd3">
                     Mètode(s)
@@ -85,9 +85,9 @@
                       </td>
                   </tr>
                   <tr v-for="punt of punts_qualitat[indicador]" :key="punt+'_'+indicador+'_q_aigua_2'">
-                      <td>a</td>
-                      <td>a</td>
-                      <td>a</td>
+                      <td class="smalltd"><div style="height:30px;overflow:hidden" class="smalltd"><div class="smalltd" :ref="'punts_qualitat_'+indicador+'_'+punt" /></div></td>
+                      <td>A</td>
+                      <td>b</td>
                   </tr>
               </template>
             </table>
@@ -379,37 +379,30 @@ export default {
     render_diagrama_qualitat: function(){
         const _this = this;
         for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
-            const doc = _this.$refs['punts_qualitat_'+indicador];
-            const namespace = joint.shapes;
-            const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
-            const paper = new joint.dia.Paper({
-                el: doc,
-                model: graph,
-                gridSize: 1,
-                width: 150,
-                heigth: 30,
-                interactive: false,
-                restrictTranslate: true,
-                cellViewNamespace: namespace
-            });
-            const type = info_indicadors[indicador].type;
-            if(type.startsWith("1.1. ")){
-                // Monitoratge continu.
-            }
-            else if(type.startsWith("2.1. ")){
-                // Nutrients.
-            }
-            else if(type.startsWith("2.2. ")){
-                // Metalls.
-            }
-            else if(type.startsWith("2.3. ")){
-                // Compostos orgànics.
-            }
-            else if(type.startsWith("2.4. ")){
-                // Productes d'oxidació.
-            }
-            else if(type.startsWith("3. ")){
-                // Indicadors microbiològics.
+            for(const punt of _this.punts_qualitat[indicador]){
+                const doc = _this.$refs['punts_qualitat_'+indicador+'_'+punt];
+                const namespace = joint.shapes;
+                const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+                const paper = new joint.dia.Paper({
+                    el: doc,
+                    model: graph,
+                    gridSize: 1,
+                    width: 150,
+                    heigth: 30,
+                    interactive: false,
+                    restrictTranslate: true,
+                    cellViewNamespace: namespace
+                });
+                // Crea el rombe que toqui
+                const rombe = new joint.shapes.standard.Polygon();
+                rombe.position(40,2);
+                rombe.resize(25,25);
+                rombe.attr('body/refPoints', '0,10 10,0 20,10 10,20');
+                rombe.attr('label/text', punt === "entrada1" ? '1' : punt === "entrada2" ? '2' : '3');
+                rombe.attr('label/fill', 'white');
+                rombe.attr('body/strokeWidth', 1);
+                rombe.attr('body/fill', '#6e95db');
+                rombe.addTo(graph);
             }
             
         }

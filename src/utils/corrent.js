@@ -24,9 +24,28 @@ export default class Corrent {
         }
     }
 
+    // funció que comprova que existeixi el tractament per el pretractament per el indicador.
+    comprova_errors_tractaments(tractaments_dict, tractament, pretractament, indicador){
+        if(!tractaments_dict[tractament]){
+            console.log("Error: No s'ha trobat el tractament '"+tractament+"' del tren:");
+            console.log(array_tractaments);
+            throw new Error();
+        }
+        else if( !tractaments_dict[tractament][pretractament]){
+            console.log("Error: No s'ha trobat el pretractament '"+pretractament+"' en el tractament '"+tractament+"' del tren:");
+            console.log(array_tractaments);
+            throw new Error();
+        }
+        else if (!tractaments_dict[tractament][pretractament][indicador]){
+            console.log("Error: No s'ha trobat l'indicador '"+indicador+"' pel pretractament '"+pretractament+"' en el tractament '"+tractament+"' del tren:");
+            console.log(array_tractaments);
+            throw new Error();
+        }
+    }
+
     //aplica un carro de tecnologies/tractaments
     //genera 2 nous corrents "min" i "max"
-    aplica_tren_tractaments(info_indicadors, array_tractaments, tractaments_dict, dict_tractaments_m, tractament_secundari, key) {
+    aplica_tren_tractaments(info_indicadors, array_tractaments, tractaments_dict, tractament_secundari, key) {
 
         //retorna dos corrents nous
         let _this = this;
@@ -76,33 +95,17 @@ export default class Corrent {
                     }
                     n += array_pretractaments.length;
                     array_pretractaments.forEach(tractament => {
-                        if (!dict_tractaments_m[tractament][pretractament][id]) {
-                            return;
-                        }
+                        this.comprova_errors_tractaments(tractaments_dict, tractament, pretractament, id);
 
-                        r_min = r_min * (100 - dict_tractaments_m[tractament][pretractament][id].min);
-                        r_max = r_max * (100 - dict_tractaments_m[tractament][pretractament][id].max);
+                        r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);
+                        r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);
                         pretractament = tractament;
                     });
                     pretractament = efluent_secundari;
                 }
 
                 array_tractaments.forEach(tractament => {
-                    if(!tractaments_dict[tractament]){
-                        console.log("Error: No s'ha trobat el tractament '"+tractament+"' del tren:");
-                        console.log(array_tractaments);
-                        throw new Error();
-                    }
-                    else if( !tractaments_dict[tractament][pretractament]){
-                        console.log("Error: No s'ha trobat el pretractament '"+pretractament+"' en el tractament '"+tractament+"' del tren:");
-                        console.log(array_tractaments);
-                        throw new Error();
-                    }
-                    else if (!tractaments_dict[tractament][pretractament][id]){
-                        console.log("Error: No s'ha trobat l'indicador '"+id+"' pel pretractament '"+pretractament+"' en el tractament '"+tractament+"' del tren:");
-                        console.log(array_tractaments);
-                        throw new Error();
-                    }
+                    this.comprova_errors_tractaments(tractaments_dict, tractament, pretractament, id);
 
                     r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);
                     r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);

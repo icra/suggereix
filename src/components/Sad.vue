@@ -894,7 +894,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_tractaments_micro,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
@@ -927,7 +927,6 @@ export default {
       Usuari,                   //classe
       Corrent,                  //classe
       Tractaments_info: {},     //diccionari tots els tractaments
-	    Tractaments_m_info: {},   //diccionari tractaments amb punt de referència 1 (microbiològics).
       Trens_info: {},           //diccionari tots els trens,
       Trens_dict: {},           //diccionari dels rich names per trens.
       Tractaments_dict: {},     //diccionari dels rich names per tractaments.
@@ -957,10 +956,7 @@ export default {
   },
   created: async function() {
     // llegir excel 'tractaments'
-    this.read_file('/20220421_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
-
-    // llegir excel 'tractaments' per a punt de referència 1 (indicadors microbiològics).
-    this.read_file('/20211004_SUGGEREIX_Taula_B5.xlsx', 'tractaments_micro');
+    this.read_file('/20220518_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
 
     // llegir excel 'trens'
     this.read_file('/20220518_SUGGEREIX_Taula_Trens_v2.xlsx', 'trens');
@@ -1060,8 +1056,6 @@ export default {
         let binaryData = new Uint8Array(buffer);
         if (type === 'tractaments')
           _this.Tractaments_info = await llegir_tractaments(binaryData);
-		else if (type === 'tractaments_micro')
-          _this.Tractaments_m_info = await llegir_tractaments_micro(binaryData);
         else if (type === 'trens'){
             const res = await llegir_trens(binaryData);
             _this.Trens_info = res[0];
@@ -1184,7 +1178,6 @@ export default {
 
       let _this = this;
       let dict_tractaments = _this.Tractaments_info;
-	  let dict_tractaments_m = _this.Tractaments_m_info;
       let efluent_secundari = _this.tractament_secundari;
       let dict_trens = _this.Trens_info;
       let avaluacio_trens = [];
@@ -1218,7 +1211,7 @@ export default {
               (efluent_secundari.includes('DP') && primer_tractament === 'BRM');
         
           if(tren_aplicable){
-            let min_max = _this.user.corrent.aplica_tren_tractaments(_this.Info_indicadors, array_tractaments, dict_tractaments, dict_tractaments_m, efluent_secundari,key);
+            let min_max = _this.user.corrent.aplica_tren_tractaments(_this.Info_indicadors, array_tractaments, dict_tractaments, efluent_secundari,key);
 
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
             const n_indicadors = Object.values(_this.ind_seleccionats).filter(selected => selected).length;
