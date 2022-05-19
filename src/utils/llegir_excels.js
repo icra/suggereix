@@ -267,11 +267,11 @@ function valor_nom_enriquit(nom){
                 }
                 else string += element.text;
             }
-            return string;
+            return string.trimEnd();
         }
         else return "";
     }
-    else return nom;
+    else return typeof(nom) === 'string' ? nom.trimEnd() : nom;
 }
 
 // Retorna un nom que pot contenir sub o sup valors i cursives (només text).
@@ -283,11 +283,11 @@ function valor_nom(nom){
             for(const element of nom.richText){
                 string += element.text;
             }
-            return string;
+            return string.trimEnd();
         }
         else return "";
     }
-    else return nom;
+    else return typeof(nom) === 'string' ? nom.trimEnd() : nom;
 }
 
 // llegeix excel d'abreviació de tractaments.
@@ -513,7 +513,6 @@ function llegir_mon_per_ind_quim(binaryData){
             mes_gran = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
             mes_petit = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
         }
-        console.log(tipus_rangs)
         return tipus_rangs;
     });
 }
@@ -527,10 +526,13 @@ function llegir_metodes_monitoratge(binaryData) {
         let worksheet2 = wb.worksheets[2];
         let rowNumber = 4; //ignore first column (header)
         const metodes_monitoratge = {};
+        const monitoratge_code_to_ind = {};
         const abreviacions_monitoratge = {}; 
 
         let parameter = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
         while(parameter){
+            const code = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+            if(code && code !== 'na') monitoratge_code_to_ind[code] = parameter;
             const desc_enriquit = valor_nom_enriquit(worksheet.getCell('C' + rowNumber.toString()).value);
             const frequencia = valor_nom(worksheet.getCell('D' + rowNumber.toString()).value);
             const estandard = valor_nom(worksheet.getCell('E' + rowNumber.toString()).value);
@@ -556,7 +558,7 @@ function llegir_metodes_monitoratge(binaryData) {
             rowNumber += 1;
             abreviacio = valor_nom(worksheet2.getCell('A' + rowNumber.toString()).value);
         }
-        return [metodes_monitoratge, abreviacions_monitoratge];
+        return [metodes_monitoratge, monitoratge_code_to_ind, abreviacions_monitoratge];
     });
 }
 

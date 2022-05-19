@@ -882,7 +882,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" v-bind:capacitat="user.corrent.Q * user.corrent.F / 100" v-bind:mon_code_to_ind="Mon_code_to_ind" />
           </div>
       </div>
     </details>
@@ -943,6 +943,7 @@ export default {
       Metodes_monitoratge: {},     //objecte que conté la informació dels mètodes que s'utilitzen per a cada parametre i tipus de freqüència.
       Ind_to_code: {},             //diccionari per passar de noms a codis d'indicadors.
       Mon_per_ind_quim: {},       //diccionari del monitoratge periòdic d'indicadors químics.
+      Mon_code_to_ind: {},        //diccionari que converteix el codi del paràmetre de monitoratge a indicador.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -1097,7 +1098,9 @@ export default {
         else if (type === 'metodes_monitoratge'){
             const res = await llegir_metodes_monitoratge(binaryData);
             _this.Metodes_monitoratge = res[0];
-            _this.Abrevicions_met_mon = res[1];
+            _this.Mon_code_to_ind = res[1];
+            _this.Mon_code_to_ind['Cabal'] = 'Cabal';
+            _this.Abrevicions_met_mon = res[2];
         }
         else if (type === 'abreviacio_tractaments'){
             const res = await llegir_abreviacio_tractaments(binaryData);
@@ -1106,7 +1109,6 @@ export default {
         }
         else if (type === 'mon_per_ind_quim'){
             _this.Mon_per_ind_quim = await llegir_mon_per_ind_quim(binaryData);
-            console.log(_this.Mon_per_ind_quim)
         }
       }
 
@@ -1583,6 +1585,9 @@ table td {
 }
 .smalltd {
   width: 110px;
+}
+.smalltd2 {
+  width: 60px;
 }
 .doubletd {
   width: 120px;

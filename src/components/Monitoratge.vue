@@ -67,12 +67,27 @@
         </div>
       </div>
       <div v-if="visio_monitoratge === 1 && usos_seleccionats.length">
+          <p><b>Indicadors químics:</b> El quocient de risc (QR) i la freqüència de monitoratge es calculen en funció dels valors objectius de qualitat (VP) introduïts en la primera fase.</p>
+          <div class='my-legend'>
+            <div class='legend-scale'>
+            <ul class='legend-labels'>
+                <li>
+                    <span class="color" style='background:#baffc9;'></span>
+                    <span class="legend" style='width:65px;'>VP assolit</span>
+                    <span class="color" style='background:#ffdfba;'></span>
+                    <span class="legend">VP no assolit (no regulat)</span>
+                    <span class="color" style='background:#ffb3ba;'></span>
+                    <span class="legend">VP no assolit (regulat)</span>
+                </li>
+            </ul>
+            </div>
+          </div>
           <div class="sticky">
             <table class="sticky extraborder" border="1">
               <tr>
                 <th rowspan="2" class="doubletd">Paràmetre/Indicador</th>
                 <th rowspan="2" class="smalltd">Punt Monitoratge</th>
-                <th rowspan="2" class="doubletd">QR</th>
+                <th rowspan="2" class="smalltd2">QR</th>
                 <th rowspan="2" class="doubletd3">Freqüència</th>
                 <th rowspan="2" class="doubletd3">
                     Mètode(s)
@@ -80,16 +95,24 @@
               </tr>
               <tr />
               <template v-for="indicador in Object.keys(info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(indicadors_seleccionats).includes(indicador) ? indicadors_seleccionats[indicador] : true)))">
-                  <tr :key="indicador+'_q_aigua_1'">
-                      <td :rowspan="punts_qualitat[indicador].length+1">
+                  <tr :key="indicador+'_q_aigua_1'" style="height: 14px;">
+                      <td>
                           <div v-html="info_indicadors[indicador].name_rich" />
                       </td>
-                  </tr>
-                  <tr v-for="punt of punts_qualitat[indicador]" :key="punt+'_'+indicador+'_q_aigua_2'">
-                      <td class="smalltd"><div style="height:30px;overflow:hidden" class="smalltd"><div class="smalltd" :ref="'punts_qualitat_'+indicador+'_'+punt" /></div></td>
-                      <td><div v-html="indicador_punt_freq &&  indicador_punt_freq[indicador] ? indicador_punt_freq[indicador][punt].qr || '--': '--'" /></td>
-                      <td><div v-html="indicador_punt_freq &&  indicador_punt_freq[indicador] ? indicador_punt_freq[indicador][punt].freq : ''"></div></td>
-                      <td></td>
+                      <td class="smalltd"><div style="height:30px;overflow:hidden" class="smalltd">
+                          <div class="smalltd" :ref="'punts_qualitat_'+indicador" /></div>
+                      </td>
+                      <td :style="'text-align: center; background: '+getColor(indicador)+';'">{{indicador_punt_freq &&  indicador_punt_freq[indicador] ? indicador_punt_freq[indicador].qr || '--' : '--'}}</td>
+                      <td><div v-html="indicador_punt_freq && indicador_punt_freq[indicador] ? indicador_punt_freq[indicador].freq : ''"></div></td>
+                      <td>
+                          <div v-for="metode, ind in metodes_qualitat[mon_code_to_ind[indicador]]" :key="'_'+ind+'_freq_qual'">
+                            <div style="position: relative; display: inline-block;" v-html="getMetodeHtml(metode, ind+1)"></div>
+                            <div v-if="mostrar_abreviacio(metode)" class="tooltip">
+                                <i class="fa-regular fa-circle-question"></i>
+                                <span :key="((Math.random() + 1).toString(36).substring(7))" class="tooltiptext">{{mostra_abreviacio(metode)}}</span>
+                            </div>
+                          </div>
+                      </td>
                   </tr>
               </template>
             </table>
@@ -107,7 +130,7 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors','tractaments_info','user','usos_seleccionats','mon_per_ind_quim'],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors','tractaments_info','user','usos_seleccionats','mon_per_ind_quim','capacitat','mon_code_to_ind'],
   data: function(){
     return {
       visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
@@ -168,52 +191,73 @@ export default {
         for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
             dict_freq[indicador] = {};
             const full_indicador = _this.info_indicadors[indicador];
-            for(const punt of _this.punts_qualitat[indicador]){
-                dict_freq[indicador][punt] = {};
-                if(full_indicador.type.startsWith("1.1. ")){
-                    if(indicador === "I5") dict_freq[indicador][punt].freq = "Continu o periòdic";
-                    else dict_freq[indicador][punt].freq = "Continu";
+            if(full_indicador.type.startsWith("1.1. ")){
+                if(indicador === "I5") dict_freq[indicador].freq = "Continu o periòdic";
+                else dict_freq[indicador].freq = "Continu";
+                if(indicador !== "I1" && indicador !== "Cabal"){
+                    const concentracio = min_max.max.qualitat[indicador];
+                    const VP = _this.user.corrent_objectiu.qualitat[indicador];
+                    const QRs = concentracio / VP;
+                    const QR = QRs;
+                    dict_freq[indicador].qr = isNaN(QR) ? '--' : QR.toExponential(1);
+                    dict_freq[indicador].regulat = _this.user.corrent_objectiu.regulat[indicador];
                 }
-                else if(full_indicador.type.startsWith("2.")){
-                    if(full_indicador.type.startsWith("2.4.")) dict_freq[indicador][punt].freq = '<i style="color:red">No definida per a productes d\'oxidació</i>';
-                    else{
-                        const concentracio = min_max.max.qualitat[indicador];
-                        const VP = _this.user.corrent_objectiu.qualitat[indicador];
-                        const QRs = concentracio / VP;
-                        const QRe = QRs / (1-min_max.max.eliminacio[indicador]);
-                        const QR = punt === "sortida" ? QRs : QRe;
-                        dict_freq[indicador][punt].qr = QR;
-                        const tipus_vp = Number(_this.user.corrent_objectiu.tipus_vp[indicador]);
+            }
+            else if(full_indicador.type.startsWith("2.")){
+                if(full_indicador.type.startsWith("2.4.")) dict_freq[indicador].freq = '<i style="color:red">No definida per a productes d\'oxidació</i>';
+                else{
+                    const concentracio = min_max.max.qualitat[indicador];
+                    const VP = _this.user.corrent_objectiu.qualitat[indicador];
+                    const QRs = concentracio / VP;
+                    //const QRe = QRs / (1-min_max.max.eliminacio[indicador]);
+                    const QR = QRs;
+                    dict_freq[indicador].qr = isNaN(QR) ? '--' : QR.toExponential(1);
+                    const tipus_vp = Number(_this.user.corrent_objectiu.tipus_vp[indicador]);
+                    dict_freq[indicador].regulat = _this.user.corrent_objectiu.regulat[indicador];
 
-                        // Depenent del rang i del QR obtingut, es posa el resultat que toca.
-                        for(const rang of _this.mon_per_ind_quim[tipus_vp]){
-                            if(rang.mes_gran && !rang.mes_petit){
-                                if(QR > rang.mes_gran){
-                                    dict_freq[indicador][punt].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
-                                    dict_freq[indicador][punt].ref = rang.ref;
-                                }
-                            }
-                            else if(rang.mes_gran && rang.mes_petit){
-                                if(QR > rang.mes_gran && QR < rang.mes_petit){
-                                    dict_freq[indicador][punt].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
-                                    dict_freq[indicador][punt].ref = rang.ref;
-                                }
-                            }
-                            else{
-                                if(QR < rang.mes_petit){
-                                    dict_freq[indicador][punt].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
-                                    dict_freq[indicador][punt].ref = rang.ref;
-                                }
+                    // Depenent del rang i del QR obtingut, es posa el resultat que toca.
+                    for(const rang of _this.mon_per_ind_quim[tipus_vp]){
+                        if(rang.mes_gran && !rang.mes_petit){
+                            if(QR > rang.mes_gran){
+                                dict_freq[indicador].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                dict_freq[indicador].ref = rang.ref;
                             }
                         }
-                        // En el cas de no trobar coincidència.
-                        if(!dict_freq[indicador][punt].freq) dict_freq[indicador][punt].freq = '<i style="color:red">No definida</i>';
-                        else if(dict_freq[indicador][punt].ref) dict_freq[indicador][punt].freq += " (<i><u>" + dict_freq[indicador][punt].ref + "</u></i>)";
+                        else if(rang.mes_gran && rang.mes_petit){
+                            if(QR > rang.mes_gran && QR < rang.mes_petit){
+                                dict_freq[indicador].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                dict_freq[indicador].ref = rang.ref;
+                            }
+                        }
+                        else{
+                            if(QR < rang.mes_petit){
+                                dict_freq[indicador].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                dict_freq[indicador].ref = rang.ref;
+                            }
+                        }
                     }
+                    // En el cas de no trobar coincidència.
+                    if(!dict_freq[indicador].freq) dict_freq[indicador].freq = '<i style="color:red">No definida</i>';
+                    // Afegir la referència (si té).
+                    else if(dict_freq[indicador].ref) dict_freq[indicador].freq += " (<i><u>" + dict_freq[indicador].ref + "</u></i>)";
 
+                    // En cas que sigui en funció de l'aigua produïda.
+                    if(dict_freq[indicador].freq.includes("segons el volum d'aigua produïda")){
+                        let extra_info = ". Nombre anual de mostres requerides: ";
+                        if(_this.capacitat < 10) extra_info += "1.";
+                        else if(_this.capacitat <= 100) extra_info += "2.";
+                        else if(_this.capacitat <= 1000) extra_info += "4.";
+                        else{
+                            // Equació 12 (veure taula C4).
+                            const n = 4 + (3*Math.ceil((_this.capacitat-1000)/1000));
+                            extra_info += n.toString()+".";
+                        }
+                        dict_freq[indicador].freq += extra_info;
+                    }
                 }
-                else dict_freq[indicador][punt].freq = '<i style="color:red">No definida</i>';
+
             }
+            else dict_freq[indicador].freq = '<i style="color:red">No definida</i>';
         }
         return dict_freq;
     },
@@ -239,6 +283,21 @@ export default {
             else qualitat[indicador] = [];
         }
         return qualitat;
+    },
+    // Variable que indica el llistat de mètodes per a la qualitat de l'aigua per a cada indicador.
+    metodes_qualitat: function(){
+        const _this = this;
+        const metodes_qualitat = {};
+        for(const [parametre,metodes] of Object.entries(_this.metodes_monitoratge)){
+            const metodes_array = [];
+            for(const metodes_freq_array of Object.values(metodes)){
+                for(const metode of metodes_freq_array){
+                    metodes_array.push(metode);
+                }
+            }
+            metodes_qualitat[parametre] = metodes_array;
+        }
+        return metodes_qualitat;
     },
     // Variable que conté la informació dels mètodes per cada indicador de cada tractament.
     metodes_info: function () {
@@ -279,6 +338,18 @@ export default {
         let _this = this;
 		    if(event.target.id === 'monitoratge_tractaments') _this.visio_monitoratge = 0;
         else if(event.target.id === 'monitoratge_qualitats') _this.visio_monitoratge = 1;
+    },
+    getColor(indicador){
+        const _this = this;
+        if(_this.indicador_punt_freq && _this.indicador_punt_freq[indicador] && _this.indicador_punt_freq[indicador].qr){
+            if(_this.indicador_punt_freq[indicador].qr === '--') return '#ffffff';
+            if(_this.indicador_punt_freq[indicador].qr > 1){
+                if(_this.indicador_punt_freq[indicador].regulat) return '#ffb3ba';
+                else return '#ffdfba';
+            }
+            else return '#baffc9';
+        }
+        else return '#ffffff';
     },
     render_graph() {
         // Dibuixa el diagrama.
@@ -393,7 +464,7 @@ export default {
         // Crea punt monitoratge sortida.
         const last_rombe = primer_rombe.clone();
         last_rombe.attr('label/text', rombe_count);
-        last_rombe.translate(rombe_offset, 0)
+        last_rombe.translate(rombe_offset <= 260 ? rombe_offset+32 : rombe_offset, 0)
         last_rombe.addTo(graph);
 
         // Crea últim rectangle (buit).
@@ -442,30 +513,38 @@ export default {
     render_diagrama_qualitat: function(){
         const _this = this;
         for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
+            
+            const doc = _this.$refs['punts_qualitat_'+indicador];
+            const namespace = joint.shapes;
+            const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+            const paper = new joint.dia.Paper({
+                el: doc,
+                model: graph,
+                gridSize: 1,
+                width: 150,
+                heigth: 30,
+                interactive: false,
+                restrictTranslate: true,
+                cellViewNamespace: namespace
+            });
+
+            // Crea el primer rombe de referència.
+            let translate = 0;
+            const rombe = new joint.shapes.standard.Polygon();
+            const n_punts = _this.punts_qualitat[indicador].length;
+            rombe.position(n_punts === 3 ? 12 : n_punts === 2 ? 26 : 40, 2);
+            rombe.resize(25,25);
+            rombe.attr('body/refPoints', '0,10 10,0 20,10 10,20');
+            rombe.attr('label/text', _this.punts_qualitat[indicador][0] === "entrada1" ? '1' : _this.punts_qualitat[indicador][0] === "entrada2" ? '2' : '3');
+            rombe.attr('label/fill', 'white');
+            rombe.attr('body/strokeWidth', 1);
+            rombe.attr('body/fill', '#6e95db');
             for(const punt of _this.punts_qualitat[indicador]){
-                const doc = _this.$refs['punts_qualitat_'+indicador+'_'+punt];
-                const namespace = joint.shapes;
-                const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
-                const paper = new joint.dia.Paper({
-                    el: doc,
-                    model: graph,
-                    gridSize: 1,
-                    width: 150,
-                    heigth: 30,
-                    interactive: false,
-                    restrictTranslate: true,
-                    cellViewNamespace: namespace
-                });
-                // Crea el rombe que toqui
-                const rombe = new joint.shapes.standard.Polygon();
-                rombe.position(40,2);
-                rombe.resize(25,25);
-                rombe.attr('body/refPoints', '0,10 10,0 20,10 10,20');
-                rombe.attr('label/text', punt === "entrada1" ? '1' : punt === "entrada2" ? '2' : '3');
-                rombe.attr('label/fill', 'white');
-                rombe.attr('body/strokeWidth', 1);
-                rombe.attr('body/fill', '#6e95db');
-                rombe.addTo(graph);
+                const rombe_to_add = rombe.clone(rombe);
+                rombe_to_add.attr('label/text', punt === "entrada1" ? '1' : punt === "entrada2" ? '2' : '3');
+                rombe_to_add.translate(translate,0);
+                rombe_to_add.addTo(graph);
+                translate += 30;
             }
             
         }
