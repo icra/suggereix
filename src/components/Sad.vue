@@ -882,7 +882,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" v-bind:capacitat="user.corrent.Q * user.corrent.F / 100" v-bind:mon_code_to_ind="Mon_code_to_ind" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" v-bind:capacitat="user.corrent.Q * user.corrent.F / 100" v-bind:mon_code_to_ind="Mon_code_to_ind" v-bind:mon_per_ind_micro="Mon_per_ind_micro" v-bind:qualitat_microbiologica="Qualitat_microbiologica" />
           </div>
       </div>
     </details>
@@ -894,7 +894,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments, llegir_mon_per_ind_quim} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments, llegir_mon_per_ind_quim, llegir_mon_per_ind_micro} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
@@ -933,7 +933,7 @@ export default {
       Abreviacions_tractament: {}, //diccionari de les abreviacions dels tractaments.
       Usos_info: {},              //diccionari tots els usos
       Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
-	    Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
+	  Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
       Multicriteri_info: {},       //diccionari amb la informació de l'avaluació multicriteri.
       Info_indicadors: {},         //diccionari amb informació sobre els indicadors.
       Info_indicadors_types: [],   //array amb informació sobre els tipus indicadors.
@@ -944,6 +944,7 @@ export default {
       Ind_to_code: {},             //diccionari per passar de noms a codis d'indicadors.
       Mon_per_ind_quim: {},       //diccionari del monitoratge periòdic d'indicadors químics.
       Mon_code_to_ind: {},        //diccionari que converteix el codi del paràmetre de monitoratge a indicador.
+      Mon_per_ind_micro: {},      //diccionari del monitoratge periòdic d'indicadors químics.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -989,6 +990,9 @@ export default {
 
     // llegir excel 'monitoratge periòdic dels indicadors químics'.
     this.read_file('/20220323_SUGGEREIX_Taula_C3.xlsx', 'mon_per_ind_quim');
+
+    // llegir excel 'monitoratge periòdic dels indicadors químics'.
+    this.read_file('/20220120_SUGGEREIX_Taula_C5.xlsx', 'mon_per_ind_micro');
     
   },
   methods:{
@@ -1111,6 +1115,9 @@ export default {
         }
         else if (type === 'mon_per_ind_quim'){
             _this.Mon_per_ind_quim = await llegir_mon_per_ind_quim(binaryData);
+        }
+        else if (type === "mon_per_ind_micro"){
+            _this.Mon_per_ind_micro = await llegir_mon_per_ind_micro(binaryData);
         }
       }
 

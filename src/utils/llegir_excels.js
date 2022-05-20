@@ -517,6 +517,53 @@ function llegir_mon_per_ind_quim(binaryData){
     });
 }
 
+// Taula C5: Monitoratge indicadors micro.
+function llegir_mon_per_ind_micro(binaryData){
+    let _this = this;
+    let workbook = new ExcelJS.Workbook();
+    return workbook.xlsx.load(binaryData).then(wb => {
+        let worksheet = wb.worksheets[0];
+        let rowNumber = 6; //ignore first column (header)
+        const reduccio_requerida = {};
+        reduccio_requerida['I19'] = [];
+        reduccio_requerida['I20'] = [];
+        reduccio_requerida['I21'] = [];
+
+        let mes_gran_I19 = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
+        let mes_petit_I19 = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+        while(mes_gran_I19 || mes_petit_I19){
+            let mes_gran_I20 = valor_nom(worksheet.getCell('C' + rowNumber.toString()).value);
+            let mes_petit_I20 = valor_nom(worksheet.getCell('D' + rowNumber.toString()).value);
+            let mes_gran_I21 = valor_nom(worksheet.getCell('E' + rowNumber.toString()).value);
+            let mes_petit_I21 = valor_nom(worksheet.getCell('F' + rowNumber.toString()).value);
+            const freq = valor_nom_enriquit(worksheet.getCell('G' + rowNumber.toString()).value);
+            const ref = valor_nom_enriquit(worksheet.getCell('H' + rowNumber.toString()).value);
+
+            for(const indicador of Object.keys(reduccio_requerida)){
+                let mes_gran = indicador === 'I19' ? mes_gran_I19 : indicador === 'I20' ? mes_gran_I20 : mes_gran_I21;
+                let mes_petit = indicador === 'I19' ? mes_petit_I19 : indicador === 'I20' ? mes_petit_I20 : mes_petit_I21;
+                if(!mes_gran) mes_gran = undefined;
+                else if(mes_gran.startsWith("≥")) mes_gran = Number(mes_gran.substring(1)) - 1;
+                else mes_gran = Number(mes_gran.substring(1));
+                if(!mes_petit) mes_petit = undefined;
+                else if(mes_petit.startsWith("≤")) mes_petit = Number(mes_petit.substring(1)) + 1;
+                else mes_petit = Number(mes_petit.substring(1));
+                reduccio_requerida[indicador].push({
+                    mes_gran: mes_gran,
+                    mes_petit: mes_petit,
+                    freq: freq,
+                    ref: ref
+                });
+            }
+
+            rowNumber += 1;
+            mes_gran_I19 = valor_nom(worksheet.getCell('A' + rowNumber.toString()).value);
+            mes_petit_I19 = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+        }
+        return reduccio_requerida;
+    });
+}
+
 function llegir_metodes_monitoratge(binaryData) {
 
     let _this = this;
@@ -615,5 +662,6 @@ export {
     llegir_monitoratge,
     llegir_metodes_monitoratge,
     llegir_abreviacio_tractaments,
-    llegir_mon_per_ind_quim
+    llegir_mon_per_ind_quim,
+    llegir_mon_per_ind_micro
 }

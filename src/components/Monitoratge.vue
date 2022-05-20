@@ -130,7 +130,7 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors','tractaments_info','user','usos_seleccionats','mon_per_ind_quim','capacitat','mon_code_to_ind'],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors','tractaments_info','user','usos_seleccionats','mon_per_ind_quim','capacitat','mon_code_to_ind', 'mon_per_ind_micro','qualitat_microbiologica'],
   data: function(){
     return {
       visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
@@ -255,28 +255,63 @@ export default {
                             }
                         }
                     }
-                    // En el cas de no trobar coincidència.
-                    if(!dict_freq[indicador].freq) dict_freq[indicador].freq = '<i style="color:red">No definida</i>';
-                    // Afegir la referència (si té).
-                    else if(dict_freq[indicador].ref) dict_freq[indicador].freq += " (<i><u>" + dict_freq[indicador].ref + "</u></i>)";
-
-                    // En cas que sigui en funció de l'aigua produïda.
-                    if(dict_freq[indicador].freq.includes("segons el volum d'aigua produïda")){
-                        let extra_info = ". Nombre anual de mostres requerides (segons el volum d'aigua produïda): ";
-                        if(_this.capacitat < 10) extra_info += "1.";
-                        else if(_this.capacitat <= 100) extra_info += "2.";
-                        else if(_this.capacitat <= 1000) extra_info += "4.";
-                        else{
-                            // Equació 12 (veure taula C4).
-                            const n = 4 + (3*Math.ceil((_this.capacitat-1000)/1000));
-                            extra_info += n.toString()+".";
-                        }
-                        dict_freq[indicador].freq += extra_info;
-                    }
                 }
 
             }
+            else if(full_indicador.type.startsWith("3. ")){
+                // Primer calcula el QR a títol informatiu.
+                const concentracio = min_max.max.qualitat[indicador];
+                const VP = _this.user.corrent_objectiu.qualitat[indicador];
+                const QRs = concentracio / VP;
+                const QR = QRs;
+                dict_freq[indicador].qr = isNaN(QR) ? '--' : QR.toExponential(1);
+
+                // Ara obté la reducció logarítmica de qualitat microbiològica per a l'indicador i compara amb els valors de l'excel.
+                let reduccio_requerida = 0;
+                for (const usage of _this.usos_seleccionats) {
+                    if (_this.qualitat_microbiologica[usage][indicador][1] > reduccio_requerida) reduccio_requerida = _this.qualitat_microbiologica[usage][indicador][1];
+                }
+                for(const rang of _this.mon_per_ind_micro[indicador]){
+                    if(rang.mes_gran && !rang.mes_petit){
+                        if(reduccio_requerida > rang.mes_gran){
+                            dict_freq[indicador].freq = rang.freq;
+                            dict_freq[indicador].ref = rang.ref;
+                        }
+                    }
+                    else if(rang.mes_gran && rang.mes_petit){
+                        if(reduccio_requerida > rang.mes_gran && reduccio_requerida < rang.mes_petit){
+                            dict_freq[indicador].freq = rang.freq;
+                            dict_freq[indicador].ref = rang.ref;
+                        }
+                    }
+                    else{
+                        if(reduccio_requerida < rang.mes_petit){
+                            dict_freq[indicador].freq = rang.freq;
+                            dict_freq[indicador].ref = rang.ref;
+                        }
+                    }
+                }
+            }
             else dict_freq[indicador].freq = '<i style="color:red">No definida</i>';
+
+            // En el cas de no trobar coincidència.
+            if(!dict_freq[indicador].freq) dict_freq[indicador].freq = '<i style="color:red">No definida</i>';
+            // Afegir la referència (si té).
+            else if(dict_freq[indicador].ref) dict_freq[indicador].freq += " (<i><u>" + dict_freq[indicador].ref + "</u></i>)";
+
+            // En cas que sigui en funció de l'aigua produïda.
+            if(dict_freq[indicador].freq.includes("segons el volum d'aigua produïda") || (full_indicador.type.startsWith("3. ") && _this.usos_seleccionats.includes("Dummy15"))){
+                let extra_info = ". Nombre anual de mostres requerides (segons el volum d'aigua produïda): ";
+                if(_this.capacitat < 10) extra_info += "1.";
+                else if(_this.capacitat <= 100) extra_info += "2.";
+                else if(_this.capacitat <= 1000) extra_info += "4.";
+                else{
+                    // Equació 12 (veure taula C4).
+                    const n = 4 + (3*Math.ceil((_this.capacitat-1000)/1000));
+                    extra_info += n.toString()+".";
+                }
+                dict_freq[indicador].freq += extra_info;
+            }
         }
         return dict_freq;
     },
