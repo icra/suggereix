@@ -262,7 +262,7 @@ export default {
 
                     // En cas que sigui en funció de l'aigua produïda.
                     if(dict_freq[indicador].freq.includes("segons el volum d'aigua produïda")){
-                        let extra_info = ". Nombre anual de mostres requerides: ";
+                        let extra_info = ". Nombre anual de mostres requerides (segons el volum d'aigua produïda): ";
                         if(_this.capacitat < 10) extra_info += "1.";
                         else if(_this.capacitat <= 100) extra_info += "2.";
                         else if(_this.capacitat <= 1000) extra_info += "4.";
@@ -325,7 +325,6 @@ export default {
         for(const tractament of _this.array_tractaments){
             metodes[tractament] = {};
             for(const parameter of Object.keys(_this.info_monitoratge[tractament]).filter(key => _this.info_monitoratge[tractament][key].llocs.length && (_this.ind_to_code[key] ? _this.indicadors_seleccionats[_this.ind_to_code[key]] : true))){
-                console.log(parameter)
                 metodes[tractament][parameter] = [];
                 let frequencia = _this.info_monitoratge[tractament][parameter].frequencia;
                 if(frequencia && _this.metodes_monitoratge[parameter]){
