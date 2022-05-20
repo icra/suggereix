@@ -94,7 +94,7 @@
                 </th>
               </tr>
               <tr />
-              <template v-for="indicador in Object.keys(info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(indicadors_seleccionats).includes(indicador) ? indicadors_seleccionats[indicador] : true)))">
+              <template v-for="indicador in indicadors_qualitat">
                   <tr :key="indicador+'_q_aigua_1'" style="height: 14px;">
                       <td>
                           <div v-html="info_indicadors[indicador].name_rich" />
@@ -182,13 +182,32 @@ export default {
     });
   },
   computed: {
+    // Indicadors que cal monitorar la qualitat de l'aigua.
+    indicadors_qualitat: function(){
+        const _this = this;
+        const indicadors = Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true))); 
+        let triclorometa = false;
+        let NDMA = false;
+        for(let tractament of _this.tren_monitoratge.array_tractaments){
+            if(tractament.includes("FAC_DS")) tractament = _this.tractament_secundari;
+            if(tractament.includes("BRM")) tractament = _this.tractament_secundari;
+
+            if(_this.info_monitoratge[tractament]['Triclorometà']) triclorometa = true;
+            if(_this.info_monitoratge[tractament]['N-nitrosodimetilamina (NDMA)']) NDMA = true;
+        }
+        return indicadors.filter(indicador => {
+            if(indicador === 'OT1' && !NDMA) return false;
+            else if(indicador === 'OT2' && !triclorometa) return false;
+            else return true;
+        });
+    },
     // Diccionari que conté la freqüència per a cada indicador i punt.
     indicador_punt_freq: function() {
         const _this = this;
         const dict_freq = {};
         const array_tractaments = _this.tren_monitoratge['array_tractaments'];
         const min_max = _this.user.corrent.aplica_tren_tractaments(_this.info_indicadors, array_tractaments, _this.tractaments_info, _this.tractament_secundari,_this.tren_monitoratge.codi);
-        for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
+        for(const indicador of _this.indicadors_qualitat){
             dict_freq[indicador] = {};
             const full_indicador = _this.info_indicadors[indicador];
             if(full_indicador.type.startsWith("1.1. ")){
@@ -204,7 +223,7 @@ export default {
                 }
             }
             else if(full_indicador.type.startsWith("2.")){
-                if(full_indicador.type.startsWith("2.4.")) dict_freq[indicador].freq = '<i style="color:red">No definida per a productes d\'oxidació</i>';
+                if(full_indicador.type.startsWith("2.4.")) dict_freq[indicador].freq = 'Periòdic en funció del QR';
                 else{
                     const concentracio = min_max.max.qualitat[indicador];
                     const VP = _this.user.corrent_objectiu.qualitat[indicador];
@@ -265,7 +284,7 @@ export default {
     punts_qualitat: function() {
         const _this = this;
         const qualitat = {}
-        for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
+        for(const indicador of _this.indicadors_qualitat){
             const type = _this.info_indicadors[indicador].type;
             if(indicador === 'Cabal') qualitat[indicador] = ['entrada1','entrada2','sortida'];
             else if(type.includes("1.1. ") || type.includes("2.1. ") || type.includes("2.2. ") || type.includes("2.3. ")){
@@ -306,6 +325,7 @@ export default {
         for(const tractament of _this.array_tractaments){
             metodes[tractament] = {};
             for(const parameter of Object.keys(_this.info_monitoratge[tractament]).filter(key => _this.info_monitoratge[tractament][key].llocs.length && (_this.ind_to_code[key] ? _this.indicadors_seleccionats[_this.ind_to_code[key]] : true))){
+                console.log(parameter)
                 metodes[tractament][parameter] = [];
                 let frequencia = _this.info_monitoratge[tractament][parameter].frequencia;
                 if(frequencia && _this.metodes_monitoratge[parameter]){
@@ -361,7 +381,7 @@ export default {
         for(const tractament of vm.tren_monitoratge.array_tractaments){
             if(!vm.tractament_secundari.includes('BRM') || tractament !== "BRM") array_tractaments.push(tractament)
         }
-        vm.array_tractaments = array_tractaments;
+        vm.array_tractaments = array_tractaments.map(tractament => tractament === 'BRM' ? 'BRM1' : tractament);
 
         const namespace = joint.shapes;
 
@@ -512,7 +532,7 @@ export default {
     },
     render_diagrama_qualitat: function(){
         const _this = this;
-        for(const indicador of Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true)))){
+        for(const indicador of _this.indicadors_qualitat){
             
             const doc = _this.$refs['punts_qualitat_'+indicador];
             const namespace = joint.shapes;

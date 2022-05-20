@@ -26,7 +26,7 @@ export default class Corrent {
     }
 
     // funció que comprova que existeixi el tractament per el pretractament per el indicador.
-    comprova_errors_tractaments(tractaments_dict, tractament, pretractament, indicador){
+    comprova_errors_tractaments(tractaments_dict, array_tractaments, tractament, pretractament, indicador){
         if(!tractaments_dict[tractament]){
             console.log("Error: No s'ha trobat el tractament '"+tractament+"' del tren:");
             console.log(array_tractaments);
@@ -96,7 +96,7 @@ export default class Corrent {
                     }
                     n += array_pretractaments.length;
                     array_pretractaments.forEach(tractament => {
-                        this.comprova_errors_tractaments(tractaments_dict, tractament, pretractament, id);
+                        this.comprova_errors_tractaments(tractaments_dict, array_pretractaments, tractament, pretractament, id);
 
                         r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);
                         r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);
@@ -106,7 +106,7 @@ export default class Corrent {
                 }
 
                 array_tractaments.forEach(tractament => {
-                    this.comprova_errors_tractaments(tractaments_dict, tractament, pretractament, id);
+                    this.comprova_errors_tractaments(tractaments_dict, array_tractaments, tractament, pretractament, id);
 
                     r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);
                     r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);

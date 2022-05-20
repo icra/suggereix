@@ -1100,6 +1100,8 @@ export default {
             _this.Metodes_monitoratge = res[0];
             _this.Mon_code_to_ind = res[1];
             _this.Mon_code_to_ind['Cabal'] = 'Cabal';
+            _this.Mon_code_to_ind['OT1'] = 'N-nitrosodimetilamina (NDMA)';
+            _this.Mon_code_to_ind['OT2'] = 'Triclorometà';
             _this.Abrevicions_met_mon = res[2];
         }
         else if (type === 'abreviacio_tractaments'){
