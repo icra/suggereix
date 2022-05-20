@@ -1230,8 +1230,15 @@ export default {
               (efluent_secundari.includes('DP') && primer_tractament === 'BRM');
         
           if(tren_aplicable){
-            let min_max = _this.user.corrent.aplica_tren_tractaments(_this.Info_indicadors, array_tractaments, dict_tractaments, efluent_secundari,key);
-
+            let min_max = undefined;
+            try{  
+                min_max = _this.user.corrent.aplica_tren_tractaments(_this.Info_indicadors, array_tractaments, dict_tractaments, efluent_secundari,key);
+            } catch(err){
+                // prova re-llegirnt excel 'tractaments'
+                alert("ERROR: És possible que la taula de tractaments estigui desactualitzada. No s'han pogut avaluar els trens, però s'han restaurat els nous valors per defecte de la taula de tractaments. Torni a provar l'avaluació per a veure si s'ha solucionat el problema.");
+                _this.read_file('/20220518_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
+                throw new Error(err);
+            }
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
             const n_indicadors = Object.values(_this.ind_seleccionats).filter(selected => selected).length;
             const avaluacio_compliments_max = min_max.max.n_compliments('max',_this.ind_seleccionats,_this.user.corrent_objectiu, _this.Qualitat_microbiologica, _this.usos_seleccionats, _this.user.corrent.qualitat, _this.Info_indicadors);
