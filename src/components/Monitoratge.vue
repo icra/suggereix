@@ -68,6 +68,9 @@
       </div>
       <div v-if="visio_monitoratge === 1 && usos_seleccionats.length">
           <p><b>Indicadors químics:</b> El quocient de risc (QR) i la freqüència de monitoratge es calculen en funció dels valors objectius de qualitat (VP) introduïts en la primera fase.</p>
+          <img src="/img/qr.png" alt="Equació del càlcul del QR" class="center" style="margin-top:10px;width: 200px;"> 
+          <p><b>Indicadors microbiològics:</b> La freqüència de monitoratge s'estableix en funció dels valors de reducció log<sub>10</sub> introduïts en la primera fase. </p>
+          
           <div class='my-legend'>
             <div class='legend-scale'>
             <ul class='legend-labels'>
@@ -268,12 +271,8 @@ export default {
 
             }
             else if(full_indicador.type.startsWith("3. ")){
-                // Primer calcula el QR a títol informatiu.
-                const concentracio = min_max.max.qualitat[indicador];
-                const VP = _this.user.corrent_objectiu.qualitat[indicador];
-                const QRs = concentracio / VP;
-                const QR = QRs;
-                dict_freq[indicador].qr = isNaN(QR) ? '--' : QR.toExponential(1);
+                // Segons Mercè, no calculem QR dels indicadors microbiològics.
+                dict_freq[indicador].qr = '--';
 
                 // Ara obté la reducció logarítmica de qualitat microbiològica per a l'indicador i compara amb els valors de l'excel.
                 let reduccio_requerida = 0;
