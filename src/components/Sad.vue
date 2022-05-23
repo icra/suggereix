@@ -378,8 +378,8 @@
 
             <tr>
               <th
-                v-for="(val, key) in info_qualitats"
-                :key="key"
+                v-for="val in info_qualitats"
+                :key="val.code"
                 class="sticky2 indlength"
                 style="
                   font-family: monospace;
@@ -388,7 +388,7 @@
                 "
               >
                 <div class="tooltip" style="color: inherit">
-                  {{ key }}
+                  {{ val.code }}
                   <span class="tooltiptext_ind" style="font-size: 10px; margin-top: 30px">
                     <div v-html="val.name_rich"></div>
                   </span>
@@ -424,16 +424,16 @@
                   min:
                 </td>
                 <template
-                  v-for="(val, key) in info_qualitats"
+                  v-for="val in info_qualitats"
                   style="font-family: monospace"
                 >
                   <td
-                    :key="key+'_aval_min'"
+                    :key="val.code+'_aval_min'"
                     :style="{
                       background:
-                        tren.compliments_min[key] === 0
+                        tren.compliments_min[val.code] === 0
                           ? '#baffc9' // green
-                          : tren.compliments_min[key] === 1
+                          : tren.compliments_min[val.code] === 1
                           ? '#ffdfba'  //orange
                           : '#ffb3ba', //red
                     }"
@@ -443,7 +443,7 @@
                       padding: 0px 5px 0px 5px;
                     "
                   >
-                    {{ show_sc_not(tren.concentracio.min.qualitat[key]) }}
+                    {{ show_sc_not(tren.concentracio.min.qualitat[val.code]) }}
                   </td>
                 </template>
               </tr>
@@ -452,16 +452,16 @@
                   max:
                 </td>
                 <template
-                  v-for="(val, key) in info_qualitats"
+                  v-for="val in info_qualitats"
                   style="font-family: monospace"
                 >
                   <td
-                    :key="key+'_aval_max'"
+                    :key="val.code+'_aval_max'"
                     :style="{
                       background:
-                        tren.compliments_max[key] === 0
+                        tren.compliments_max[val.code] === 0
                           ? '#baffc9' // green
-                          : tren.compliments_max[key] === 1
+                          : tren.compliments_max[val.code] === 1
                           ? '#ffdfba'  //orange
                           : '#ffb3ba', //red
                     }"
@@ -471,7 +471,7 @@
                       padding: 0px 5px 0px 5px;
                     "
                   >
-                    {{ show_sc_not(tren.concentracio.max.qualitat[key]) }}
+                    {{ show_sc_not(tren.concentracio.max.qualitat[val.code]) }}
                   </td>
                 </template>
               </tr>
@@ -1508,7 +1508,12 @@ export default {
   computed: {
     // Variable que conté la informació de qualitats filtrades sense els indicadors desactivats.
     info_qualitats: function () {
-        return Object.fromEntries(Object.entries(this.Info_indicadors).filter(([key]) => this.ind_seleccionats[key]));
+        const info_qualitats_obj = Object.fromEntries(Object.entries(this.Info_indicadors).filter(([key]) => this.ind_seleccionats[key]));
+        const info_qualitats = [];
+        for(const [key,val] of Object.entries(info_qualitats_obj)){
+            info_qualitats.push({...val, code: key});
+        }
+        return info_qualitats.sort((a,b) => a.code.substring(1) - b.code.substring(1));
     }
   },
   watch: {
