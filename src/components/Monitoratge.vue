@@ -53,7 +53,7 @@
                   <td><div style="height:30px;overflow:hidden"><div :ref="'punts_'+tractament+'_'+parameter" /></div></td>
                   <td style="padding: 2px;"><div v-html="getFrequencia(tractament,parameter)"></div></td>
                   <td style="padding: 2px;">
-                      <div v-for="metode, ind in metodes_info[tractament][parameter]" :key="'_'+parameter+'_'+tractament+'_freq_'+ind">
+                      <div v-for="metode, ind in metodes_qualitat[parameter]" :key="'_'+parameter+'_'+tractament+'_freq_'+ind">
                         <div style="position: relative; display: inline-block;" v-html="getMetodeHtml(metode, ind+1)"></div>
                         <div v-if="mostrar_abreviacio(metode)" class="tooltip">
                             <i class="fa-regular fa-circle-question"></i>
