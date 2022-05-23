@@ -264,7 +264,6 @@
         (opcional)
       </summary>
       <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i permet modificar els valors de reducció logarítmica per als indicadors microbiològics, p. ex., si es disposa d'una avaluació específica del risc microbiològic.</p>
-      <p>Per defecte, els valors de reducció logarítmica definits per a l'ús "recàrrega d'aqüífers per percolació" són els mateixos valors que els definits per a l’ús "recàrrega d'aqüífers per injecció directa" sense tenir en compte l'atenuació natural del medi. Amb una avaluació específica del risc microbiològic, es podria avaluar la capacitat d'atenuació del medi i reduir els valors definits per defecte.</p>
       <div>
         <div>
           <table border="1">
@@ -968,7 +967,7 @@ export default {
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
 
     // llegir excel 'valors protectors usos'
-    this.read_file('/20211214_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
+    this.read_file('/20220520_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
 
 	// llegir excel 'monitoratge de la qualitat autobiològica', que mostra el % de reducció Rmin per a terns de tractament dels indicadors microbiològics.
 	this.read_file('20220605_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
