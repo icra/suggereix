@@ -529,15 +529,17 @@ function llegir_casos_us(binaryData){
         let org = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
         while(org){
             const tren_sad_nom = valor_nom(worksheet.getCell('Y' + rowNumber.toString()).value);
-            if(tren_sad_nom){
-                if(!casos_us[tren_sad_nom]) casos_us[tren_sad_nom] = [];
+            const tren_sad_nom_2 = valor_nom(worksheet.getCell('Z' + rowNumber.toString()).value);
+            if(tren_sad_nom || tren_sad_nom_2){
+                if(tren_sad_nom && !casos_us[tren_sad_nom]) casos_us[tren_sad_nom] = [];
+                if(tren_sad_nom_2 && !casos_us[tren_sad_nom_2]) casos_us[tren_sad_nom_2] = [];
                 const usos_regenerats_sad = [];
                 const cols_usos = ['L','M','N','O','P'];
                 for(const col_usos of cols_usos){
                     const us = valor_nom(worksheet.getCell(col_usos + rowNumber.toString()).value)
                     if(us && us !== 'nd') usos_regenerats_sad.push(us);
                 }
-                casos_us[tren_sad_nom].push({
+                const cas = {
                     nom_planta: valor_nom(worksheet.getCell('D' + rowNumber.toString()).value),
                     pais: valor_nom(worksheet.getCell('G' + rowNumber.toString()).value),
                     emplacament: valor_nom(worksheet.getCell('Q' + rowNumber.toString()).value),
@@ -548,7 +550,9 @@ function llegir_casos_us(binaryData){
                     cabal: valor_nom(worksheet.getCell('AA' + rowNumber.toString()).value),
                     usos_sad: usos_regenerats_sad,
                     tecnologies: valor_nom(worksheet.getCell('W' + rowNumber.toString()).value)
-                });
+                };
+                if(tren_sad_nom) casos_us[tren_sad_nom].push(cas);
+                if(tren_sad_nom_2) casos_us[tren_sad_nom_2].push(cas);
             }
 
             rowNumber += 1;

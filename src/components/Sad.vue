@@ -276,7 +276,7 @@
             <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
               <tr>
                 <td :rowspan="4" class="doubletd2">
-                  {{ Usos_info[id] ? Usos_info[id].nom : id }}
+                  {{ Usos_info[id] ? Usos_info[id].nom.replace('Dummy','SAD') : id.replace('Dummy','SAD') }}
                 </td>
               </tr>
               <tr v-for="ind in Object.keys(obj)" :key="ind">
@@ -1184,6 +1184,9 @@ export default {
             _this.Mon_code_to_ind['Cabal'] = 'Cabal';
             _this.Mon_code_to_ind['OT1'] = 'N-nitrosodimetilamina (NDMA)';
             _this.Mon_code_to_ind['OT2'] = 'Triclorometà';
+            _this.Mon_code_to_ind['OT3'] = 'Clorat';
+            _this.Mon_code_to_ind['OT4'] = 'Clorit';
+            _this.Mon_code_to_ind['OT5'] = 'Bromat';
             _this.Abrevicions_met_mon = res[2];
         }
         else if (type === 'abreviacio_tractaments'){

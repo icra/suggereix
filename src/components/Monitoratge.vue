@@ -188,16 +188,25 @@ export default {
         const indicadors = Object.keys(_this.info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(_this.indicadors_seleccionats).includes(indicador) ? _this.indicadors_seleccionats[indicador] : true))); 
         let triclorometa = false;
         let NDMA = false;
+        let clorat = false;
+        let clorit = false;
+        let bromat = false;
         for(let tractament of _this.tren_monitoratge.array_tractaments){
             if(tractament.includes("FAC_DS")) tractament = _this.tractament_secundari;
             if(tractament.includes("BRM")) tractament = _this.tractament_secundari;
 
             if(_this.info_monitoratge[tractament]['Triclorometà']) triclorometa = true;
             if(_this.info_monitoratge[tractament]['N-nitrosodimetilamina (NDMA)']) NDMA = true;
+            if(_this.info_monitoratge[tractament]['Clorat']) clorat = true;
+            if(_this.info_monitoratge[tractament]['Clorit']) clorit = true;
+            if(_this.info_monitoratge[tractament]['Bromat']) bromat = true;
         }
         return indicadors.filter(indicador => {
             if(indicador === 'OT1' && !NDMA) return false;
             else if(indicador === 'OT2' && !triclorometa) return false;
+            else if(indicador === 'OT3' && !clorat) return false;
+            else if(indicador === 'OT4' && !clorit) return false;
+            else if(indicador === 'OT5' && !bromat) return false;
             else return true;
         });
     },
@@ -268,7 +277,8 @@ export default {
 
                 // Ara obté la reducció logarítmica de qualitat microbiològica per a l'indicador i compara amb els valors de l'excel.
                 let reduccio_requerida = 0;
-                for (const usage of _this.usos_seleccionats) {
+                for (let usage of _this.usos_seleccionats) {
+                    if(!usage.startsWith('Dummy')) usage = 'Dummy'+usage;
                     if (_this.qualitat_microbiologica[usage][indicador][1] > reduccio_requerida) reduccio_requerida = _this.qualitat_microbiologica[usage][indicador][1];
                 }
                 for(const rang of _this.mon_per_ind_micro[indicador]){
