@@ -276,7 +276,7 @@
             <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
               <tr>
                 <td :rowspan="4" class="doubletd2">
-                  {{ Usos_info[id] ? Usos_info[id].nom.replace('Dummy','SAD') : id.replace('Dummy','SAD') }}
+                  {{ Usos_info[id] ? Usos_info[id].nom : Usos_info[id.replace('Dummy','')] ? Usos_info[id.replace('Dummy','')].nom : id.replace('Dummy','SAD') }}
                 </td>
               </tr>
               <tr v-for="ind in Object.keys(obj)" :key="ind">
