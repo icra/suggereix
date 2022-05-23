@@ -517,6 +517,47 @@ function llegir_mon_per_ind_quim(binaryData){
     });
 }
 
+// Taula casos d'ús.
+function llegir_casos_us(binaryData){
+    let _this = this;
+    let workbook = new ExcelJS.Workbook();
+    return workbook.xlsx.load(binaryData).then(wb => {
+        let worksheet = wb.worksheets[1];
+        let rowNumber = 4; //ignore first column (header)
+        const casos_us = {};
+
+        let org = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+        while(org){
+            const tren_sad_nom = valor_nom(worksheet.getCell('Y' + rowNumber.toString()).value);
+            if(tren_sad_nom){
+                if(!casos_us[tren_sad_nom]) casos_us[tren_sad_nom] = [];
+                const usos_regenerats_sad = [];
+                const cols_usos = ['L','M','N','O','P'];
+                for(const col_usos of cols_usos){
+                    const us = valor_nom(worksheet.getCell(col_usos + rowNumber.toString()).value)
+                    if(us && us !== 'nd') usos_regenerats_sad.push(us);
+                }
+                casos_us[tren_sad_nom].push({
+                    nom_planta: valor_nom(worksheet.getCell('D' + rowNumber.toString()).value),
+                    pais: valor_nom(worksheet.getCell('G' + rowNumber.toString()).value),
+                    emplacament: valor_nom(worksheet.getCell('Q' + rowNumber.toString()).value),
+                    latitud: valor_nom(worksheet.getCell('R' + rowNumber.toString()).value),
+                    longitud: valor_nom(worksheet.getCell('S' + rowNumber.toString()).value),
+                    entitat_gestora: valor_nom(worksheet.getCell('T' + rowNumber.toString()).value),
+                    any_inici: valor_nom(worksheet.getCell('AB' + rowNumber.toString()).value),
+                    cabal: valor_nom(worksheet.getCell('AA' + rowNumber.toString()).value),
+                    usos_sad: usos_regenerats_sad,
+                    tecnologies: valor_nom(worksheet.getCell('W' + rowNumber.toString()).value)
+                });
+            }
+
+            rowNumber += 1;
+            org = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
+        }
+        return casos_us;
+    });
+}
+
 // Taula C5: Monitoratge indicadors micro.
 function llegir_mon_per_ind_micro(binaryData){
     let _this = this;
@@ -663,5 +704,6 @@ export {
     llegir_metodes_monitoratge,
     llegir_abreviacio_tractaments,
     llegir_mon_per_ind_quim,
-    llegir_mon_per_ind_micro
+    llegir_mon_per_ind_micro,
+    llegir_casos_us
 }

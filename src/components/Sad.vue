@@ -885,6 +885,69 @@
           </div>
       </div>
     </details>
+    <details class="seccio" open>
+      <summary class="seccio">5. Casos similars</summary>
+      <div>
+          <p>Si s'ha computat la priorització de trens viables (fase 3), en aquest selector apareixeran els trens viables ponderats per puntuació.</p> 
+          <p>En cas contrari, apareixeran tots els trens de tractaments considerant la infraestructura existent.</p>
+          <p><b>Seleccionar tren de tractament a obtenir casos similars: </b>
+            <select v-model="tren_casos" style="max-width: 200px">
+                <option
+                  v-for="obj of selector_monitoratge"
+                  :value="obj"
+                  :key="obj.codi"
+                >
+                  {{ obj.selector || obj.nom }}
+                </option>
+              </select>
+          </p>
+          <div v-if="tren_casos && Casos_us[tren_casos.nom]">
+              <div class="sticky">
+                <table class="sticky extraborder" border="1">
+                <tr>
+                    <th rowspan="2" class="doubletd">Nom de la planta existent</th>
+                    <th rowspan="2" class="doubletd2">Localització</th>
+                    <th rowspan="2" class="doubletd">Entitat Gestora</th>
+                    <th rowspan="2" class="doubletd">Any de posada en marxa</th>
+                    <th rowspan="2" class="doubletd">Cabal de disseny (m<sup>3</sup>)</th>
+                    <th rowspan="2" class="doubletd3">Usos de l'aigua regenerada</th>
+                    <th rowspan="2" class="doubletd">Tecnologies</th>
+                </tr>
+                <tr />
+                <template v-for="cas_us in Casos_us[tren_casos.nom]">
+                    <tr :key="cas_us.latitud+'_cas'" style="height: 14px;">
+                        <td style="text-align: right; padding: 5px;">
+                            <div v-html="cas_us.nom_planta" />
+                        </td>
+                        <td style="text-align: center; padding: 5px;">
+                            {{obtenirEmplacament(cas_us)}}
+                            <a target="_blank" class="btn" :href="'https://www.google.com/maps/place/'+cas_us.latitud+','+cas_us.longitud"><i class="fa-solid fa-map-location-dot"></i></a>
+                        </td>
+                        <td style="text-align: center; padding: 5px;">
+                            <div v-html="cas_us.entitat_gestora" />
+                        </td>
+                        <td style="text-align: center; padding: 5px;">
+                            <div v-html="(!cas_us.any_inici || cas_us.any_inici === 'n.a.' ? no_definit : cas_us.any_inici)" />
+                        </td>
+                        <td style="text-align: center; padding: 5px;">
+                            <div v-html="(!cas_us.cabal || cas_us.cabal === 'n.a.') ? no_definit : cas_us.cabal" />
+                        </td>
+                        <td style="text-align: center; padding: 5px;">
+                            <div v-html="mostraUsos(cas_us.usos_sad)" />
+                        </td>
+                        <td style="text-align: center; padding: 5px;">
+                            <div v-html="cas_us.tecnologies" />
+                        </td>
+                    </tr>
+                </template>
+                </table>
+            </div>
+          </div>
+          <div v-else-if="tren_casos">
+              <p><i style="color:red">El tren seleccionat no disposa de casos similars.</i></p>
+          </div>
+      </div>
+    </details>
 
   </div>
 </template>
@@ -893,7 +956,7 @@
 
 import Corrent from '../utils/corrent';
 import Usuari from '../utils/usuari';
-import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments, llegir_mon_per_ind_quim, llegir_mon_per_ind_micro} from "../utils/llegir_excels";
+import {llegir_vp_usos,llegir_trens,llegir_tractaments,llegir_caract_efluent_secundari,llegir_qualitat_micro,llegir_multicriteri, llegir_indicadors, llegir_monitoratge, llegir_metodes_monitoratge, llegir_abreviacio_tractaments, llegir_mon_per_ind_quim, llegir_mon_per_ind_micro, llegir_casos_us} from "../utils/llegir_excels";
 import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agregaCriteris} from "../utils/multicriteri";
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
@@ -920,7 +983,9 @@ export default {
       ind_seleccionats: {},     //indicadors seleccionats per valorar trens viables.
       selector_monitoratge: [], //selector del tren a monitorar.
       tren_monitoratge: "",     //tren del monitoratge seleccionat.
+      tren_casos: "",           //tren de casos similars seleccionat.
       llest_monitoratge: false, //variable per saber si el monitoratge està llest.
+      no_definit: '<i style="color:red">No definit</i>',
 
       //backend
       Usuari,                   //classe
@@ -944,6 +1009,7 @@ export default {
       Mon_per_ind_quim: {},       //diccionari del monitoratge periòdic d'indicadors químics.
       Mon_code_to_ind: {},        //diccionari que converteix el codi del paràmetre de monitoratge a indicador.
       Mon_per_ind_micro: {},      //diccionari del monitoratge periòdic d'indicadors químics.
+      Casos_us: {},                //diccionari de casos d'ús per a un tren del SAD.
       PercentColors: [
         { pct: 0.0, color: { r: 255, g: 199, b: 199 } },
         { pct: 0.5, color: { r: 236, g: 223, b: 202 } },
@@ -992,9 +1058,22 @@ export default {
 
     // llegir excel 'monitoratge periòdic dels indicadors químics'.
     this.read_file('/20220120_SUGGEREIX_Taula_C5.xlsx', 'mon_per_ind_micro');
+
+    // llegir excel 'casos d'ús'
+    this.read_file('/20220420_SUGGEREIX_PT1_Casos.xlsx','casos_us')
     
   },
   methods:{
+    obtenirEmplacament (cas_us){
+        let text = cas_us.emplacament && cas_us.pais ? cas_us.emplacament+", "+cas_us.pais : cas_us.emplacament || cas_us.pais;
+        text += " (Lat: " + Math.round((cas_us.latitud + Number.EPSILON) * 100) / 100 + ', Long: ' + Math.round((cas_us.longitud + Number.EPSILON) * 100) / 100 + ")";
+        return text;
+    },
+    mostraUsos(usos){
+        const _this = this;
+        if(usos.length) return usos.map(us => _this.Usos_info[us] ? _this.Usos_info[us].nom : '<i style="color:red">No definit</i>').join('; ');
+        else return '<i style="color:red">No definits</i>'
+    },
     sort_multicriteri(event) {
         let _this = this;
         const column = event.currentTarget.id;
@@ -1118,6 +1197,9 @@ export default {
         else if (type === "mon_per_ind_micro"){
             _this.Mon_per_ind_micro = await llegir_mon_per_ind_micro(binaryData);
         }
+        else if (type === "casos_us"){
+            _this.Casos_us = await llegir_casos_us(binaryData);
+        }
       }
 
     },
@@ -1125,7 +1207,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){
@@ -1353,6 +1435,7 @@ export default {
         }
         _this.llest_monitoratge = true;
         _this.tren_monitoratge = "";
+        _this.tren_casos = "";
         _this.selector_monitoratge = trens_monitoratge;
     },
 
@@ -1569,6 +1652,7 @@ export default {
       _this.user.corrent.qualitat = Usuari.info_tractaments_secundaris[newUse].qualitat;
       if(!_this.llest_monitoratge){
         _this.tren_monitoratge = "";
+        _this.tren_casos = "";
         _this.selector_monitoratge = Object.values(_this.Trens_info).filter(tren => {
             return (newUse.includes('FAC_DS') && tren.array_tractaments[0] !== 'BRM') ||
                 (newUse.includes('BRM') && tren.array_tractaments[0] === 'BRM') ||
