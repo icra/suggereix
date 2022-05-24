@@ -148,7 +148,8 @@ export default class Corrent {
                         // Ara cal comprovar que s'ha aconseguit un Rmin de, com a mínim, el que s'especifica en la Taula A8 per els usos seleccionats.
                         let reduccio_requerida = 0;
                         for (const usage of usos_seleccionats) {
-                            if (qualitat_micro[usage][id][0] > reduccio_requerida) reduccio_requerida = qualitat_micro[usage][id][0];
+                            const qualitat_usage = qualitat_micro[usage] || qualitat_micro['Dummy'+usage];
+                            if (qualitat_usage[id][0] > reduccio_requerida) reduccio_requerida = qualitat_usage[id][0];
                         }
                         if (this.qualitat[id] <= (1 - reduccio_requerida) * qualitat_inicial[id][type]) {
                             compliments[id] = 0;
