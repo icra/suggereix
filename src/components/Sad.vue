@@ -485,6 +485,7 @@
     <details class="seccio" close>
       <summary class="seccio">2.1. Modificació dels tractaments (opcional)</summary>
       <div>
+        <button style="margin-bottom: 10px;" @click="read_file('/20220518_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');">Restaurar valors per defecte</button>
         <div>
           <table border="1">
             <tr>
