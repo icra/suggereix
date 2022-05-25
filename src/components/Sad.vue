@@ -488,10 +488,10 @@
         <button style="margin-bottom: 10px;" @click="read_file('/20220518_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');">Restaurar valors per defecte</button>
         <div>
           <table border="1">
-            <tr>
-              <th>Tractament</th>
-              <th>Pretractament</th>
-              <th>Editar tractament</th>
+            <tr style="background-color: #d4e9fd;">
+              <th style="padding: 5px;">Tractament</th>
+              <th style="padding: 5px;">Pretractament</th>
+              <th style="padding: 5px;">Editar tractament</th>
             </tr>
             <tbody
               v-for="(tra, nom_tra) in this.Tractaments_info"
@@ -902,42 +902,38 @@
                 </option>
               </select>
           </p>
-          <div v-if="tren_casos && Casos_us[tren_casos.nom]">
+          <div v-if="tren_casos && tren_casos.referencies.length">
               <div class="sticky">
                 <table class="sticky extraborder" border="1">
                 <tr>
-                    <th rowspan="2" class="doubletd">Nom de la planta existent</th>
+                    <th rowspan="2" class="doubletd2">Nom de la planta existent</th>
                     <th rowspan="2" class="doubletd2">Localització</th>
                     <th rowspan="2" class="doubletd">Entitat Gestora</th>
                     <th rowspan="2" class="doubletd">Any de posada en marxa</th>
                     <th rowspan="2" class="doubletd">Cabal de disseny (m<sup>3</sup>)</th>
-                    <th rowspan="2" class="doubletd3">Usos de l'aigua regenerada</th>
-                    <th rowspan="2" class="doubletd">Tecnologies</th>
+                    <th rowspan="2" class="doubletd">Tren de tractament</th>
                 </tr>
                 <tr />
-                <template v-for="cas_us in Casos_us[tren_casos.nom]">
-                    <tr :key="cas_us.latitud+'_cas'" style="height: 14px;">
+                <template v-for="ref in tren_casos.referencies">
+                    <tr :key="ref+'_cas_'+tren_casos.nom" style="height: 14px;">
                         <td style="text-align: right; padding: 5px;">
-                            <div v-html="cas_us.nom_planta" />
+                            <div v-html="Casos_us[ref].nom_planta" />
                         </td>
                         <td style="text-align: center; padding: 5px;">
-                            {{obtenirEmplacament(cas_us)}}
-                            <a target="_blank" class="btn" :href="'https://www.google.com/maps/place/'+cas_us.latitud+','+cas_us.longitud"><i class="fa-solid fa-map-location-dot"></i></a>
+                            {{obtenirEmplacament(Casos_us[ref])}}
+                            <a target="_blank" class="btn" :href="'https://www.google.com/maps/place/'+Casos_us[ref].latitud+','+Casos_us[ref].longitud"><i class="fa-solid fa-map-location-dot"></i></a>
                         </td>
                         <td style="text-align: center; padding: 5px;">
-                            <div v-html="cas_us.entitat_gestora" />
+                            <div v-html="Casos_us[ref].entitat_gestora" />
                         </td>
                         <td style="text-align: center; padding: 5px;">
-                            <div v-html="(!cas_us.any_inici || cas_us.any_inici === 'n.a.' ? no_definit : cas_us.any_inici)" />
+                            <div v-html="(!Casos_us[ref].any_inici || Casos_us[ref].any_inici === 'n.a.' ? no_definit : Casos_us[ref].any_inici)" />
                         </td>
                         <td style="text-align: center; padding: 5px;">
-                            <div v-html="(!cas_us.cabal || cas_us.cabal === 'n.a.') ? no_definit : cas_us.cabal" />
+                            <div v-html="(!Casos_us[ref].cabal || Casos_us[ref].cabal === 'n.a.') ? no_definit : Casos_us[ref].cabal" />
                         </td>
                         <td style="text-align: center; padding: 5px;">
-                            <div v-html="mostraUsos(cas_us.usos_sad)" />
-                        </td>
-                        <td style="text-align: center; padding: 5px;">
-                            <div v-html="cas_us.tecnologies" />
+                            <div v-html="Casos_us[ref].tecnologies" />
                         </td>
                     </tr>
                 </template>
@@ -1046,7 +1042,7 @@ export default {
     this.read_file('/20220407_SUGGEREIX_Taula_C7.xlsx', 'descripcio_indicadors');
 
     // llegir excel 'monitoratge'.
-    this.read_file('/20220506_SUGGEREIX_Taula_C1.xlsx', 'monitoratge');
+    this.read_file('/20220524_SUGGEREIX_Taula_C1.xlsx', 'monitoratge');
 
     // llegir excel 'metodes_monitoratge'.
     this.read_file('/20220421_SUGGEREIX_Taula_A4.xlsx', 'metodes_monitoratge');

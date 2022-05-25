@@ -355,7 +355,7 @@ function llegir_monitoratge(binaryData) {
 
     let workbook = new ExcelJS.Workbook();
     return workbook.xlsx.load(binaryData).then(wb => {
-        let worksheet = wb.worksheets[0];
+        let worksheet = wb.worksheets[1];
 
         // Diccionari clau=tractament, valor=objecte{clau=parametre,valor={array_punts_a_moritorar}}.
         const monitoratge_tractaments = {};
@@ -372,7 +372,7 @@ function llegir_monitoratge(binaryData) {
         let unitats_indicador = valor_nom(worksheet.getRow(6).getCell(header_column).value);
         let unitats_rich_indicador = valor_nom_enriquit(worksheet.getRow(6).getCell(header_column).value);
         let group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
-        while(group !== "Eficiència"){
+        while(group !== "Freqüències monitoratge"){
             if(code && code !== "I1") dict_indicadors[indicador] = code;
             dict_enriquit[indicador] = indicador_rich;
             dict_enriquit[unitats_indicador] = unitats_rich_indicador;
@@ -421,13 +421,6 @@ function llegir_monitoratge(binaryData) {
             unitats_indicador = valor_nom(worksheet.getRow(6).getCell(header_column).value);
             unitats_rich_indicador = valor_nom_enriquit(worksheet.getRow(6).getCell(header_column).value);
             group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
-        }
-        while(group !== "Freqüències monitoratge"){
-            // Incrementar comptador.
-            header_column += 1;
-            group = valor_nom(worksheet.getRow(3).getCell(header_column).value);
-            indicador = valor_nom(worksheet.getRow(4).getCell(header_column).value);
-            indicador_rich = valor_nom_enriquit(worksheet.getRow(4).getCell(header_column).value);
         }
         while(indicador !== ""){
 
@@ -530,30 +523,27 @@ function llegir_casos_us(binaryData){
         while(org){
             const tren_sad_nom = valor_nom(worksheet.getCell('Y' + rowNumber.toString()).value);
             const tren_sad_nom_2 = valor_nom(worksheet.getCell('Z' + rowNumber.toString()).value);
-            if(tren_sad_nom || tren_sad_nom_2){
-                if(tren_sad_nom && !casos_us[tren_sad_nom]) casos_us[tren_sad_nom] = [];
-                if(tren_sad_nom_2 && !casos_us[tren_sad_nom_2]) casos_us[tren_sad_nom_2] = [];
-                const usos_regenerats_sad = [];
-                const cols_usos = ['L','M','N','O','P'];
-                for(const col_usos of cols_usos){
-                    const us = valor_nom(worksheet.getCell(col_usos + rowNumber.toString()).value)
-                    if(us && us !== 'nd') usos_regenerats_sad.push(us);
-                }
-                const cas = {
-                    nom_planta: valor_nom(worksheet.getCell('D' + rowNumber.toString()).value),
-                    pais: valor_nom(worksheet.getCell('G' + rowNumber.toString()).value),
-                    emplacament: valor_nom(worksheet.getCell('Q' + rowNumber.toString()).value),
-                    latitud: valor_nom(worksheet.getCell('R' + rowNumber.toString()).value),
-                    longitud: valor_nom(worksheet.getCell('S' + rowNumber.toString()).value),
-                    entitat_gestora: valor_nom(worksheet.getCell('T' + rowNumber.toString()).value),
-                    any_inici: valor_nom(worksheet.getCell('AB' + rowNumber.toString()).value),
-                    cabal: valor_nom(worksheet.getCell('AA' + rowNumber.toString()).value),
-                    usos_sad: usos_regenerats_sad,
-                    tecnologies: valor_nom(worksheet.getCell('W' + rowNumber.toString()).value)
-                };
-                if(tren_sad_nom) casos_us[tren_sad_nom].push(cas);
-                if(tren_sad_nom_2) casos_us[tren_sad_nom_2].push(cas);
+            const tren_sad_nom_def = tren_sad_nom && tren_sad_nom_2 ? tren_sad_nom + ' + ' + tren_sad_nom_2 : tren_sad_nom || tren_sad_nom_2;
+            const id = Number(valor_nom(worksheet.getCell('C' + rowNumber.toString()).value));
+            const usos_regenerats_sad = [];
+            const cols_usos = ['L','M','N','O','P'];
+            for(const col_usos of cols_usos){
+                const us = valor_nom(worksheet.getCell(col_usos + rowNumber.toString()).value)
+                if(us && us !== 'nd') usos_regenerats_sad.push(us);
             }
+            const cas = {
+                nom_planta: valor_nom(worksheet.getCell('D' + rowNumber.toString()).value),
+                pais: valor_nom(worksheet.getCell('G' + rowNumber.toString()).value),
+                emplacament: valor_nom(worksheet.getCell('Q' + rowNumber.toString()).value),
+                latitud: valor_nom(worksheet.getCell('R' + rowNumber.toString()).value),
+                longitud: valor_nom(worksheet.getCell('S' + rowNumber.toString()).value),
+                entitat_gestora: valor_nom(worksheet.getCell('T' + rowNumber.toString()).value),
+                any_inici: valor_nom(worksheet.getCell('AB' + rowNumber.toString()).value),
+                cabal: valor_nom(worksheet.getCell('AA' + rowNumber.toString()).value),
+                usos_sad: usos_regenerats_sad,
+                tecnologies: tren_sad_nom_def
+            };
+            casos_us[id] = cas;
 
             rowNumber += 1;
             org = valor_nom(worksheet.getCell('B' + rowNumber.toString()).value);
