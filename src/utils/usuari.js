@@ -16,31 +16,6 @@ export default class Usuari{
     const I20 = {min: 2187761.62394955, max: 89125093.8133748};
     const I21 = {min: 3019.95172040202, max: 5128613.83991366};
     return{
-      "DP":{tipus:"primari", nom:"Només decantació primària. Sense tractament secundari",
-        qualitat:{
-          I1  : {min: 7,           max: 7.5},
-          I2  : {min: 300,         max: 2000},
-          I3  : {min: 80,          max: 150},
-          I4  : {min: 130,         max: 389},
-          I5  : {min: 109,         max: 328},
-          I6  : {min: 14,          max: 41},
-          I7  : {min: 0,           max: 0},
-          I8  : {min: 150,         max: 700},
-          I9  : {min: 7.5,         max: 600},
-          I10 : {min: 65,          max: 81},
-          I11 : {min: 431,         max: 715},
-          I12 : {min: 0.196,       max: 15.8},
-          I13 : {min: 0.2,         max: 6},
-          I14 : {min: 0.3,         max: 3.5},
-          I15 : {min: 159,         max: 272},
-          I16 : {min: 0.058,       max: 61.638},
-          I17 : {min: 0.0122,      max: 2.101},
-          I18 : {min: 37.2,        max: 81},
-          I19 : I19,
-          I20 : I20,
-          I21 : I21
-        },
-      },
       "FAC_DS1":{tipus:"secundari", nom:"Llots actius convencionals sense nitrificació",
         qualitat:{
           I1  : {min: 7,      max: 7.5},
