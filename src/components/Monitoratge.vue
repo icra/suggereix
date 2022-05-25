@@ -39,12 +39,12 @@
                 <tr v-for="parameter in Object.keys(info_monitoratge[tractament]).filter(key => info_monitoratge[tractament][key].llocs.length && (ind_to_code[key] ? indicadors_seleccionats[ind_to_code[key]] : true))" :key="((Math.random() + 1).toString(36).substring(7))+parameter+'_tab_rec_'+tractament" style="height: 40px;">
                   <td>
                     <div v-html="info_rich[parameter] || parameter" style="padding: 2px;" />
-                    <div v-if="parameter === 'N-nitrosodimetilamina (NDMA)'" class="tooltip" :key="key+'_helper'">
+                    <div v-if="parameter === 'N-nitrosodimetilamina (NDMA)'" class="tooltip" :key="tractament+'_'+parameter+'_helper'">
                       <i class="fa-regular fa-circle-question"></i>
                       <span class="tooltiptext2">
                         La N-nitrosodimetilamina es pot formar en tractaments de desinfecció amb cloramines, amb clor si al medi també hi ha amoni, i en tractaments amb ozó.</span>
                     </div>
-                    <div v-else-if="parameter === 'Triclorometà'" class="tooltip" :key="key+'_helper'">
+                    <div v-else-if="parameter === 'Triclorometà'" class="tooltip" :key="tractament+'_'+parameter+'_helper'">
                       <i class="fa-regular fa-circle-question"></i>
                       <span class="tooltiptext2">
                         El Triclorometà es pot formar en tractaments de desinfecció amb clor lliure.</span>
@@ -57,7 +57,7 @@
                         <div style="position: relative; display: inline-block;" v-html="getMetodeHtml(metode, ind+1)"></div>
                         <div v-if="mostrar_abreviacio(metode)" class="tooltip">
                             <i class="fa-regular fa-circle-question"></i>
-                            <span :key="((Math.random() + 1).toString(36).substring(7))" class="tooltiptext">{{mostra_abreviacio(metode)}}</span>
+                            <span class="tooltiptext">{{mostra_abreviacio(metode)}}</span>
                         </div>
                        </div>
                   </td>
