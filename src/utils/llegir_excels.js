@@ -167,26 +167,10 @@ function llegir_tractaments(binaryData) {
             treatments[name][pretreatment] = {};
             for (let j = 1; j <= 22; j++) {
                 let key = worksheet.getCell('D' + i.toString()).value; //'I'+j.toString();
-                let min = worksheet.getCell('E' + i.toString()).value;
-                let max = worksheet.getCell('F' + i.toString()).value;
-
-                if (typeof min === 'string' && typeof max === 'string') { // parse 'ne' or 'na' values to 0
-                    min = 0;
-                    max = 0;
-                } else if (typeof min === 'string' && typeof max !== 'string') {
-                    if (typeof max === 'object') max = max.result; // type object when cell contains a formula and result.
-                    min = max;
-                } else if (typeof max === 'string' && typeof min !== 'string') {
-                    if (typeof min === 'object') min = min.result;
-                    max = min;
-                } else {
-                    if (typeof max === 'object') max = max.result;
-                    if (typeof min === 'object') min = min.result;
-                }
 
                 treatments[name][pretreatment][key] = {
-                    min: min,
-                    max: max
+                    min: valor_nom(worksheet.getCell('E' + i.toString()).value),
+                    max: valor_nom(worksheet.getCell('F' + i.toString()).value)
                 }
                 i++;
             }
@@ -285,6 +269,7 @@ function valor_nom(nom){
             }
             return string.trimEnd();
         }
+        else if(nom.result) return nom.result;
         else return "";
     }
     else return typeof(nom) === 'string' ? nom.trimEnd() : nom;

@@ -97,9 +97,11 @@ export default class Corrent {
                     n += array_pretractaments.length;
                     array_pretractaments.forEach(tractament => {
                         this.comprova_errors_tractaments(tractaments_dict, array_pretractaments, tractament, pretractament, id);
+                        const min = isNaN(tractaments_dict[tractament][pretractament][id].min) ? 0 : tractaments_dict[tractament][pretractament][id].min;
+                        const max = isNaN(tractaments_dict[tractament][pretractament][id].max) ? 0 : tractaments_dict[tractament][pretractament][id].max;
 
-                        r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);
-                        r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);
+                        r_min = r_min * (100 - min);
+                        r_max = r_max * (100 - max);
                         pretractament = tractament;
                     });
                     pretractament = efluent_secundari;
@@ -107,9 +109,10 @@ export default class Corrent {
 
                 array_tractaments.forEach(tractament => {
                     this.comprova_errors_tractaments(tractaments_dict, array_tractaments, tractament, pretractament, id);
-
-                    r_min = r_min * (100 - tractaments_dict[tractament][pretractament][id].min);
-                    r_max = r_max * (100 - tractaments_dict[tractament][pretractament][id].max);
+                    const min = isNaN(tractaments_dict[tractament][pretractament][id].min) ? 0 : tractaments_dict[tractament][pretractament][id].min;
+                    const max = isNaN(tractaments_dict[tractament][pretractament][id].max) ? 0 : tractaments_dict[tractament][pretractament][id].max;
+                    r_min = r_min * (100 - min);
+                    r_max = r_max * (100 - max);
                     pretractament = tractament;
                 });
                 r_min = 1.0 - (r_min / Math.pow(100, n));
