@@ -53,6 +53,9 @@ export default class Corrent {
         let min = new Corrent(info_indicadors); //eliminació mínima
         let max = new Corrent(info_indicadors); //eliminació màxima
 
+        // Diccionari de no especificat.
+        const ne_dict = {};
+
         //copia el cabal actual al cabal dels nous corrents
         min.Q = _this.Q;
         max.Q = _this.Q;
@@ -80,6 +83,7 @@ export default class Corrent {
         for (const [id, selected] of Object.entries(_this.seleccionat)) {
             //calculem l'eliminació de tots els indicadors excepte no seleccionats.
             if(selected){
+                ne_dict[id] = {min: false, max: false};
                 min.qualitat[id] = _this.qualitat[id];
                 max.qualitat[id] = _this.qualitat[id];
                 let r_min = 1;
@@ -97,6 +101,8 @@ export default class Corrent {
                     n += array_pretractaments.length;
                     array_pretractaments.forEach(tractament => {
                         this.comprova_errors_tractaments(tractaments_dict, array_pretractaments, tractament, pretractament, id);
+                        if(tractaments_dict[tractament][pretractament][id].min === 'ne') ne_dict[id].min = true;
+                        if(tractaments_dict[tractament][pretractament][id].max === 'ne') ne_dict[id].max = true;
                         const min = isNaN(tractaments_dict[tractament][pretractament][id].min) ? 0 : tractaments_dict[tractament][pretractament][id].min;
                         const max = isNaN(tractaments_dict[tractament][pretractament][id].max) ? 0 : tractaments_dict[tractament][pretractament][id].max;
 
@@ -109,6 +115,8 @@ export default class Corrent {
 
                 array_tractaments.forEach(tractament => {
                     this.comprova_errors_tractaments(tractaments_dict, array_tractaments, tractament, pretractament, id);
+                    if(tractaments_dict[tractament][pretractament][id].min === 'ne') ne_dict[id].min = true;
+                    if(tractaments_dict[tractament][pretractament][id].max === 'ne') ne_dict[id].max = true;
                     const min = isNaN(tractaments_dict[tractament][pretractament][id].min) ? 0 : tractaments_dict[tractament][pretractament][id].min;
                     const max = isNaN(tractaments_dict[tractament][pretractament][id].max) ? 0 : tractaments_dict[tractament][pretractament][id].max;
                     r_min = r_min * (100 - min);
@@ -125,10 +133,10 @@ export default class Corrent {
             }
         }
 
-        return {
+        return [{
             min,
             max
-        };
+        }, ne_dict];
 
     }
 

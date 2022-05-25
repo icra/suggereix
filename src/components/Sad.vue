@@ -363,6 +363,8 @@
                         <span class="legend">VP no assolit (no regulat)</span>
                         <span class="color" style='background:#ffb3ba;'></span>
                         <span class="legend">VP no assolit (regulat)</span>
+                        <span class="color" style='background:#bbbbbb;'></span>
+                        <span class="legend">Inclou eficiències no definides</span>
                     </li>
                 </ul>
                 </div>
@@ -433,9 +435,13 @@
                       background:
                         tren.compliments_min[val.code] === 0
                           ? '#baffc9' // green
-                          : tren.compliments_min[val.code] === 1
+                          : tren.compliments_min[val.code] === 1 && !ne_dict[tren.id][val.code].min
                           ? '#ffdfba'  //orange
-                          : '#ffb3ba', //red
+                          : tren.compliments_min[val.code] === 1 
+                          ? 'linear-gradient(to top right, #ffdfba 49.5%, #bbbbbb 50.5%)'  //orange
+                          : tren.compliments_min[val.code] === 2 && !ne_dict[tren.id][val.code].min
+                          ? '#ffb3ba' //red
+                          : 'linear-gradient(to top right, #ffb3ba 49.5%, #bbbbbb 50.5%)'
                     }"
                     style="
                       font-size: small;
@@ -461,9 +467,13 @@
                       background:
                         tren.compliments_max[val.code] === 0
                           ? '#baffc9' // green
-                          : tren.compliments_max[val.code] === 1
+                          : tren.compliments_max[val.code] === 1 && !ne_dict[tren.id][val.code].max
                           ? '#ffdfba'  //orange
-                          : '#ffb3ba', //red
+                          : tren.compliments_max[val.code] === 1 
+                          ? 'linear-gradient(to top right, #ffdfba 49.5%, #bbbbbb 50.5%)'  //orange
+                          : tren.compliments_max[val.code] === 2 && !ne_dict[tren.id][val.code].max
+                          ? '#ffb3ba' //red
+                          : 'linear-gradient(to top right, #ffb3ba 49.5%, #bbbbbb 50.5%)'
                     }"
                     style="
                       font-size: small;
@@ -983,6 +993,7 @@ export default {
       tren_casos: "",           //tren de casos similars seleccionat.
       llest_monitoratge: false, //variable per saber si el monitoratge està llest.
       no_definit: '<i style="color:red">No definit</i>',
+      ne_dict: {},              //diccionari de trens i els seus indicadors per a saber si algun pot ser 'ne'.
 
       //backend
       Usuari,                   //classe
@@ -1313,7 +1324,9 @@ export default {
           if(tren_aplicable){
             let min_max = undefined;
             try{  
-                min_max = _this.user.corrent.aplica_tren_tractaments(_this.Info_indicadors, array_tractaments, dict_tractaments, efluent_secundari,key);
+                const res = _this.user.corrent.aplica_tren_tractaments(_this.Info_indicadors, array_tractaments, dict_tractaments, efluent_secundari,key);
+                min_max = res[0];
+                _this.ne_dict[key] = res[1];
             } catch(err){
                 // prova re-llegirnt excel 'tractaments'
                 alert("ERROR: És possible que la taula de tractaments estigui desactualitzada. No s'han pogut avaluar els trens, però s'han restaurat els nous valors per defecte de la taula de tractaments. Torni a provar l'avaluació per a veure si s'ha solucionat el problema.");
@@ -1872,7 +1885,7 @@ input[type="number"] {
     display: block;
     float: left;
     height: 16px;
-    width: 150px;
+    width: 180px;
     margin-right: 5px;
     margin-left: 0;
 }
