@@ -19,21 +19,7 @@
         <table border="1">
           <tr>
             <th colspan="2">
-              Capacitat tractament avançat (m<sup>3</sup>/d):
-              <input
-                type="number"
-                v-model.number="user.corrent.Q"
-                min="0" step="1"
-                style="max-width: 75px"
-              />
-              <br>
-              Factor sobre la capacitat de tractament (%):
-              <input
-                type="number"
-                v-model.number="user.corrent.F"
-                min="0" step="1" max="100"
-                style="max-width: 40px"
-              />
+              
             </th>
             <th colspan="2">Descripció infraestructura existent</th>
             <th colspan="2">Ús d'aigua regenerada</th>
@@ -44,6 +30,24 @@
           <tr>
             <th colspan="2" rowspan="2">Indicadors de qualitat</th>
             <td colspan="2" class="doubletd">
+              <div style="margin-bottom: 10px;">
+                Capacitat tractament avançat (m<sup>3</sup>/d):
+                <input
+                    type="number"
+                    v-model.number="user.corrent.Q"
+                    min="0" step="1"
+                    style="max-width: 75px"
+                />
+              </div>
+              <div style="margin-bottom: 20px;">
+                Factor sobre la capacitat de tractament (%):
+                <input
+                    type="number"
+                    v-model.number="user.corrent.F"
+                    min="0" step="1" max="100"
+                    style="max-width: 40px"
+                />
+              </div>
               Selecciona la infraestructura existent:
               <select v-model="tractament_secundari" style="max-width: 350px">
                 <option
@@ -499,7 +503,7 @@
     <details class="seccio" close>
       <summary class="seccio">(opcional) 2.1. Modificació dels tractaments</summary>
       <div>
-        <button style="margin-bottom: 10px;" @click="read_file('/20220518_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');">Restaurar valors per defecte</button>
+        <button style="margin-bottom: 10px;" @click="read_file('/20220526_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');">Restaurar valors per defecte</button>
         <div>
           <table border="1">
             <tr style="background-color: #d4e9fd;">
@@ -614,21 +618,6 @@
                 <th rowspan="2">id</th>
                 <th rowspan="2" class="doubletd">Compliment (%)</th>
                 <th colspan="2" rowspan="2" class="doubletd">
-                    Mitjana del % d'eliminació (I. químics) 
-                    <div class="tooltip">
-                        <button :id="'eliminacio_quimics'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
-                    </div>
-                    
-                </th>
-                <th colspan="2" rowspan="2" class="doubletd">
-                    Mitjana del % d'eliminació (I. microbiològics)
-                    <div class="tooltip">
-                        <button :id="'eliminacio_microbiologics'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
-                        <span class="tooltiptext" style="margin-top: 20px;">Sort columns</span>
-                    </div>
-                </th>
-                <th colspan="2" rowspan="2" class="doubletd">
                     Cost total (€/d)
                     <div class="tooltip">
                         <button :id="'cost_total'" v-on:click="sort_multicriteri"><img src="/img/sort.png" alt="Sort columns" class="center" style="width: 10px"></button>
@@ -695,18 +684,6 @@
                     v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('puntuacio',tren.criteris_agregats['puntuacio']))">
                     {{ tren.criteris_agregats['puntuacio'] }}
                     </td>
-                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
-                    min:
-                    </td>
-                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
-                    {{ Math.round((tren.criteris.eliminacio_quimics_min + Number.EPSILON) * 100) / 100 }}
-                    </td>
-                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
-                    min:
-                    </td>
-                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
-                    {{ Math.round((tren.criteris.eliminacio_microbiologics_min + Number.EPSILON) * 100) / 100 }}
-                    </td>
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cost_total',tren.criteris_agregats['cost_total']))">
                     min:
                     </td>
@@ -748,18 +725,6 @@
                     </td>
                 </tr>
                 <tr :key="id+'_max_multi'">
-                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
-                    max:
-                    </td>
-                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_quimics',tren.criteris_agregats['eliminacio_quimics']))">
-                    {{ Math.round((tren.criteris.eliminacio_quimics_max + Number.EPSILON) * 100) / 100 }}
-                    </td>
-                    <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
-                    max:
-                    </td>
-                    <td v-bind:style="'text-align: right; padding: 0px 10px 0px 10px; background-color: '+getColorForPercentage(getCriteriPercentage('eliminacio_microbiologics',tren.criteris_agregats['eliminacio_microbiologics']))">
-                    {{ Math.round((tren.criteris.eliminacio_microbiologics_max + Number.EPSILON) * 100) / 100 }}
-                    </td>
                     <td v-bind:style="'text-align: right; padding: 0px 5px 0px 5px; background-color: '+getColorForPercentage(1-getCriteriPercentage('cost_total',tren.criteris_agregats['cost_total']))">
                     max:
                     </td>
@@ -1055,16 +1020,16 @@ export default {
     this.read_file('/20220526_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
 
     // llegir excel 'trens'
-    this.read_file('/20220518_SUGGEREIX_Taula_Trens_v2.xlsx', 'trens');
+    this.read_file('/20220524_SUGGEREIX_Taula_Trens.xlsx', 'trens');
 
     // llegir excel 'efluent secundari' (característiques infraestructura existent)
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
 
     // llegir excel 'valors protectors usos'
-    this.read_file('/20220526_SUGGEREIX_Taules_A7.0_A7.1.xlsx', 'usos');
+    this.read_file('/20220526_SUGGEREIX_Taules_A7.0_A7.1_v2.xlsx', 'usos');
 
 	// llegir excel 'monitoratge de la qualitat autobiològica', que mostra el % de reducció Rmin per a terns de tractament dels indicadors microbiològics.
-	this.read_file('20220605_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
+	this.read_file('20220526_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
 
     // llegir excel 'Avaluació multicriteri', que mostra els criteris a considerar amb cadascun dels tractaments.
 	this.read_file('/20211111_SUGGEREIX_Criteris_add.xlsx', 'multicriteri');
@@ -1352,7 +1317,7 @@ export default {
             } catch(err){
                 // prova re-llegirnt excel 'tractaments'
                 alert("ERROR: És possible que la taula de tractaments estigui desactualitzada. No s'han pogut avaluar els trens, però s'han restaurat els nous valors per defecte de la taula de tractaments. Torni a provar l'avaluació per a veure si s'ha solucionat el problema.");
-                _this.read_file('/20220518_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
+                _this.read_file('/20220526_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
                 throw new Error(err);
             }
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
