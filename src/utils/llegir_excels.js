@@ -24,7 +24,7 @@ function llegir_vp_usos(binaryData) {
 
     return workbook.xlsx.load(binaryData).then(wb => {
         //1a pestanya amb nom i codi dels usos
-        let worksheet_codes = wb.worksheets[0];
+        let worksheet_codes = wb.worksheets[1];
         let startingRow = 4; //ignore first 3 columns (headers)
         let uses = {};
 
@@ -45,7 +45,7 @@ function llegir_vp_usos(binaryData) {
         });
 
         //2a pestanya amb valors protectors (VP) per cada indicador i ús.
-        let worksheet_vp = wb.worksheets[1];
+        let worksheet_vp = wb.worksheets[2];
         startingRow = 4; //ignore first 4 rows (headers).
 
         worksheet_vp.eachRow({
