@@ -24,7 +24,6 @@
                 type="number"
                 v-model.number="user.corrent.Q"
                 min="0" step="1"
-                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 style="max-width: 75px"
               />
               <br>
@@ -33,7 +32,6 @@
                 type="number"
                 v-model.number="user.corrent.F"
                 min="0" step="1" max="100"
-                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 style="max-width: 40px"
               />
             </th>
@@ -112,7 +110,7 @@
               <input
                 v-else
                 type="number"
-                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                
                 v-model.number="user.corrent.qualitat[key].min"
                 v-on:blur="handleBlur"
               />
@@ -130,7 +128,7 @@
               <input
                 v-else
                 type="number"
-                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                
                 v-model.number="user.corrent.qualitat[key].max"
                 v-on:blur="handleBlur"
               />
@@ -172,7 +170,7 @@
               <input
                 v-else
                 type="number"
-                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                
                 v-model.number="user.corrent_objectiu.qualitat[key]"
                 v-on:blur="handleBlur"
               />
@@ -249,7 +247,7 @@
                     v-else
                     type="number"
                     v-model.number="Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].vp"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     style="width: 66.66px"
                     v-on:blur="handleBlur"
                 />
@@ -294,7 +292,7 @@
                   <input
                     type="number"
                     v-model.number="obj[ind][1]"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     :ref="id + '_' + ind"
                     :id="id + '_' + ind"
                     class="nd"
@@ -575,7 +573,7 @@
             <input
                 class="viables"
                 type="number"
-                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                
                 v-model.number="treshold_viables"
                 min="0"
                 max="100"
@@ -793,7 +791,7 @@
             <input
                 class="viables"
                 type="number"
-                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                
                 v-model.number="anys_operacio"
                 min="1"
                 max="100"
@@ -826,63 +824,63 @@
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].cap_min"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].cap_max"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].cons_ene_mitja"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].hc"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].hh"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].espai_ocupat"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].opex"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].capex_min_d"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].capex_max_d"
-                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
+                    
                     min="0"
                     class="smalltd"
                 /></td>
