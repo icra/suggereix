@@ -19,7 +19,7 @@
         <table border="1">
           <tr>
             <th colspan="2">
-              Capacitat tractament (m<sup>3</sup>/d):
+              Capacitat tractament avançat (m<sup>3</sup>/d):
               <input
                 type="number"
                 v-model.number="user.corrent.Q"
@@ -27,7 +27,7 @@
                 style="max-width: 75px"
               />
               <br>
-              Factor sobre el cabal màxim (%):
+              Factor sobre la capacitat de tractament (%):
               <input
                 type="number"
                 v-model.number="user.corrent.F"
@@ -195,7 +195,7 @@
     </details>
 
     <details ref="vp-details" class="seccio" close>
-      <summary class="seccio">1.1. Consulta i/o modificació dels valors objectius de qualitat VP (opcional)</summary>
+      <summary class="seccio">(opcional) 1.1. Consulta i/o modificació dels valors objectius de qualitat VP</summary>
       <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i deixa modificar els VP per a tots els indicadors.</p>
       <p>Per defecte, el valor VP que es selecciona per a cada indicador és el valor menor diferent de 'nd'. Si es vol utilitzar un valor VP d'un tipus i ús concret, es pot seleccionar a partir de les caselles de selecció.</p>
       <div>
@@ -264,8 +264,7 @@
     </details>
 
     <details class="seccio" close >
-      <summary class="seccio">1.2. Modificació de la reducció acumulada mínima requerida al llarg d'un tren
-        (opcional)
+      <summary class="seccio">(opcional) 1.2. Modificació de la reducció acumulada mínima requerida al llarg d'un tren
       </summary>
       <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i permet modificar els valors de reducció logarítmica per als indicadors microbiològics, p. ex., si es disposa d'una avaluació específica del risc microbiològic.</p>
       <div>
@@ -498,7 +497,7 @@
     </details>
 
     <details class="seccio" close>
-      <summary class="seccio">2.1. Modificació dels tractaments (opcional)</summary>
+      <summary class="seccio">(opcional) 2.1. Modificació dels tractaments</summary>
       <div>
         <button style="margin-bottom: 10px;" @click="read_file('/20220518_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');">Restaurar valors per defecte</button>
         <div>
@@ -783,8 +782,8 @@
     </details>
 
     <details class="seccio" close >
-      <summary class="seccio">3.1. Modificació dels rangs de consum i valors dels criteris de cada tractament
-        (opcional)
+      <summary class="seccio">(opcional) 3.1. Modificació dels rangs de consum i valors dels criteris de cada tractament
+        
       </summary>
       <p>Per cada tractament es disposa de 4 rangs qualitatius (Baix (B), Mitjà (M), Alt (A) i Molt Alt (MA)) de consum amb determinats valors de criteris. Els valors dels rangs de consum i els valors corresponents dels criteris es poden modificar en aquesta taula.</p>
       <p><b>S'assumeix un temps d'operació de la planta general de: </b>
