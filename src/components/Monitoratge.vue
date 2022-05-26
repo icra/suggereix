@@ -133,10 +133,10 @@ window.joint = joint;
 
 export default {
   name: "Monitoratge",
-  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors','tractaments_info','user','usos_seleccionats','mon_per_ind_quim','capacitat','mon_code_to_ind', 'mon_per_ind_micro','qualitat_microbiologica'],
+  props: ["tren_monitoratge","tractament_secundari","info_monitoratge",'info_rich','metodes_monitoratge','indicadors_seleccionats','ind_to_code','abreviacions_met_mon','info_indicadors','tractaments_info','user','usos_seleccionats','mon_per_ind_quim','capacitat','mon_code_to_ind', 'mon_per_ind_micro','qualitat_microbiologica','prop_visio_monitoratge'],
   data: function(){
     return {
-      visio_monitoratge: 0,    //Variable que indica la visió activa de l'apartat monitoratge.
+      visio_monitoratge: this.prop_visio_monitoratge || 0,    //Variable que indica la visió activa de l'apartat monitoratge.
       array_tractaments: []    //Array dels tractaments.
     }
   },
@@ -169,6 +169,7 @@ export default {
     visio_monitoratge: {
         handler: function(newVal, oldVal) {
             const _this = this;
+            _this.$emit('changeData', 'mon_visio_monitoratge', newVal);
             _this.$nextTick(function () {
                 if(_this.visio_monitoratge === 0) _this.render_diagrama_tractament();
                 else if(_this.visio_monitoratge === 1) _this.render_diagrama_qualitat();
@@ -218,7 +219,7 @@ export default {
         const _this = this;
         const dict_freq = {};
         const array_tractaments = _this.tren_monitoratge['array_tractaments'];
-        const min_max = _this.user.corrent.aplica_tren_tractaments(_this.info_indicadors, array_tractaments, _this.tractaments_info, _this.tractament_secundari,_this.tren_monitoratge.codi);
+        const [min_max,] = _this.user.corrent.aplica_tren_tractaments(_this.info_indicadors, array_tractaments, _this.tractaments_info, _this.tractament_secundari,_this.tren_monitoratge.codi);
         for(const indicador of _this.indicadors_qualitat){
             dict_freq[indicador] = {};
             const full_indicador = _this.info_indicadors[indicador];

@@ -75,11 +75,11 @@ const colors = [
 
 export default {
   name: "Avaluacio",
-  props: ["trens_multicriteris","trens_info", "resultatAvaluacio"],
+  props: ["trens_multicriteris","trens_info","prop_pes_criteris","prop_criteris_a_considerar","prop_metode"],
   data: function(){
     return {
         DICT_CRI_NOMS: DICT_CRI_NOMS,
-        pes_criteris: JSON.parse(JSON.stringify(DICT_PES_CRITERIS)),
+        pes_criteris: this.prop_pes_criteris || JSON.parse(JSON.stringify(DICT_PES_CRITERIS)),
         pes_criteris_info: {
             'VL': 'Molt baixa (MB)',
             'L': 'Baixa (B)',
@@ -87,9 +87,9 @@ export default {
             'H': 'Alta (A)',
             'VH': 'Molt alta (MA)'
         },
-        criteris_a_considerar: JSON.parse(JSON.stringify(DICT_CRITERIS_A_CONSIDERAR)),
+        criteris_a_considerar: this.prop_criteris_a_considerar || JSON.parse(JSON.stringify(DICT_CRITERIS_A_CONSIDERAR)),
         trens_avaluats: [],
-        metode: 'agregar',
+        metode: this.prop_metode || 'agregar',
         selector_metode: [{codi: 'agregar', nom: 'Agregació i normalització'},{codi: 'fuzzy', nom: 'IA: Lògica Fuzzy'}],
         chart: undefined
     }
@@ -304,11 +304,13 @@ export default {
     },
     //cada vegada que canvii el mètode de càlcul, computar la priorització. 
     metode: function(newVal, oldVal) {
+        this.$emit('changeData', 'av_metode', newVal);
         this.computeFuzzyTopsis(this.trens_multicriteris.filter(tren => tren.avaluar));
     },
     //cada vegada que s'actualitzin els pesos, es re-computa el fuzzy topsis.
     pes_criteris:{
         handler: function(newVal, oldVal) {
+            this.$emit('changeData', 'av_pes_criteris', newVal);
             this.computeFuzzyTopsis(this.trens_multicriteris.filter(tren => tren.avaluar));
         },
         deep: true
@@ -316,6 +318,7 @@ export default {
     //cada vegada que s'actualitzin els criteris a considerar, computar el fuzzy topsis.
     criteris_a_considerar:{
         handler: function(newVal, oldVal) {
+            this.$emit('changeData', 'av_criteris_a_considerar', newVal);
             this.computeFuzzyTopsis(this.trens_multicriteris.filter(tren => tren.avaluar));
         },
         deep: true

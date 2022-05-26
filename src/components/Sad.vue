@@ -23,7 +23,8 @@
               <input
                 type="number"
                 v-model.number="user.corrent.Q"
-                min="1" step="1"
+                min="0" step="1"
+                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 style="max-width: 75px"
               />
               <br>
@@ -31,7 +32,8 @@
               <input
                 type="number"
                 v-model.number="user.corrent.F"
-                min="1" step="1" max=100
+                min="0" step="1" max="100"
+                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 style="max-width: 40px"
               />
             </th>
@@ -110,6 +112,7 @@
               <input
                 v-else
                 type="number"
+                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 v-model.number="user.corrent.qualitat[key].min"
                 v-on:blur="handleBlur"
               />
@@ -127,6 +130,7 @@
               <input
                 v-else
                 type="number"
+                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 v-model.number="user.corrent.qualitat[key].max"
                 v-on:blur="handleBlur"
               />
@@ -168,6 +172,7 @@
               <input
                 v-else
                 type="number"
+                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 v-model.number="user.corrent_objectiu.qualitat[key]"
                 v-on:blur="handleBlur"
               />
@@ -244,6 +249,7 @@
                     v-else
                     type="number"
                     v-model.number="Usos_info[usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)].vp"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     style="width: 66.66px"
                     v-on:blur="handleBlur"
                 />
@@ -288,6 +294,7 @@
                   <input
                     type="number"
                     v-model.number="obj[ind][1]"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     :ref="id + '_' + ind"
                     :id="id + '_' + ind"
                     class="nd"
@@ -435,13 +442,13 @@
                       background:
                         tren.compliments_min[val.code] === 0
                           ? '#baffc9' // green
-                          : tren.compliments_min[val.code] === 1 && !ne_dict[tren.id][val.code].min
-                          ? '#ffdfba'  //orange
-                          : tren.compliments_min[val.code] === 1 
+                          : tren.compliments_min[val.code] === 1 && ne_dict[tren.id] && ne_dict[tren.id][val.code].min
                           ? 'linear-gradient(to top right, #ffdfba 49.5%, #bbbbbb 50.5%)'  //orange
-                          : tren.compliments_min[val.code] === 2 && !ne_dict[tren.id][val.code].min
-                          ? '#ffb3ba' //red
-                          : 'linear-gradient(to top right, #ffb3ba 49.5%, #bbbbbb 50.5%)'
+                          : tren.compliments_min[val.code] === 1 
+                          ? '#ffdfba'  //orange
+                          : tren.compliments_min[val.code] === 2 && ne_dict[tren.id] && ne_dict[tren.id][val.code].min
+                          ? 'linear-gradient(to top right, #ffb3ba 49.5%, #bbbbbb 50.5%)' //red
+                          : '#ffb3ba'
                     }"
                     style="
                       font-size: small;
@@ -467,13 +474,13 @@
                       background:
                         tren.compliments_max[val.code] === 0
                           ? '#baffc9' // green
-                          : tren.compliments_max[val.code] === 1 && !ne_dict[tren.id][val.code].max
-                          ? '#ffdfba'  //orange
-                          : tren.compliments_max[val.code] === 1 
+                          : tren.compliments_max[val.code] === 1 && ne_dict[tren.id] && ne_dict[tren.id][val.code].max
                           ? 'linear-gradient(to top right, #ffdfba 49.5%, #bbbbbb 50.5%)'  //orange
-                          : tren.compliments_max[val.code] === 2 && !ne_dict[tren.id][val.code].max
-                          ? '#ffb3ba' //red
-                          : 'linear-gradient(to top right, #ffb3ba 49.5%, #bbbbbb 50.5%)'
+                          : tren.compliments_max[val.code] === 1 
+                          ? '#ffdfba'  //orange
+                          : tren.compliments_max[val.code] === 2 && ne_dict[tren.id] && ne_dict[tren.id][val.code].max
+                          ? 'linear-gradient(to top right, #ffb3ba 49.5%, #bbbbbb 50.5%)' //red
+                          : '#ffb3ba'
                     }"
                     style="
                       font-size: small;
@@ -568,6 +575,7 @@
             <input
                 class="viables"
                 type="number"
+                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 v-model.number="treshold_viables"
                 min="0"
                 max="100"
@@ -770,7 +778,7 @@
               <Graph v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
           </div>
           <div v-else-if="this.visio_multicriteri === 2">
-              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info" @resultats="resultatAvaluacio"/>
+              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info" @resultats="resultatAvaluacio" v-bind:prop_pes_criteris="av_pes_criteris" v-bind:prop_criteris_a_considerar="av_criteris_a_considerar" v-bind:prop_metode="av_metode" @changeData="avChangeData" />
           </div>
         </div>
       </div>
@@ -785,6 +793,7 @@
             <input
                 class="viables"
                 type="number"
+                oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                 v-model.number="anys_operacio"
                 min="1"
                 max="100"
@@ -817,54 +826,63 @@
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].cap_min"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].cap_max"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].cons_ene_mitja"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].hc"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].hh"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].espai_ocupat"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].opex"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].capex_min_d"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
                 <td class="smalltd"><input
                     type="number"
                     v-model.number="Multicriteri_info[id][ind].capex_max_d"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') || 0;"
                     min="0"
                     class="smalltd"
                 /></td>
@@ -892,7 +910,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" v-bind:capacitat="user.corrent.Q * user.corrent.F / 100" v-bind:mon_code_to_ind="Mon_code_to_ind" v-bind:mon_per_ind_micro="Mon_per_ind_micro" v-bind:qualitat_microbiologica="Qualitat_microbiologica" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" v-bind:capacitat="user.corrent.Q * user.corrent.F / 100" v-bind:mon_code_to_ind="Mon_code_to_ind" v-bind:mon_per_ind_micro="Mon_per_ind_micro" v-bind:qualitat_microbiologica="Qualitat_microbiologica" v-bind:prop_visio_monitoratge="mon_visio_monitoratge" @changeData="avChangeData" />
           </div>
       </div>
     </details>
@@ -994,6 +1012,11 @@ export default {
       llest_monitoratge: false, //variable per saber si el monitoratge està llest.
       no_definit: '<i style="color:red">No definit</i>',
       ne_dict: {},              //diccionari de trens i els seus indicadors per a saber si algun pot ser 'ne'.
+
+      av_criteris_a_considerar: undefined,
+      av_pes_criteris: undefined,
+      av_metode: undefined,
+      mon_visio_monitoratge: undefined,
 
       //backend
       Usuari,                   //classe
@@ -1218,7 +1241,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){
@@ -1250,20 +1273,23 @@ export default {
         }
         const fr = new FileReader();
         fr.readAsText(estat_file, "UTF-8");
-        fr.onload = function (evt) {
+        fr.onload = async function (evt) {
             try{
                 const data = JSON.parse(evt.target.result);
                 for(const [key,value] of Object.entries(data)){
                     if(key !== "user") _this[key] = value;
                 }
+                await new Promise(r => setTimeout(r, 500));
+                if(data.tren_monitoratge) _this.tren_monitoratge = data.tren_monitoratge;
+                if(data.tren_casos) _this.tren_casos = data.tren_casos;
                 // Processar usuari.
                 const usuari = new Usuari(_this.Info_indicadors);
                 for(const [key, value] of Object.entries(data.user.corrent)){
-                    //_this.user.corrent[key] = value;
+                    if(key === "I11") console.log(value);
                     usuari.corrent[key] = value;
                 }
                 for(const [key, value] of Object.entries(data.user.corrent_objectiu)){
-                    //_this.user.corrent_objectiu[key] = value;
+                    if(key === "I11") console.log(value);
                     usuari.corrent_objectiu[key] = value;
                 }
                 _this.user = usuari;
@@ -1280,7 +1306,6 @@ export default {
 
     // funcio per a carregar un estat de la pàgina a la sessió actual.
     carregar_estat: function () {
-        this.carregar_estat_intern();
         this.carregar_estat_intern();
     },
 
@@ -1429,6 +1454,10 @@ export default {
 
     },
 
+    avChangeData(param, data){
+      this[param] = data;
+    },
+
     //funció que s'executa des del component avaluació per a transmetre els resultats.
     resultatAvaluacio(trens_cc){
         const _this = this;
@@ -1441,7 +1470,8 @@ export default {
                 ...tren, 
                 codi: tren.id, 
                 selector: counter+". "+_this.Trens_info[tren.id].nom+" ("+cc+")",
-                array_tractaments: _this.Trens_info[tren.id].array_tractaments
+                array_tractaments: _this.Trens_info[tren.id].array_tractaments,
+                referencies: _this.Trens_info[tren.id].referencies
             };
             trens_monitoratge.push(tren_obj);
             counter += 1;
