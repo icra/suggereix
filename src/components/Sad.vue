@@ -1247,11 +1247,9 @@ export default {
                 // Processar usuari.
                 const usuari = new Usuari(_this.Info_indicadors);
                 for(const [key, value] of Object.entries(data.user.corrent)){
-                    if(key === "I11") console.log(value);
                     usuari.corrent[key] = value;
                 }
                 for(const [key, value] of Object.entries(data.user.corrent_objectiu)){
-                    if(key === "I11") console.log(value);
                     usuari.corrent_objectiu[key] = value;
                 }
                 _this.user = usuari;
