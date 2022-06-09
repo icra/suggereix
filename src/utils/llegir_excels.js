@@ -57,10 +57,9 @@ function llegir_vp_usos(binaryData) {
                 let indId = row[4]; //codi indicador: columna 'D'
                 let tipusVp = row[5]; //tipus de valor protector (1,2 o 3): columna 'E'
                 let valorVp = row[6]; //valor protector: columna 'F'
-                let refVp = row[8]; //referència del valor protector
+                let refVp = row[8] || ""; //referència del valor protector
                 let regulat = row[9]; //Indica si el VP es troba regulat per l'ús concret.
-                if (refVp === undefined) //si no hi ha referència, guardem string buida.
-                    refVp = "";
+                let ref_pt3 = row[14]; //Indica la referència PT3 del valor protector.
 
                 if (typeof valorVp === 'object') { //de tipus formula (la cel·la té objectes 'result' i 'formula', ens guardem només 'result').
                     valorVp = valorVp.result
@@ -83,6 +82,7 @@ function llegir_vp_usos(binaryData) {
                 uses[useId].qualitat[indId][tipusVp] = {
                     vp: valorVp,
                     ref: refVp,
+                    ref_pt3: ref_pt3,
                     regulat: regulat ? true : false
                 }
             }
@@ -157,20 +157,22 @@ function llegir_tractaments(binaryData) {
         let maxRows = worksheet.rowCount;
         let treatments = {};
 
-        for (rowNumber; rowNumber < maxRows; rowNumber += 22) {
+        for (rowNumber; rowNumber < maxRows; rowNumber += 21) {
             let i = rowNumber;
-            let name = worksheet.getCell('A' + i.toString());
-            let pretreatment = worksheet.getCell('B' + i.toString());
+            let name = valor_nom(worksheet.getCell('A' + i.toString()).value);
+            let pretreatment = valor_nom(worksheet.getCell('B' + i.toString()).value);
             if (treatments[name] === undefined) {
                 treatments[name] = {};
             }
             treatments[name][pretreatment] = {};
             for (let j = 1; j <= 22; j++) {
                 let key = worksheet.getCell('D' + i.toString()).value; //'I'+j.toString();
+                const min = valor_nom(worksheet.getCell('E' + i.toString()).value);
+                const max = valor_nom(worksheet.getCell('F' + i.toString()).value);
 
                 treatments[name][pretreatment][key] = {
-                    min: valor_nom(worksheet.getCell('E' + i.toString()).value),
-                    max: valor_nom(worksheet.getCell('F' + i.toString()).value)
+                    min: isNaN(min) ? 0 : min,
+                    max: isNaN(max) ? 0 : max
                 }
                 i++;
             }

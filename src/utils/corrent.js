@@ -12,6 +12,7 @@ export default class Corrent {
         this.qualitat = {};
         this.eliminacio = {};
         this.refs = {};
+        this.refs_pt3 = {};
         this.regulat = {};
         this.seleccionat = {};
         this.tipus_vp = {};
@@ -19,6 +20,7 @@ export default class Corrent {
             if(id.startsWith('I')){
                 this.qualitat[id] = 0;
                 this.refs[id] = "";
+                this.refs_pt3[id] = "";
                 this.eliminacio[id] = 0;
                 this.seleccionat[id] = id !== 'I1' ? true : false;
             }

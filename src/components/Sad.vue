@@ -91,6 +91,7 @@
                 <button class="btn" v-on:click="modificar_vps"><img src="/img/edit.png" width="20" height="20" /></button>
                 <span class="tooltiptext">Modificar valors</span>
               </div>
+              <button class="btn" v-on:click="nomes_regulats">Considerar només indicadors regulats</button>
             </td>
           </tr>
 
@@ -184,6 +185,10 @@
             </td>
             <td class="doubletd2">
               {{ user.corrent_objectiu.refs[key] }}
+              <div v-if="user.corrent_objectiu.refs_pt3[key]" class="tooltip">
+                <i class="fa-regular fa-circle-question"></i>
+                <span class="tooltiptext">{{user.corrent_objectiu.refs_pt3[key]}}</span>
+              </div>
             </td>
           </tr>
           <tr>
@@ -371,8 +376,6 @@
                         <span class="legend">VP no assolit (no regulat)</span>
                         <span class="color" style='background:#ffb3ba;'></span>
                         <span class="legend">VP no assolit (regulat)</span>
-                        <span class="color" style='background:#bbbbbb;'></span>
-                        <span class="legend">Inclou eficiències no definides</span>
                     </li>
                 </ul>
                 </div>
@@ -458,6 +461,14 @@
                     "
                   >
                     {{ show_sc_not(tren.concentracio.min.qualitat[val.code]) }}
+                    <div v-if="val.code === 'I2' && Number(user.corrent_objectiu.tipus_vp[val.code]) === 1 && usos_seleccionats.some(us=> ['1','3','5','6','7','8'].includes(us)) && tren.concentracio.min.qualitat[val.code] > 1000 && tren.concentracio.min.qualitat[val.code] < 3000" class="tooltip">
+                        <i class="fa-regular fa-circle-question"></i>
+                        <span class="tooltiptext">Es recomana considerar aspectes addicionals per a aigua regenerada amb valors de conductivitat entre 1000 i 3000 µS/cm, principalment, el mètode de reg i les condicions de drenatge. És recomanable estudiar l’aplicació de les tècniques més eficients d’irrigació, sistemes avançats de microirrigació, que permeten controlar la salinitat prop de la zona radicular i en punts més allunyats de la zona d’irrigació, i a més, poden utilitzar-se amb altres mesures de gestió de l’aigua d’irrigació (p. ex., sistemes de reutilització de l’aigua de drenatge).</span>
+                    </div>
+                    <div v-if="val.code === 'I2' && Number(user.corrent_objectiu.tipus_vp[val.code]) === 1 && usos_seleccionats.some(us=> ['1','3','5','6','7','8'].includes(us)) && tren.concentracio.min.qualitat[val.code] >= 3000" class="tooltip">
+                        <i class="fa-regular fa-circle-question"></i>
+                        <span class="tooltiptext2">Amb valors de conductivitat igual o superior a 3000 µS/cm, les restriccions per a l'ús d'irrigació són severes.</span>
+                    </div>
                   </td>
                 </template>
               </tr>
@@ -490,6 +501,22 @@
                     "
                   >
                     {{ show_sc_not(tren.concentracio.max.qualitat[val.code]) }}
+                    <div v-if="val.code === 'I2' && Number(user.corrent_objectiu.tipus_vp[val.code]) === 1 && usos_seleccionats.some(us=> ['1','3','5','6','7','8'].includes(us)) && tren.concentracio.max.qualitat[val.code] > 1000 && tren.concentracio.max.qualitat[val.code] < 3000" class="tooltip">
+                        <i class="fa-regular fa-circle-question"></i>
+                        <span class="tooltiptext2">Es recomana considerar aspectes addicionals per a aigua regenerada amb valors de conductivitat entre 1000 i 3000 µS/cm, principalment, el mètode de reg i les condicions de drenatge. És recomanable estudiar l’aplicació de les tècniques més eficients d’irrigació, sistemes avançats de microirrigació, que permeten controlar la salinitat prop de la zona radicular i en punts més allunyats de la zona d’irrigació, i a més, poden utilitzar-se amb altres mesures de gestió de l’aigua d’irrigació (p. ex., sistemes de reutilització de l’aigua de drenatge).</span>
+                    </div>
+                    <div v-if="val.code === 'I2' && Number(user.corrent_objectiu.tipus_vp[val.code]) === 1 && usos_seleccionats.some(us=> ['1','3','5','6','7','8'].includes(us)) && tren.concentracio.max.qualitat[val.code] >= 3000" class="tooltip">
+                        <i class="fa-regular fa-circle-question"></i>
+                        <span class="tooltiptext2">Amb valors de conductivitat igual o superior a 3000 µS/cm, les restriccions per a l'ús d'irrigació són severes.</span>
+                    </div>
+                    <div v-if="(val.code === 'I6' || val.code === 'I7') && Number(user.corrent_objectiu.tipus_vp[val.code]) === 1 && usos_seleccionats.some(us=> ['1','3','5','6','7','8'].includes(us)) && (tren.concentracio.max.qualitat['I6'] + tren.concentracio.max.qualitat['I7']) > 5 && (tren.concentracio.max.qualitat['I6'] + tren.concentracio.max.qualitat['I7']) < 30" class="tooltip">
+                        <i class="fa-regular fa-circle-question"></i>
+                        <span class="tooltiptext2">Si la concentració de nitrogen total és entre 6 i 30 mg/l N, es recomana considerar aspectes addicionals: mesures de gestió de l’aigua d’irrigació (p. ex., reducció de la freqüència de rentat de sals, sistemes de reutilització de l’aigua de drenatge), i considerar la quantitat de nitrogen total que es pot aplicar al sòl d'acord amb la normativa sobre prevenció de la contaminació per nitrats.</span>
+                    </div>
+                    <div v-if="(val.code === 'I6' || val.code === 'I7') && Number(user.corrent_objectiu.tipus_vp[val.code]) === 1 && usos_seleccionats.some(us=> ['1','3','5','6','7','8'].includes(us)) && (tren.concentracio.max.qualitat['I6'] + tren.concentracio.max.qualitat['I7']) >= 30" class="tooltip">
+                        <i class="fa-regular fa-circle-question"></i>
+                        <span class="tooltiptext2">Amb valors de concentració de nitrogen total superior a 30 mg/l N, les restriccions per a l'ús d'irrigació (cultius sobre sòl) són severes. Es recomana considerar sistemes de reutilització de l'aigua de drenatge.</span>
+                    </div>
                   </td>
                 </template>
               </tr>
@@ -532,12 +559,18 @@
 
                       <table border="1">
                         <tr>
-                          <th colspan="2">id</th>
-                          <th>min(%)</th>
-                          <th>max(%)</th>
+                          <th colspan="2">Indicadors de qualitat</th>
+                          <th>min (%)</th>
+                          <th>max (%)</th>
                         </tr>
                         <tr v-for="(obj, id) in pre" :key="id+'_'+nom_tra+'_'+nom_pre">
-                          <td style="font-family: monospace">{{ id }}</td>
+                          <td style="font-family: monospace">
+                              {{ id }}
+                              <div v-if="Info_indicadors[id] ? !Info_indicadors[id].type.startsWith('3. ') && (nom_tra === 'DP' || nom_pre === 'DP') : false" class="tooltip">
+                                <i class="fa-regular fa-circle-question"></i>
+                                <span class="tooltiptext">Els valors d'eliminació abans de la sortida del tractament existent no apliquen per a indicadors no microbiològics</span>
+                              </div>
+                          </td>
                           <td>
                             <div v-html="Info_indicadors[id] ? Info_indicadors[id].name_rich : ''"></div>
                           </td>
@@ -547,6 +580,8 @@
                               v-model.number="obj.min"
                               min="0"
                               max="100"
+                              :disabled="Info_indicadors[id] ? !Info_indicadors[id].type.startsWith('3. ') && (nom_tra === 'DP' || nom_pre === 'DP') : false"
+                              style="position: relative; display: inline-block; width: 150px;"
                             />
                           </td>
                           <td>
@@ -555,6 +590,8 @@
                               v-model.number="obj.max"
                               min="0"
                               max="100"
+                              :disabled="Info_indicadors[id] ? !Info_indicadors[id].type.startsWith('3. ') && (nom_tra === 'DP' || nom_pre === 'DP') : false"
+                              style="width: 150px;"
                             />
                           </td>
                         </tr>
@@ -1026,13 +1063,13 @@ export default {
     //this.read_file('/SUGGEREIX_PT2_Taulest.xlsx', 'efluent');
 
     // llegir excel 'valors protectors usos'
-    this.read_file('/20220526_SUGGEREIX_Taules_A7.0_A7.1_v2.xlsx', 'usos');
+    this.read_file('/20220607_SUGGEREIX_Taules_A7.0_A7.3.xlsx', 'usos');
 
 	// llegir excel 'monitoratge de la qualitat autobiològica', que mostra el % de reducció Rmin per a terns de tractament dels indicadors microbiològics.
-	this.read_file('20220526_SUGGEREIX_Taula_A8.xlsx', 'qualitat_microbiologica');
+	this.read_file('20220602_SUGGEREIX_Taules_A8_A9.xlsx', 'qualitat_microbiologica');
 
     // llegir excel 'Avaluació multicriteri', que mostra els criteris a considerar amb cadascun dels tractaments.
-	this.read_file('/20211111_SUGGEREIX_Criteris_add.xlsx', 'multicriteri');
+	this.read_file('/20220527_SUGGEREIX_Criteris_add.xlsx', 'multicriteri');
 
     // llegir excel 'descripcio_indicadors'
     this.read_file('/20220407_SUGGEREIX_Taula_C7.xlsx', 'descripcio_indicadors');
@@ -1095,7 +1132,7 @@ export default {
             const vp_object = _this.Usos_info[_this.usos_seleccionats[Math.trunc((index-1)/3)]].qualitat[ind][(((index+2) % 3)+1)];
             _this.mod_ind_vps = {
                 ..._this.mod_ind_vps,
-                [ind]: [vp_object.vp, vp_object.ref, (((index+2) % 3)+1), us, vp_object.regulat]
+                [ind]: [vp_object.vp, vp_object.ref, (((index+2) % 3)+1), us, vp_object.regulat, vp_object.ref_pt3]
             };
         }
         else{
@@ -1455,6 +1492,15 @@ export default {
       this.llest_monitoratge = false;
     },
 
+    nomes_regulats(){
+        const _this = this;
+        const nou_corrent_seleccionat = {};
+        for(const key of Object.keys(_this.user.corrent.seleccionat)){
+            nou_corrent_seleccionat[key] = _this.user.corrent_objectiu.regulat[key];
+        }
+        _this.user.corrent.seleccionat = nou_corrent_seleccionat;
+    },
+
     modificar_vps(){
         this.modify_vp_open = true;
         const el = this.$refs['vp-details'];
@@ -1524,6 +1570,7 @@ export default {
                     _this.user.corrent_objectiu.refs[ind] = _this.mod_ind_vps[ind][1];
                     _this.user.corrent_objectiu.tipus_vp[ind] = _this.mod_ind_vps[ind][2];
                     _this.user.corrent_objectiu.regulat[ind] = _this.mod_ind_vps[ind][4];
+                    _this.user.corrent_objectiu.refs_pt3[ind] = _this.mod_ind_vps[ind][5];
 
                     if(_this.mod_ind_vps[ind][0] !== 'nd') vp_assigned.add(ind);
                 }
@@ -1533,6 +1580,7 @@ export default {
                     let vp_ref = '';
                     let vp_regulat = false;
                     let vp_tipus = 1;
+                    let vp_ref_pt3 = undefined;
                     for(const us of _this.usos_seleccionats){
                         for (const [key, value] of Object.entries(_this.Usos_info[us].qualitat[ind])) {
                             if(value.vp !== 'nd'){
@@ -1542,6 +1590,7 @@ export default {
                                     vp_ref = value.ref;
                                     vp_regulat = value.regulat;
                                     vp_tipus = key;
+                                    vp_ref_pt3 = value.ref_pt3 ? value.ref_pt3.toString().trim() : undefined;
                                 }
                             }
                         }
@@ -1550,6 +1599,7 @@ export default {
                     _this.user.corrent_objectiu.refs[ind] = vp_ref;
                     _this.user.corrent_objectiu.regulat[ind] = vp_regulat;
                     _this.user.corrent_objectiu.tipus_vp[ind] = vp_tipus;
+                    _this.user.corrent_objectiu.refs_pt3[ind] = vp_ref_pt3;
                 }
             }
         }
@@ -1875,7 +1925,7 @@ input[type="number"] {
     display: block;
     float: left;
     height: 16px;
-    width: 180px;
+    width: 150px;
     margin-right: 5px;
     margin-left: 0;
 }
