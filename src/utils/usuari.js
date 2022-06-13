@@ -1,6 +1,10 @@
 import Corrent from './corrent';
 
 //infraestructura existent de l'usuari
+const I19 = {min: 1548816.61891249, max: 85113803.8202378};
+const I20 = {min: 2187761.62394955, max: 89125093.8133748};
+const I21 = {min: 3019.95172040202, max: 5128613.83991366};
+
 export default class Usuari{
   constructor(info_indicadors){
     this.corrent = new Corrent(info_indicadors); //qualitat actual
@@ -12,9 +16,6 @@ export default class Usuari{
   }
 
   static get info_tractaments_secundaris(){
-    const I19 = {min: 1548816.61891249, max: 85113803.8202378};
-    const I20 = {min: 2187761.62394955, max: 89125093.8133748};
-    const I21 = {min: 3019.95172040202, max: 5128613.83991366};
     return{
       "FAC_DS1":{tipus:"secundari", nom:"Llots actius convencionals sense nitrificació",
         qualitat:{

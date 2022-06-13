@@ -2,7 +2,7 @@
   <div id="intro">
     <a id="downloadAnchorElem" style="display:none"></a>
     <details class="seccio">
-        <summary class="seccio">0. Gestió de dades (descarregar, carregar, restaurar) </summary>
+        <summary class="seccio">0. Gestió de dades (descarregar, carregar, gestionar indicadors) </summary>
         <div>
             <p><b>A. Descarregar l'estat actual</b></p> 
             <button @click="descarregar_estat">Descarregar</button>
@@ -11,6 +11,40 @@
             <input id="estat-file" type="file" />
             <button @click="carregar_estat">Carregar</button>
             <p>Carrega un estat previ de la pàgina a la sessió actual.</p>
+            <p><b>C. Gestionar indicadors</b></p> 
+            <p>Per a afegir un nou indicador, cal omplir les següents dades i prémer el botó 'Afegir Indicador':</p>
+            <table border="1">
+                <tr style="background-color: #d4e9fd;">
+                    <th>Codi</th>
+                    <th>Nom</th>
+                    <th>Tipus</th>
+                    <th>Unitats</th>
+                </tr>
+                <tbody>
+                    <tr>
+                        <td>{{'I'+(Math.max(...Object.keys(Info_indicadors).flatMap(key => key.startsWith('I') ? [Number(key.substring(1))] : []))+1)}}</td>
+                        <td>
+                            <input v-model="new_ind_name" placeholder="p.ex.: Nitrat (NO3-)" />
+                        </td>
+                        <td>
+                            <select v-model="new_ind_type" style="max-width: 350px">
+                                <option
+                                v-for="obj in Info_indicadors_types"
+                                :value="obj"
+                                :key="obj"
+                                >
+                                {{ obj }}
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <input v-model="new_ind_units" placeholder="p.ex.: mg/l N-NO3-" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p></p>
+            <button @click="afegirIndicador">Afegir Indicador</button>
         </div>
     </details>
     <details class="seccio" open>
@@ -51,7 +85,7 @@
               Selecciona la infraestructura existent:
               <select v-model="tractament_secundari" style="max-width: 350px">
                 <option
-                  v-for="(obj, key) in Usuari.info_tractaments_secundaris"
+                  v-for="(obj, key) in tractaments_sec"
                   :value="key"
                   :key="key"
                 >
@@ -115,7 +149,6 @@
               <input
                 v-else
                 type="number"
-                
                 v-model.number="user.corrent.qualitat[key].min"
                 v-on:blur="handleBlur"
               />
@@ -1003,11 +1036,16 @@ export default {
       llest_monitoratge: false, //variable per saber si el monitoratge està llest.
       no_definit: '<i style="color:red">No definit</i>',
       ne_dict: {},              //diccionari de trens i els seus indicadors per a saber si algun pot ser 'ne'.
+      tractaments_sec: {},      //corrents per defecte de la infraestructura existent.
 
       av_criteris_a_considerar: undefined,
       av_pes_criteris: undefined,
       av_metode: undefined,
       mon_visio_monitoratge: undefined,
+
+      new_ind_name: "",
+      new_ind_type: "",
+      new_ind_units: "",
 
       //backend
       Usuari,                   //classe
@@ -1083,9 +1121,84 @@ export default {
 
     // llegir excel 'casos d'ús'
     this.read_file('/20220420_SUGGEREIX_PT1_Casos.xlsx','casos_us')
+
+    this.tractaments_sec = Usuari.info_tractaments_secundaris;
     
   },
   methods:{
+    afegirIndicador(){
+        const _this = this;
+
+        // El codi serà el màxim indicador actual + 1.
+        const indicador_code = 'I'+(Math.max(...Object.keys(_this.Info_indicadors).flatMap(key => key.startsWith('I') ? [Number(key.substring(1))] : []))+1);
+
+        // Dades de l'indicador (pot sontenir <sup>, <sub>, <i> tags en els noms i unitats).
+        const indicador = {
+            name: _this.new_ind_name.replace("<sup>","").replace("</sup>","").replace("<sub>","").replace("</sub>","").replace("<i>","").replace("</i>",""),
+            name_rich: _this.new_ind_name,
+            unitats: _this.new_ind_units.replace("<sup>","").replace("</sup>","").replace("<sub>","").replace("</sub>","").replace("<i>","").replace("</i>",""),
+            unitats_rich: _this.new_ind_units,
+            type: _this.new_ind_type
+        }
+
+        // Modificar estructures de dades.
+        _this.Ind_to_code[indicador.name] = indicador_code;
+        _this.Info_indicadors[indicador_code] = indicador;
+        _this.Info_rich[indicador.name] = indicador.name_rich;
+        _this.Info_rich[indicador.unitats] = indicador.unitats_rich;
+        _this.Metodes_monitoratge[indicador.name] = {};
+        _this.Mon_code_to_ind[indicador_code] = indicador.name;
+
+        const new_tractaments_info = {};
+        for(const [trac, value] of Object.entries(_this.Tractaments_info)){
+            new_tractaments_info[trac] = {};
+            for(const [pre, value2] of Object.entries(value)){
+                new_tractaments_info[trac][pre] = {};
+                for(const [ind, max_min] of Object.entries(value2)){
+                    new_tractaments_info[trac][pre][ind] = {max_min};
+                }
+                new_tractaments_info[trac][pre][indicador_code] = {max: 0, min: 0};
+            }
+        }
+        _this.Tractaments_info = new_tractaments_info;
+
+        const new_usos_info = {};
+        for(const [codi_us, value] of Object.entries(_this.Usos_info)){
+            new_usos_info[codi_us] = value;
+            new_usos_info[codi_us].qualitat[indicador_code] = {
+                1: {ref: "", ref_pt3: "", regulat: false, vp: 0},
+                2: {ref: "", ref_pt3: "", regulat: false, vp: 0},
+                3: {ref: "", ref_pt3: "", regulat: false, vp: 0}
+            };
+        }
+        _this.Usos_info = new_usos_info;
+
+        for(const param of ["corrent","corrent_objectiu"]){
+            _this.user[param].eliminacio[indicador_code] = 0;
+            _this.user[param].qualitat[indicador_code] = 0;
+            _this.user[param].refs[indicador_code] = "";
+            _this.user[param].refs_pt3[indicador_code] = "";
+            _this.user[param].regulat[indicador_code] = false;
+            _this.user[param].seleccionat[indicador_code] = false;
+            _this.user[param].tipus_vp[indicador_code] = "1";
+        }
+
+        const new_tractaments_sec = {};
+        for(const [infraestructura,valor] of Object.entries(_this.tractaments_sec)){
+            new_tractaments_sec[infraestructura] = valor;
+            new_tractaments_sec[infraestructura].qualitat[indicador_code] = {max: 0, min: 0};
+        }
+        _this.tractaments_sec = new_tractaments_sec;
+
+        _this.new_ind_name = "";
+        _this.new_ind_type = "";
+        _this.new_ind_units= "";
+
+        // Avís a l'usuari.
+        alert("Indicador afegit correctament");
+
+
+    },
     obtenirEmplacament (cas_us){
         let text = cas_us.emplacament && cas_us.pais ? cas_us.emplacament+", "+cas_us.pais : cas_us.emplacament || cas_us.pais;
         text += " (Lat: " + Math.round((cas_us.latitud + Number.EPSILON) * 100) / 100 + ', Long: ' + Math.round((cas_us.longitud + Number.EPSILON) * 100) / 100 + ")";
@@ -1694,7 +1807,7 @@ export default {
     //actualitza els valors inicial de qualitat de l'aigua (usuari) en funció de l'efluent secundari seleccionat.
     tractament_secundari: function (newUse, oldUse){
       let _this = this;
-      _this.user.corrent.qualitat = Usuari.info_tractaments_secundaris[newUse].qualitat;
+      _this.user.corrent.qualitat = _this.tractaments_sec[newUse].qualitat;
       if(!_this.llest_monitoratge){
         _this.tren_monitoratge = "";
         _this.tren_casos = "";
