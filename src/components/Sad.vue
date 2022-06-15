@@ -176,7 +176,7 @@
                     <input
                         type="checkbox"
                         v-model="user.corrent.seleccionat[key]"
-                    /> {{ user.corrent.seleccionat[key] ? 'Activat' : 'Desactivat' }}
+                    /> {{ checkChecked(key) }}
                 </div>
                 <div v-else>
                     <input
@@ -1126,6 +1126,9 @@ export default {
     
   },
   methods:{
+    checkChecked(key){
+        return this.user.corrent.seleccionat[key] ? 'Activat' : 'Desactivat'
+    },
     afegirIndicador(){
         const _this = this;
 
@@ -1143,12 +1146,12 @@ export default {
 
         // Modificar estructures de dades.
         _this.Ind_to_code[indicador.name] = indicador_code;
-        _this.Info_indicadors[indicador_code] = indicador;
         _this.Info_rich[indicador.name] = indicador.name_rich;
         _this.Info_rich[indicador.unitats] = indicador.unitats_rich;
         _this.Metodes_monitoratge[indicador.name] = {};
         _this.Mon_code_to_ind[indicador_code] = indicador.name;
 
+        // Afegir eficiències (per defecte, 0).
         const new_tractaments_info = {};
         for(const [trac, value] of Object.entries(_this.Tractaments_info)){
             new_tractaments_info[trac] = {};
@@ -1162,6 +1165,15 @@ export default {
         }
         _this.Tractaments_info = new_tractaments_info;
 
+        // Actualitzar qualitats de la infraestructura existent.
+        const new_tractaments_sec = {};
+        for(const [infraestructura,valor] of Object.entries(_this.tractaments_sec)){
+            new_tractaments_sec[infraestructura] = valor;
+            new_tractaments_sec[infraestructura].qualitat[indicador_code] = {max: 0, min: 0};
+        }
+        _this.tractaments_sec = new_tractaments_sec;
+
+        // Modificar informació usos.
         const new_usos_info = {};
         for(const [codi_us, value] of Object.entries(_this.Usos_info)){
             new_usos_info[codi_us] = value;
@@ -1173,9 +1185,13 @@ export default {
         }
         _this.Usos_info = new_usos_info;
 
+        // Actualitzar indicadors.
+        _this.Info_indicadors[indicador_code] = indicador;
+
+        // Processar noves corrents.
         for(const param of ["corrent","corrent_objectiu"]){
             _this.user[param].eliminacio[indicador_code] = 0;
-            _this.user[param].qualitat[indicador_code] = 0;
+            _this.user[param].qualitat[indicador_code] = param === "corrent" ? {min: 0, max: 0} : 0;
             _this.user[param].refs[indicador_code] = "";
             _this.user[param].refs_pt3[indicador_code] = "";
             _this.user[param].regulat[indicador_code] = false;
@@ -1183,20 +1199,15 @@ export default {
             _this.user[param].tipus_vp[indicador_code] = "1";
         }
 
-        const new_tractaments_sec = {};
-        for(const [infraestructura,valor] of Object.entries(_this.tractaments_sec)){
-            new_tractaments_sec[infraestructura] = valor;
-            new_tractaments_sec[infraestructura].qualitat[indicador_code] = {max: 0, min: 0};
-        }
-        _this.tractaments_sec = new_tractaments_sec;
+        // Necessari perquè funcioni, coses rares del VUE.
+        _this.user.corrent = JSON.parse(JSON.stringify(_this.user.corrent));
 
+        // Esborrar selectors d'afegir indicador.
         _this.new_ind_name = "";
         _this.new_ind_type = "";
-        _this.new_ind_units= "";
+        _this.new_ind_units = "";
 
-        // Avís a l'usuari.
-        alert("Indicador afegit correctament");
-
+        alert("Indicador afegit correctament. ATENCIÓ: Per defecte, aquest nou indicador té tots els seus valors protectors i eficiències d'eliminació a 0. Per editar-les, cal fer-ho des de les seccions opcionals.");
 
     },
     obtenirEmplacament (cas_us){
