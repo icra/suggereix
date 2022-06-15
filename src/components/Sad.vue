@@ -12,7 +12,9 @@
             <button @click="carregar_estat">Carregar</button>
             <p>Carrega un estat previ de la pàgina a la sessió actual.</p>
             <p><b>C. Gestionar indicadors</b></p> 
-            <p>Per a afegir un nou indicador, cal omplir les següents dades i prémer el botó 'Afegir Indicador':</p>
+            <p> - Per a <b>afegir</b> un nou indicador, cal omplir les dades a l'última fila de la taula i prémer el botó 'Afegir Indicador'.</p>
+            <p> - Per a <b>eliminar</b> un indicador prèviament afegit per l'usuari, cal prémer el botó d'eliminar a la fila corresponent.</p>
+            <p> - Per a <b>editar</b> un indicador prèviament afegit per l'usuari, cal editar directament els camps desitjats a la taula.</p>
             <table border="1">
                 <tr style="background-color: #d4e9fd;">
                     <th>Codi</th>
@@ -21,8 +23,34 @@
                     <th>Unitats</th>
                 </tr>
                 <tbody>
-                    <tr>
-                        <td>{{'I'+(Math.max(...Object.keys(Info_indicadors).flatMap(key => key.startsWith('I') ? [Number(key.substring(1))] : []))+1)}}</td>
+                    <tr v-for="ind in ind_afegits" :key="ind+'_afegits'">
+                      <td>
+                        {{ind}}
+                        <div class="tooltip">
+                          <button class="btn" @click="eliminarIndicador(ind)"><i class="fa-regular fa-circle-question"></i></button>
+                          <span class="tooltiptext">Eliminar indicador</span>
+                        </div>
+                      </td>
+                      <td>
+                        <input :value="Info_indicadors[ind].name_rich" @change="(ev) => nouNomIndicador(ind, ev.target.value)" />
+                      </td>
+                      <td>
+                        <select v-model="Info_indicadors[ind].type" style="max-width: 350px">
+                          <option
+                          v-for="obj in Info_indicadors_types"
+                          :value="obj"
+                          :key="obj"
+                          >
+                          {{ obj }}
+                          </option>
+                        </select>
+                      </td>
+                      <td>
+                        <input v-model="Info_indicadors[ind].unitats_rich" />
+                      </td>
+                    </tr>
+                    <tr :style="ind_afegits.length ? 'border-top: 4px double black;' : ''">
+                        <td>{{'I'+indicadorDisponible()}}</td>
                         <td>
                             <input v-model="new_ind_name" placeholder="p.ex.: Nitrat (NO3-)" />
                         </td>
@@ -1043,9 +1071,11 @@ export default {
       av_metode: undefined,
       mon_visio_monitoratge: undefined,
 
+      //gestió per afegir indicadors.
       new_ind_name: "",
       new_ind_type: "",
       new_ind_units: "",
+      ind_afegits: [],  //diccionari amb els indicadors afegits per l'usuari.
 
       //backend
       Usuari,                   //classe
@@ -1126,14 +1156,105 @@ export default {
     
   },
   methods:{
-    checkChecked(key){
-        return this.user.corrent.seleccionat[key] ? 'Activat' : 'Desactivat'
+    // Canvi en el nom d'un indicador.
+    nouNomIndicador(indicador, nou_nom_rich){
+      console.log(indicador, nou_nom_rich)
+      const _this = this;
+      const nou_nom = nou_nom_rich.replace("<sup>","").replace("</sup>","").replace("<sub>","").replace("</sub>","").replace("<i>","").replace("</i>","");
+      delete _this.Info_rich[indicador.name];
+      _this.Info_indicadors[indicador].name = nou_nom;
+      _this.Info_indicadors[indicador].name_rich = nou_nom_rich;
+      _this.Info_indicadors = JSON.parse(JSON.stringify(_this.Info_indicadors))
     },
+    // Funció cridada pel botó de eliminar un indicador ja afegit per l'usuari (I22+).
+    eliminarIndicador(indicador){
+      const _this = this;
+      // No es pot eliminar un indicador estàndard.
+      if(!indicador.startsWith('I') || Number(indicador.substring(1)) < 22){
+        alert('No es pot eliminar aquest indicador.')
+        return;
+      }
+
+      // Eliminar l'indicador de tot arreu.
+      _this.ind_afegits = _this.ind_afegits.filter(ind => ind !== indicador);
+      delete _this.Ind_to_code[indicador.name];
+      delete _this.Info_rich[indicador.name];
+      delete _this.Info_rich[indicador.unitats];
+      delete _this.Metodes_monitoratge[indicador.name];
+      delete _this.Mon_code_to_ind[indicador];
+
+      // Eliminar eficiències (per defecte, 0).
+      const new_tractaments_info = {};
+      for(const [trac, value] of Object.entries(_this.Tractaments_info)){
+          new_tractaments_info[trac] = {};
+          for(const [pre, value2] of Object.entries(value)){
+              new_tractaments_info[trac][pre] = {};
+              for(const [ind, max_min] of Object.entries(value2)){
+                  if(ind !== indicador) new_tractaments_info[trac][pre][ind] = max_min;
+              }
+          }
+      }
+      _this.Tractaments_info = new_tractaments_info;
+
+      // Actualitzar qualitats de la infraestructura existent.
+      const new_tractaments_sec = {};
+      for(const [infraestructura,valor] of Object.entries(_this.tractaments_sec)){
+          new_tractaments_sec[infraestructura] = valor;
+          delete new_tractaments_sec[infraestructura].qualitat[indicador];
+      }
+      _this.tractaments_sec = new_tractaments_sec;
+
+      // Modificar informació usos.
+      const new_usos_info = {};
+      for(const [codi_us, value] of Object.entries(_this.Usos_info)){
+          new_usos_info[codi_us] = value;
+          delete new_usos_info[codi_us].qualitat[indicador];
+      }
+      _this.Usos_info = new_usos_info;
+
+      // Actualitzar indicadors.
+      delete _this.Info_indicadors[indicador];
+
+      // Eliminar corrents.
+      for(const param of ["corrent","corrent_objectiu"]){
+          delete _this.user[param].eliminacio[indicador];
+          delete _this.user[param].qualitat[indicador];
+          delete _this.user[param].refs[indicador];
+          delete _this.user[param].refs_pt3[indicador];
+          delete _this.user[param].regulat[indicador];
+          delete _this.user[param].seleccionat[indicador];
+          delete _this.user[param].tipus_vp[indicador];
+      }
+
+      // Necessari perquè funcioni, coses rares del VUE.
+      _this.user.corrent = JSON.parse(JSON.stringify(_this.user.corrent));
+
+      // Avís a l'usuari.
+      alert("S'ha eliminat l'indicador correctament.");
+    },
+    // Funció que retorna el primer nombre disponible per a un indicador nou.
+    indicadorDisponible(){
+      const _this = this;
+      // Obtenir un array ordenat dels números dels indicadors que comencen per 'I'.
+      const array_indicador_numeros = Object.keys(_this.Info_indicadors).flatMap(key => key.startsWith('I') ? [Number(key.substring(1))] : []).sort((a,b) => a-b);
+
+      // Ara busca el primer disponible a partir de l'estàndard.
+      let i = 22;
+      while(array_indicador_numeros.includes(i)){
+        i += 1;
+      }
+      return i;
+    },
+    // Retorna 'activat' si l'indicador passat per paràmetre està seleccionat, 'desactivat' altrament.
+    checkChecked(indicador){
+        return this.user.corrent.seleccionat[indicador] ? 'Activat' : 'Desactivat'
+    },
+    // Funció cridada pel botó per a crear un nou indicador.
     afegirIndicador(){
         const _this = this;
 
         // El codi serà el màxim indicador actual + 1.
-        const indicador_code = 'I'+(Math.max(...Object.keys(_this.Info_indicadors).flatMap(key => key.startsWith('I') ? [Number(key.substring(1))] : []))+1);
+        const indicador_code = 'I'+_this.indicadorDisponible();
 
         // Dades de l'indicador (pot sontenir <sup>, <sub>, <i> tags en els noms i unitats).
         const indicador = {
@@ -1145,6 +1266,7 @@ export default {
         }
 
         // Modificar estructures de dades.
+        _this.ind_afegits.push(indicador_code);
         _this.Ind_to_code[indicador.name] = indicador_code;
         _this.Info_rich[indicador.name] = indicador.name_rich;
         _this.Info_rich[indicador.unitats] = indicador.unitats_rich;
@@ -1158,7 +1280,7 @@ export default {
             for(const [pre, value2] of Object.entries(value)){
                 new_tractaments_info[trac][pre] = {};
                 for(const [ind, max_min] of Object.entries(value2)){
-                    new_tractaments_info[trac][pre][ind] = {max_min};
+                    new_tractaments_info[trac][pre][ind] = max_min;
                 }
                 new_tractaments_info[trac][pre][indicador_code] = {max: 0, min: 0};
             }
