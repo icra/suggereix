@@ -35,7 +35,7 @@
                         <input :value="Info_indicadors[ind].name_rich" @change="(ev) => nouNomIndicador(ind, ev.target.value)" />
                       </td>
                       <td>
-                        <select v-model="Info_indicadors[ind].type" style="max-width: 350px">
+                        <select :value="Info_indicadors[ind].type" @change="(ev) => nouTypeIndicador(ind, ev.target.value)" style="max-width: 350px">
                           <option
                           v-for="obj in Info_indicadors_types"
                           :value="obj"
@@ -348,7 +348,7 @@
             </tr>
             <tbody v-for="(obj, id) in this.Qualitat_microbiologica" :key="id">
               <tr>
-                <td :rowspan="4" class="doubletd2">
+                <td :rowspan="Object.values(Info_indicadors).filter(indicador => indicador.type && indicador.type.startsWith('3.')).length + 1" class="doubletd2">
                   {{ Usos_info[id] ? Usos_info[id].nom : Usos_info[id.replace('Dummy','')] ? Usos_info[id.replace('Dummy','')].nom : id.replace('Dummy','SAD') }}
                 </td>
               </tr>
@@ -1090,7 +1090,7 @@ export default {
       Abreviacions_tractament: {}, //diccionari de les abreviacions dels tractaments.
       Usos_info: {},              //diccionari tots els usos
       Efluents_info: {},          //diccionari efluents (primari/secundari) de l'infraestructura existent
-	  Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
+	    Qualitat_microbiologica: {}, //diccionari amb qualitats microbiològiques.
       Multicriteri_info: {},       //diccionari amb la informació de l'avaluació multicriteri.
       Info_indicadors: {},         //diccionari amb informació sobre els indicadors.
       Info_indicadors_types: [],   //array amb informació sobre els tipus indicadors.
@@ -1163,6 +1163,37 @@ export default {
     restaurarTractaments(){
         const _this = this;
         _this.Tractaments_info = JSON.parse(JSON.stringify(_this.Tractaments_info_sc));
+    },
+    // Canvi en el nom d'un indicador.
+    nouTypeIndicador(indicador, nou_type){
+      const _this = this;
+
+      if(_this.Info_indicadors[indicador].type.startsWith("3.") && !nou_type.startsWith("3.")){
+        // Si abans era micro i ara ja no:
+        const new_qualitat_micro = {};
+        for(const [codi_us, value] of Object.entries(_this.Qualitat_microbiologica)){
+            new_qualitat_micro[codi_us] = {};
+            for(const [ind, value2] of Object.entries(value)){
+              if(ind !== indicador) new_qualitat_micro[codi_us][ind] = value2;
+            }
+        }
+        _this.Qualitat_microbiologica = new_qualitat_micro;
+      }
+      else if(!_this.Info_indicadors[indicador].type.startsWith("3.") && nou_type.startsWith("3.")){
+        // Si abans no era micro i ara si:
+        const new_qualitat_micro = {};
+        for(const [codi_us, value] of Object.entries(_this.Qualitat_microbiologica)){
+            new_qualitat_micro[codi_us] = {};
+            new_qualitat_micro[codi_us][indicador] = [0,0];
+            for(const [ind, value2] of Object.entries(value)){
+              new_qualitat_micro[codi_us][ind] = value2;
+            }
+        }
+        _this.Qualitat_microbiologica = new_qualitat_micro;
+      }
+
+      _this.Info_indicadors[indicador].type = nou_type;
+      _this.Info_indicadors = JSON.parse(JSON.stringify(_this.Info_indicadors));
     },
     // Canvi en el nom d'un indicador.
     nouNomIndicador(indicador, nou_nom_rich){
@@ -1239,7 +1270,7 @@ export default {
       for(const [infraestructura,valor] of Object.entries(_this.tractaments_sec)){
           new_tractaments_sec[infraestructura] = valor;
           const new_qualitats = {};
-          for(const [ind, value] of new_tractaments_sec[infraestructura].qualitat){
+          for(const [ind, value] of Object.entries(new_tractaments_sec[infraestructura].qualitat)){
             if(ind !== indicador) new_qualitats[ind] = value;
           }
           new_tractaments_sec[infraestructura].qualitat = new_qualitats;
@@ -1251,7 +1282,7 @@ export default {
       for(const [codi_us, value] of Object.entries(_this.Usos_info)){
           new_usos_info[codi_us] = value;
           const new_qualitats = {};
-          for(const [ind, value] of new_usos_info[codi_us].qualitat){
+          for(const [ind, value] of Object.entries(new_usos_info[codi_us].qualitat)){
             if(ind !== indicador) new_qualitats[ind] = value;
           }
           new_usos_info[codi_us].qualitat = new_qualitats;
@@ -1260,25 +1291,39 @@ export default {
 
       // Actualitzar indicadors.
       const new_indicadors = {};
-      for(const [ind, value] of _this.Info_indicadors){
+      let indicador_full;
+      for(const [ind, value] of Object.entries(_this.Info_indicadors)){
         if(ind !== indicador) new_indicadors[ind] = value;
+        else indicador_full = value;
       }
       _this.Info_indicadors = new_indicadors;
 
-        // Necessari perquè funcioni, coses rares del VUE.
-        //  S'ha de refer l'objecte d'usuari a partir d'una còpia.
-        const usuari = new Usuari(_this.Info_indicadors);
-        for(const param of ["corrent","corrent_objectiu"]){
-            for(const [key, value] of Object.entries(_this.user[param])){
-                if(key === 'F' || key === 'Q') usuari[param][key] = value;
-                else{
-                    for(const [ind, value2] of Object.entries(_this.user[param][key])){
-                        if(ind !== indicador) usuari[param][key][ind] = value2;
-                    }
-                }
+      // Si l'indicador és microbiològic, eliminar l'entrada a 'Qualitat_microbiologica'.
+      if(indicador_full.type.startsWith("3.")){
+        const new_qualitat_micro = {};
+        for(const [codi_us, value] of Object.entries(_this.Qualitat_microbiologica)){
+            new_qualitat_micro[codi_us] = {};
+            for(const [ind, value2] of Object.entries(value)){
+              if(ind !== indicador) new_qualitat_micro[codi_us][ind] = value2;
             }
         }
-        _this.user = usuari;
+        _this.Qualitat_microbiologica = new_qualitat_micro;
+      }
+
+      // Necessari perquè funcioni, coses rares del VUE.
+      //  S'ha de refer l'objecte d'usuari a partir d'una còpia.
+      const usuari = new Usuari(_this.Info_indicadors);
+      for(const param of ["corrent","corrent_objectiu"]){
+          for(const [key, value] of Object.entries(_this.user[param])){
+              if(key === 'F' || key === 'Q') usuari[param][key] = value;
+              else{
+                  for(const [ind, value2] of Object.entries(_this.user[param][key])){
+                      if(ind !== indicador) usuari[param][key][ind] = value2;
+                  }
+              }
+          }
+      }
+      _this.user = usuari;
 
       // Avís a l'usuari.
       alert("S'ha eliminat l'indicador correctament.");
@@ -1382,6 +1427,19 @@ export default {
         _this.new_ind_name = "";
         _this.new_ind_type = "";
         _this.new_ind_units = "";
+
+        // Si l'indicador és microbiològic, afegir l'entrada a 'Qualitat_microbiologica'.
+        if(indicador.type.startsWith("3.")){
+          const new_qualitat_micro = {};
+          for(const [codi_us, value] of Object.entries(_this.Qualitat_microbiologica)){
+              new_qualitat_micro[codi_us] = {};
+              new_qualitat_micro[codi_us][indicador_code] = [0,0];
+              for(const [ind, value2] of Object.entries(value)){
+                new_qualitat_micro[codi_us][ind] = value2;
+              }
+          }
+          _this.Qualitat_microbiologica = new_qualitat_micro;
+        }
 
         alert("Indicador afegit correctament. ATENCIÓ: Per defecte, aquest nou indicador té tots els seus valors protectors i eficiències d'eliminació a 0. Per editar-les, cal fer-ho des de les seccions opcionals.");
 
