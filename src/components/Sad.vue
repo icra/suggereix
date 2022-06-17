@@ -27,7 +27,7 @@
                       <td>
                         {{ind}}
                         <div class="tooltip">
-                          <button class="btn" @click="eliminarIndicador(ind)"><i class="fa-regular fa-circle-question"></i></button>
+                          <button class="btn" @click="eliminarIndicador(ind)"><i class="fa-regular fa-trash-can"></i></button>
                           <span class="tooltiptext">Eliminar indicador</span>
                         </div>
                       </td>
@@ -46,7 +46,7 @@
                         </select>
                       </td>
                       <td>
-                        <input v-model="Info_indicadors[ind].unitats_rich" />
+                        <input :value="Info_indicadors[ind].unitats_rich" @change="(ev) => nouUnitatsIndicador(ind, ev.target.value)" />
                       </td>
                     </tr>
                     <tr :style="ind_afegits.length ? 'border-top: 4px double black;' : ''">
@@ -583,7 +583,7 @@
     <details class="seccio" close>
       <summary class="seccio">(opcional) 2.1. Modificació dels tractaments</summary>
       <div>
-        <button style="margin-bottom: 10px;" @click="read_file('/20220526_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');">Restaurar valors per defecte</button>
+        <button style="margin-bottom: 10px;" @click="restaurarTractaments()">Restaurar valors per defecte</button>
         <div>
           <table border="1">
             <tr style="background-color: #d4e9fd;">
@@ -1077,6 +1077,9 @@ export default {
       new_ind_units: "",
       ind_afegits: [],  //diccionari amb els indicadors afegits per l'usuari.
 
+      // Variables inicials en còpia (per a un posterior reseteig a defaults).
+      Tractaments_info_sc: {},
+
       //backend
       Usuari,                   //classe
       Corrent,                  //classe
@@ -1156,15 +1159,28 @@ export default {
     
   },
   methods:{
+    // Funció que restaura els valors per defecte dels tractaments.
+    restaurarTractaments(){
+        const _this = this;
+        _this.Tractaments_info = JSON.parse(JSON.stringify(_this.Tractaments_info_sc));
+    },
     // Canvi en el nom d'un indicador.
     nouNomIndicador(indicador, nou_nom_rich){
-      console.log(indicador, nou_nom_rich)
       const _this = this;
       const nou_nom = nou_nom_rich.replace("<sup>","").replace("</sup>","").replace("<sub>","").replace("</sub>","").replace("<i>","").replace("</i>","");
       delete _this.Info_rich[indicador.name];
       _this.Info_indicadors[indicador].name = nou_nom;
       _this.Info_indicadors[indicador].name_rich = nou_nom_rich;
-      _this.Info_indicadors = JSON.parse(JSON.stringify(_this.Info_indicadors))
+      _this.Info_indicadors = JSON.parse(JSON.stringify(_this.Info_indicadors));
+    },
+    // Canvi en les unitats d'un indicador.
+    nouUnitatsIndicador(indicador, nou_unitats_rich){
+      const _this = this;
+      const nou_unitats = nou_unitats_rich.replace("<sup>","").replace("</sup>","").replace("<sub>","").replace("</sub>","").replace("<i>","").replace("</i>","");
+      delete _this.Info_rich[indicador.unitats];
+      _this.Info_indicadors[indicador].unitats = nou_unitats;
+      _this.Info_indicadors[indicador].unitats_rich = nou_unitats_rich;
+      _this.Info_indicadors = JSON.parse(JSON.stringify(_this.Info_indicadors));
     },
     // Funció cridada pel botó de eliminar un indicador ja afegit per l'usuari (I22+).
     eliminarIndicador(indicador){
@@ -1177,30 +1193,56 @@ export default {
 
       // Eliminar l'indicador de tot arreu.
       _this.ind_afegits = _this.ind_afegits.filter(ind => ind !== indicador);
-      delete _this.Ind_to_code[indicador.name];
-      delete _this.Info_rich[indicador.name];
-      delete _this.Info_rich[indicador.unitats];
-      delete _this.Metodes_monitoratge[indicador.name];
-      delete _this.Mon_code_to_ind[indicador];
+      const new_ind_to_code = {};
+      for(const [key, value] of Object.entries(_this.Ind_to_code)){
+        if(key !== indicador.name) new_ind_to_code[key] = value;
+      }
+      _this.Ind_to_code = new_ind_to_code;
+      const new_info_rich = {};
+      for(const [key, value] of Object.entries(_this.Info_rich)){
+        if(key !== indicador.name && key !== indicador.unitats) new_info_rich[key] = value;
+      }
+      _this.Info_rich = new_info_rich;
+      const new_metodes = {};
+      for(const [key, value] of Object.entries(_this.Metodes_monitoratge)){
+        if(key !== indicador.name) new_metodes[key] = value;
+      }
+      _this.Metodes_monitoratge = new_metodes;
+      const new_mon_code_to_ind = {};
+      for(const [key, value] of Object.entries(_this.Mon_code_to_ind)){
+        if(key !== indicador) new_mon_code_to_ind[key] = value;
+      }
+      _this.Mon_code_to_ind = new_mon_code_to_ind;
 
       // Eliminar eficiències (per defecte, 0).
       const new_tractaments_info = {};
+      const new_tractaments_info_sc = {};
       for(const [trac, value] of Object.entries(_this.Tractaments_info)){
           new_tractaments_info[trac] = {};
+          new_tractaments_info_sc[trac] = {};
           for(const [pre, value2] of Object.entries(value)){
               new_tractaments_info[trac][pre] = {};
+              new_tractaments_info_sc[trac][pre] = {};
               for(const [ind, max_min] of Object.entries(value2)){
-                  if(ind !== indicador) new_tractaments_info[trac][pre][ind] = max_min;
+                  if(ind !== indicador){
+                    new_tractaments_info[trac][pre][ind] = max_min;
+                    new_tractaments_info_sc[trac][pre][ind] = _this.Tractaments_info_sc[trac][pre][ind];
+                  }
               }
           }
       }
       _this.Tractaments_info = new_tractaments_info;
+      _this.Tractaments_info_sc = new_tractaments_info_sc;
 
       // Actualitzar qualitats de la infraestructura existent.
       const new_tractaments_sec = {};
       for(const [infraestructura,valor] of Object.entries(_this.tractaments_sec)){
           new_tractaments_sec[infraestructura] = valor;
-          delete new_tractaments_sec[infraestructura].qualitat[indicador];
+          const new_qualitats = {};
+          for(const [ind, value] of new_tractaments_sec[infraestructura].qualitat){
+            if(ind !== indicador) new_qualitats[ind] = value;
+          }
+          new_tractaments_sec[infraestructura].qualitat = new_qualitats;
       }
       _this.tractaments_sec = new_tractaments_sec;
 
@@ -1208,26 +1250,35 @@ export default {
       const new_usos_info = {};
       for(const [codi_us, value] of Object.entries(_this.Usos_info)){
           new_usos_info[codi_us] = value;
-          delete new_usos_info[codi_us].qualitat[indicador];
+          const new_qualitats = {};
+          for(const [ind, value] of new_usos_info[codi_us].qualitat){
+            if(ind !== indicador) new_qualitats[ind] = value;
+          }
+          new_usos_info[codi_us].qualitat = new_qualitats;
       }
       _this.Usos_info = new_usos_info;
 
       // Actualitzar indicadors.
-      delete _this.Info_indicadors[indicador];
-
-      // Eliminar corrents.
-      for(const param of ["corrent","corrent_objectiu"]){
-          delete _this.user[param].eliminacio[indicador];
-          delete _this.user[param].qualitat[indicador];
-          delete _this.user[param].refs[indicador];
-          delete _this.user[param].refs_pt3[indicador];
-          delete _this.user[param].regulat[indicador];
-          delete _this.user[param].seleccionat[indicador];
-          delete _this.user[param].tipus_vp[indicador];
+      const new_indicadors = {};
+      for(const [ind, value] of _this.Info_indicadors){
+        if(ind !== indicador) new_indicadors[ind] = value;
       }
+      _this.Info_indicadors = new_indicadors;
 
-      // Necessari perquè funcioni, coses rares del VUE.
-      _this.user.corrent = JSON.parse(JSON.stringify(_this.user.corrent));
+        // Necessari perquè funcioni, coses rares del VUE.
+        //  S'ha de refer l'objecte d'usuari a partir d'una còpia.
+        const usuari = new Usuari(_this.Info_indicadors);
+        for(const param of ["corrent","corrent_objectiu"]){
+            for(const [key, value] of Object.entries(_this.user[param])){
+                if(key === 'F' || key === 'Q') usuari[param][key] = value;
+                else{
+                    for(const [ind, value2] of Object.entries(_this.user[param][key])){
+                        if(ind !== indicador) usuari[param][key][ind] = value2;
+                    }
+                }
+            }
+        }
+        _this.user = usuari;
 
       // Avís a l'usuari.
       alert("S'ha eliminat l'indicador correctament.");
@@ -1283,6 +1334,7 @@ export default {
                     new_tractaments_info[trac][pre][ind] = max_min;
                 }
                 new_tractaments_info[trac][pre][indicador_code] = {max: 0, min: 0};
+                _this.Tractaments_info_sc[trac][pre][indicador_code] = {max: 0, min: 0};
             }
         }
         _this.Tractaments_info = new_tractaments_info;
@@ -1310,19 +1362,21 @@ export default {
         // Actualitzar indicadors.
         _this.Info_indicadors[indicador_code] = indicador;
 
-        // Processar noves corrents.
-        for(const param of ["corrent","corrent_objectiu"]){
-            _this.user[param].eliminacio[indicador_code] = 0;
-            _this.user[param].qualitat[indicador_code] = param === "corrent" ? {min: 0, max: 0} : 0;
-            _this.user[param].refs[indicador_code] = "";
-            _this.user[param].refs_pt3[indicador_code] = "";
-            _this.user[param].regulat[indicador_code] = false;
-            _this.user[param].seleccionat[indicador_code] = false;
-            _this.user[param].tipus_vp[indicador_code] = "1";
-        }
-
         // Necessari perquè funcioni, coses rares del VUE.
-        _this.user.corrent = JSON.parse(JSON.stringify(_this.user.corrent));
+        //  S'ha de refer l'objecte d'usuari a partir d'una còpia.
+        const usuari = new Usuari(_this.Info_indicadors);
+        for(const param of ["corrent","corrent_objectiu"]){
+            for(const [key, value] of Object.entries(_this.user[param])){
+                if(key === 'F' || key === 'Q') usuari[param][key] = value;
+                else{
+                    if(key === 'seleccionat') usuari[param][key][indicador_code] = false;
+                    for(const [ind, value2] of Object.entries(_this.user[param][key])){
+                        usuari[param][key][ind] = value2;
+                    }
+                }
+            }
+        }
+        _this.user = usuari;
 
         // Esborrar selectors d'afegir indicador.
         _this.new_ind_name = "";
@@ -1409,8 +1463,10 @@ export default {
       oReq.onload = async function(){
         let buffer =  oReq.response;
         let binaryData = new Uint8Array(buffer);
-        if (type === 'tractaments')
+        if (type === 'tractaments'){
           _this.Tractaments_info = await llegir_tractaments(binaryData);
+          _this.Tractaments_info_sc = JSON.parse(JSON.stringify(_this.Tractaments_info))
+        }
         else if (type === 'trens'){
             const res = await llegir_trens(binaryData);
             _this.Trens_info = res[0];
@@ -1478,7 +1534,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Tractaments_info_sc", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge", "tractaments_sec", "ind_afegits", "Ind_to_code", "Mon_code_to_ind"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){
@@ -1590,7 +1646,7 @@ export default {
             } catch(err){
                 // prova re-llegirnt excel 'tractaments'
                 alert("ERROR: És possible que la taula de tractaments estigui desactualitzada. No s'han pogut avaluar els trens, però s'han restaurat els nous valors per defecte de la taula de tractaments. Torni a provar l'avaluació per a veure si s'ha solucionat el problema.");
-                _this.read_file('/20220526_SUGGEREIX_PT4_Tractaments.xlsx', 'tractaments');
+                restaurarTractaments();
                 throw new Error(err);
             }
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.
