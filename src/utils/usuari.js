@@ -67,7 +67,32 @@ export default class Usuari{
           I21 : I21
         },
       },
-      "FAC_DS3":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació, desnitrificació biològica i eliminació biològica de PO4",
+      "FAC_DS3":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació, desnitrificació biològica i eliminació biològica de fòsfor",
+        qualitat:{
+          I1  : {min: 7,      max: 7.5},
+          I2  : {min: 300,    max: 2000},
+          I3  : {min: 1,      max: 5},
+          I4  : {min: 5,      max: 20},
+          I5  : {min: 15,     max: 20},
+          I6  : {min: 0.4,    max: 4},
+          I7  : {min: 2,      max: 12},
+          I8  : {min: 5,      max: 700},
+          I9  : {min: 5,      max: 100},
+          I10 : {min: 0.05,   max: 20},
+          I11 : {min: 0.3,    max: 10},
+          I12 : {min: 0.196,  max: 15.8},
+          I13 : {min: 0.2,    max: 6},
+          I14 : {min: 0.3,    max: 3.5},
+          I15 : {min: 0.376,  max: 2.6},
+          I16 : {min: 0.03,   max: 23},
+          I17 : {min: 0.0122, max: 2.101},
+          I18 : {min: 0.3,    max: 81},
+          I19 : I19,
+          I20 : I20,
+          I21 : I21
+        },
+      },
+      "FAC_DS4":{tipus:"secundari", nom:"Llots actius convencionals amb nitrificació, desnitrificació biològica i eliminació química de fòsfor",
         qualitat:{
           I1  : {min: 7,      max: 7.5},
           I2  : {min: 300,    max: 2000},
@@ -117,7 +142,7 @@ export default class Usuari{
           I21 : I21
         },
       },
-      "BRM2":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació, desnitrificació biològica i eliminació biològica de PO4",
+      "BRM2":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació, desnitrificació biològica i eliminació biològica de fòsfor",
         qualitat:{
           I1  : {min: 7,      max: 7.5},
           I2  : {min: 300,    max: 2000},
@@ -142,6 +167,31 @@ export default class Usuari{
           I21 : I21
         },
       },
+      "BRM3":{tipus:"secundari", nom:"Reactor biològic de membrana amb nitrificació, desnitrificació biològica i eliminació química de fòsfor",
+      qualitat:{
+        I1  : {min: 7,      max: 7.5},
+        I2  : {min: 300,    max: 2000},
+        I3  : {min: 0.3,    max: 2},
+        I4  : {min: 1,      max: 5},
+        I5  : {min: 0.5,    max: 5},
+        I6  : {min: 0.4,    max: 1},
+        I7  : {min: 2,      max: 12},
+        I8  : {min: 5,      max: 700},
+        I9  : {min: 5,      max: 100},
+        I10 : {min: 0.05,   max: 20},
+        I11 : {min: 0.3,    max: 10},
+        I12 : {min: 0.196,  max: 15.8},
+        I13 : {min: 0.2,    max: 6},
+        I14 : {min: 0.3,    max: 3.5},
+        I15 : {min: 0.376,  max: 2.6},
+        I16 : {min: 0.03,   max: 23},
+        I17 : {min: 0.0122, max: 2.101},
+        I18 : {min: 0.3,    max: 81},
+        I19 : I19,
+        I20 : I20,
+        I21 : I21
+      },
+    },
     };
   }
 }

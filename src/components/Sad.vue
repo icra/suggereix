@@ -86,7 +86,13 @@
             <th colspan="2">Descripció infraestructura existent</th>
             <th colspan="2">Ús d'aigua regenerada</th>
             <th rowspan="3">Unitat</th>
-            <th rowspan="3">Referència</th>
+            <th rowspan="3">
+                Referència
+                <div class="tooltip">
+                    <i class="fa-regular fa-circle-question"></i>
+                    <span class="tooltiptext">Els helpers de les referències mostren la relació amb el nivell de la jerarquia de fonts i mètodes especificada en la Secció 1.1.</span>
+                </div>
+            </th>
           </tr>
 
           <tr>
@@ -160,6 +166,10 @@
           <tr v-for="(val, key) in user.corrent.qualitat" :key="key">
             <td style="text-align: right; padding: 0px 10px 0px 10px">
               <div v-html="Info_indicadors[key] ? Info_indicadors[key].name_rich : ''"></div>
+              <div v-if="key === 'I6' || key === 'I7'" class="tooltip">
+                <i class="fa-regular fa-circle-question"></i>
+                <span class="tooltiptext">Les unitats de mesura de l’amoni i el nitrat són mg/l N</span>
+              </div>
             </td>
             <td style="font-family: monospace">
               {{ key }}
@@ -214,18 +224,22 @@
                 </div>
             </td>
             <td style="text-align: right">
-              <div v-if="mostrar_nota_vp(key)" class="tooltip">
+              <div v-if="user.corrent.seleccionat[key] && mostrar_nota_vp(key)" class="tooltip">
                 <i class="fa-regular fa-circle-question"></i>
                 <span class="tooltiptext">{{ nota_rang_vp(key) }}</span>
               </div>
+              <div v-if="Info_indicadors[key].type.startsWith('3.')" class="tooltip">
+                <i class="fa-regular fa-circle-question"></i>
+                <span class="tooltiptext2">Si no hi ha definits VP per la normativa per als indicadors microbiològics, el SAD considera valors de reducció logarítmica definits per defecte. V. Seccions 1.2 i 1.4.</span>
+              </div>
               <input
-                v-if="isNaN(user.corrent_objectiu.qualitat[key])"
+                v-if="user.corrent.seleccionat[key] && isNaN(user.corrent_objectiu.qualitat[key])"
                 placeholder="nd"
                 class="nd"
                 disabled
               />
               <input
-                v-else-if="key !== 'I1' && selected_input !== key + '_vp'"
+                v-else-if="user.corrent.seleccionat[key] && (key !== 'I1' && selected_input !== key + '_vp')"
                 type="text"
                 :value="show_sc_not(user.corrent_objectiu.qualitat[key])"
                 :ref="key + '_vp'"
@@ -234,7 +248,7 @@
                 @focus="focusChanged"
               />
               <input
-                v-else
+                v-else-if="user.corrent.seleccionat[key]"
                 type="number"
                 
                 v-model.number="user.corrent_objectiu.qualitat[key]"
@@ -248,7 +262,7 @@
               {{ user.corrent_objectiu.refs[key] }}
               <div v-if="user.corrent_objectiu.refs_pt3[key]" class="tooltip">
                 <i class="fa-regular fa-circle-question"></i>
-                <span class="tooltiptext">{{user.corrent_objectiu.refs_pt3[key]}}</span>
+                <span class="tooltiptext">{{'Nivell: '+user.corrent_objectiu.refs_pt3[key]}}</span>
               </div>
             </td>
           </tr>
@@ -265,7 +279,81 @@
     </details>
 
     <details ref="vp-details" class="seccio" close>
-      <summary class="seccio">(opcional) 1.1. Consulta i/o modificació dels valors objectius de qualitat VP</summary>
+      <summary class="seccio">(informatiu) 1.1. Presentació de la metodologia utilitzada per a la derivació de VP per als indicadors químics</summary>
+      <p>Per a la derivació de VP per als indicadors químics en general, es va considerar la següent jerarquia de fonts i mètodes:</p>
+      <table border="1">
+        <tr style="background-color: #d4e9fd;">
+            <th>Nivell</th>
+            <th class="doubletd3">VP Jerarquia general</th>
+            <th>Obligatori/Orientatiu</th>
+        </tr>
+        <tbody>
+            <tr v-for="nivell in Object.keys(Jerarquia_PT3.general)" :key="nivell">
+                <td>{{nivell}}</td>
+                <td>{{Jerarquia_PT3.general[nivell].text}}</td>
+                <td>{{Jerarquia_PT3.general[nivell].type}}</td>
+            </tr>
+        </tbody>
+      </table>
+      <p>Per a la derivació de VP per als indicadors químics en l’escenari ambiental (VP de qualitat ambiental), la jerarquia aplicada va ser específicament: </p>
+      <table border="1">
+        <tr style="background-color: #d4e9fd;">
+            <th>Nivell</th>
+            <th class="doubletd3">VP escenari ambiental</th>
+            <th>Obligatori/Orientatiu</th>
+        </tr>
+        <tbody>
+            <tr v-for="nivell in Object.keys(Jerarquia_PT3.ambiental)" :key="nivell">
+                <td>{{nivell}}</td>
+                <td>{{Jerarquia_PT3.ambiental[nivell].text}}</td>
+                <td>{{Jerarquia_PT3.ambiental[nivell].type}}</td>
+            </tr>
+        </tbody>
+      </table>
+      <p>Per a la derivació de VP per als indicadors químics en l’escenari potable (VP de salut humana per a l’ús prepotable), la jerarquia aplicada va ser específicament: </p>
+      <table border="1">
+        <tr style="background-color: #d4e9fd;">
+            <th>Nivell</th>
+            <th class="doubletd3">VP escenari potable</th>
+            <th>Obligatori/Orientatiu</th>
+        </tr>
+        <tbody>
+            <tr v-for="nivell in Object.keys(Jerarquia_PT3.prepotable)" :key="nivell">
+                <td>{{nivell}}</td>
+                <td>{{Jerarquia_PT3.prepotable[nivell].text}}</td>
+                <td>{{Jerarquia_PT3.prepotable[nivell].type}}</td>
+            </tr>
+        </tbody>
+      </table>
+      <p>A continuació es mostra el diagrama de la metodologia per a la derivació de valors protectors per als indicadors químics de nivell de jerarquia 4:</p>
+      <img src="/img/diagrama11.png" alt="Diagrama de la derivació de valors protectors per als indicadors químics de nivell de jerarquia 4" style="width: 600px;"> 
+      <p>Més informació sobre la metodologia es pot trobar a la guia de reutilització.</p>
+    </details>
+
+    <details ref="vp-details" class="seccio" close>
+      <summary class="seccio">(informatiu) 1.2. Presentació de la metodologia utilitzada per a la derivació de VP per als indicadors microbiològics</summary>
+      <p>Per a la derivació de VP per als indicadors microbiològics, la jerarquia de fonts i mètodes aplicada va ser específicament:</p>
+      <table border="1">
+        <tr style="background-color: #d4e9fd;">
+            <th>Nivell</th>
+            <th class="doubletd3">VP Jerarquia general</th>
+            <th>Obligatori/Orientatiu</th>
+        </tr>
+        <tbody>
+            <tr v-for="nivell in Object.keys(Jerarquia_PT3.micro)" :key="nivell">
+                <td>{{nivell}}</td>
+                <td>{{Jerarquia_PT3.micro[nivell].text}}</td>
+                <td>{{Jerarquia_PT3.micro[nivell].type}}</td>
+            </tr>
+        </tbody>
+      </table>
+      <p>A continuació es mostra el diagrama de la metodologia per a la derivació de valors logarítmics de reducció (LRV) per a patògens (nivell de jerarquia 4)</p>
+      <img src="/img/diagrama12.png" alt="Diagrama de la metodologia per a la derivació de valors logarítmics de reducció (LRV) per a patògens (nivell de jerarquia 4)" style="width: 600px;"> 
+      <p>Més informació sobre la metodologia es pot trobar a la guia de reutilització.</p>
+    </details>
+
+    <details ref="vp-details" class="seccio" close>
+      <summary class="seccio">(opcional) 1.3. Consulta i/o modificació dels valors objectiu de qualitat VP</summary>
       <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i deixa modificar els VP per a tots els indicadors.</p>
       <p>Per defecte, el valor VP que es selecciona per a cada indicador és el valor menor diferent de 'nd'. Si es vol utilitzar un valor VP d'un tipus i ús concret, es pot seleccionar a partir de les caselles de selecció.</p>
       <div>
@@ -273,6 +361,7 @@
           <tr>
             <th colspan="2" rowspan="2">Indicadors de qualitat</th>
             <th colspan="3" class="doubletd12" v-for="us in usos_seleccionats" :key="us+'_modtable'">{{Usos_info[us].nom}}</th>
+            <th rowspan="2">Unitats</th>
           </tr>
           <tr>
             <th v-for="index in usos_seleccionats.length * 3" :key="index+'_modtabletipus'" style="width: 100px">{{(((index+2) % 3)+1) === 1 ? 'VP qualitat ambiental' : (((index+2) % 3)+1) === 2 ? 'VP salut humana' : 'VP per a plantes'}}</th>
@@ -328,13 +417,16 @@
                     No regulat
                 </div>
             </td>
+            <td>
+              <div v-html="Info_indicadors[ind] ? Info_indicadors[ind].unitats_rich : ''"></div>
+            </td>
           </tr>
         </table>
       </div>
     </details>
 
     <details class="seccio" close >
-      <summary class="seccio">(opcional) 1.2. Modificació de la reducció acumulada mínima requerida al llarg d'un tren
+      <summary class="seccio">(opcional) 1.4. Modificació de la reducció acumulada mínima requerida al llarg d'un tren
       </summary>
       <p>Un cop seleccionats els usos d'aigua regenerada desitjats, aquesta taula mostra i permet modificar els valors de reducció logarítmica per als indicadors microbiològics, p. ex., si es disposa d'una avaluació específica del risc microbiològic.</p>
       <div>
@@ -368,8 +460,21 @@
                   />
                 </td>
                 <td class="doubletd3" :rowspan="4" v-if="ind === Object.keys(obj)[0]">
-                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-if="id === 'Dummy11'">Els valors de reducció logarítmica definits per defecte són els mateixos valors que els definits per a l’ús recàrrega d'aqüífers per injecció directa sense tenir en compte l'atenuació natural del medi. Amb una avaluació específica del risc microbiològic, es podria avaluar la capacitat d'atenuació del medi i reduir els valors definits per defecte. </p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-if="id === 'Dummy1'">El RD 1620/2007 estableix només valors guia per a <i>Escherichia coli</i>. Els valors de reducció logarítmica definits per defecte es van calcular seguint la metodologia descrita a la Secció 1.2.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy2'">El RD 1620/2007 estableix només valors guia per a <i>Escherichia coli</i>. Els valors de reducció logarítmica definits per defecte es van calcular seguint la metodologia descrita a la Secció 1.2. </p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy3'">El RD 1620/2007 estableix només valors guia per a <i>Escherichia coli</i>. Els valors de reducció logarítmica definits per defecte es van calcular seguint la metodologia descrita a la Secció 1.2.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy4'">El RD 1620/2007 estableix només valors guia per a <i>Escherichia coli</i>. Els valors de reducció logarítmica definits per defecte es van calcular seguint la metodologia descrita a la Secció 1.2.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy5'">Els valors de reducció logarítmica són els corresponents als establerts pel Reglament europeu 2020/741. Aplicant la metodologia descrita a la Secció 1.2, es van obtenir valors molt semblants.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy6'">Es va assumir que es poden aconseguir valors de reducció logarítmica addicionals als determinats per a l’ús d’irrigació A aplicant mesures de control de l’exposició que afecten la ingestió dels tres grups de patògens de la mateixa manera. Es va considerar 1 valor de reducció logarítmica addicional al determinat per a l’ús d’irrigació A pel fet que la part comestible creix sobre el sòl sense contacte directe amb l'aigua regenerada.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy7'">Es va assumir que es poden aconseguir valors de reducció logarítmica addicionals als determinats per a l’ús d’irrigació A aplicant mesures de control de l’exposició que afecten la ingestió dels tres grups de patògens de la mateixa manera. Es van considerar 2 valors de reducció logarítmica addicionals pel fet que el mètode de reg és gota a gota.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy8'">Es va assumir que es poden aconseguir valors de reducció logarítmica addicionals als determinats per a l’ús d’irrigació A aplicant mesures de control de l’exposició que afecten la ingestió dels tres grups de patògens de la mateixa manera. Es van considerar 3 valors de reducció logarítmica addicionals pel fet que els productes cultivats es processen abans de consumir.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy9'">El RD 1620/2007 estableix només valors guia per a <i>Escherichia coli</i>. Els valors de reducció logarítmica definits per defecte es van calcular seguint la metodologia descrita a la Secció 1.2. </p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy10'">El RD 1620/2007 estableix només valors guia per a <i>Escherichia coli</i>. Els valors de reducció logarítmica definits per defecte es van calcular seguint la metodologia descrita a la Secció 1.2.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy11'">El RD 1620/2007 estableix valors guia per a <i>Escherichia coli</i>. Els valors de reducció logarítmica definits per defecte per a colífags i espores de Clostridium perfringens són els mateixos valors que els definits per a l’ús recàrrega d'aqüífers per injecció directa sense tenir en compte l'atenuació natural del medi. Amb una avaluació específica del risc microbiològic, es podria avaluar la capacitat d'atenuació del medi i reduir els valors definits per defecte.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy12'">Es van considerar els mateixos valors de reducció logarítmica que els definits per a l’ús prepotable. </p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy13'">Els valors de reducció logarítmica es van definir per defecte assumint una exposició semblant a la de l'ús agrícola D: cultius per a productes industrials, energètics i llavors.</p>
                     <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy14'">Manquen valors guia a la normativa, i el SAD conté valors de reducció logarítmica definits per defecte semblants als definits per a l'ús agrícola. Caldria assolir els valors de reducció necessaris per a l'ús prepotable si l’aigua s’utilitzés amb aquesta finalitat més avall.</p>
+                    <p style="padding-left: 5px;padding-right: 5px;" align="justify" v-else-if="id === 'Dummy15'">La Directiva 2020/2184 estableix valors guia per als tres indicadors. Els valors de reducció logarítmica definits per defecte es van calcular seguint la metodologia descrita a la Secció 1.2.</p>
                 </td>
               </tr>
             </tbody>
@@ -391,7 +496,7 @@
                     <th>Descripció</th>
                 </tr>
                 <tbody>
-                    <tr v-for="abr in Object.keys(Abreviacions_tractament).slice(0, Math.ceil(Object.keys(Abreviacions_tractament).length / 2)-1)" :key="abr+'_abr'">
+                    <tr v-for="abr in Object.keys(Abreviacions_tractament).slice(0, Math.ceil(Object.keys(Abreviacions_tractament).length / 2)-3)" :key="abr+'_abr'">
                         <td style="min-width: 90px;">
                             <div v-html="Tractaments_dict[abr] || abr"></div>
                         </td>
@@ -409,7 +514,7 @@
                     <th>Descripció</th>
                 </tr>
                 <tbody>
-                    <tr v-for="abr in Object.keys(Abreviacions_tractament).slice(-(Math.ceil(Object.keys(Abreviacions_tractament).length / 2)+1))" :key="abr+'_abr'">
+                    <tr v-for="abr in Object.keys(Abreviacions_tractament).slice(-(Math.ceil(Object.keys(Abreviacions_tractament).length / 2)+3))" :key="abr+'_abr'">
                         <td style="min-width: 90px;">
                             <div v-html="Tractaments_dict[abr] || abr"></div>
                         </td>
@@ -447,7 +552,7 @@
               <th colspan="2" rowspan="2">Tren</th>
               <th rowspan="2">id</th>
               <th rowspan="2" colspan="2">Compliment (%)</th>
-              <th colspan="21">Concentracions dels indicadors</th>
+              <th colspan="21">Valors/concentracions dels paràmetres/indicadors</th>
             </tr>
 
             <tr>
@@ -589,7 +694,32 @@
     </details>
 
     <details class="seccio" close>
-      <summary class="seccio">(opcional) 2.1. Modificació dels tractaments</summary>
+      <summary class="seccio">(informatiu) 2.1. Informació per a la modificació dels tractaments</summary>
+      <div>
+        <p>Principals assumpcions per definir les eficiències d’un tractament i d’un tren de tractament: </p>
+        <ul>
+            <li>
+                - S’assumeix que al llarg de cadascun dels tractaments estudiats el cabal d’aigua no varia, amb la qual cosa el càlcul de l’eficiència d’eliminació d’un indicador i per un tren de tractament (E<sub>itren</sub>) se simplifica amb l’ús de la següent equació (si el cabal d’aigua variés al llarg d’un tractament (p. ex. en aiguamolls construïts), l’eficiència del tractament s’hauria d’avaluar en funció de la diferència del cabal de massa de l’indicador):
+            </li>
+            <p></p>
+            <li><img src="/img/eq.png" alt="Diagrama de la metodologia per a la derivació de valors logarítmics de reducció (LRV) per a patògens (nivell de jerarquia 4)" style="width: 400px;"></li>
+            <p></p>
+            <li>
+                - Cerca bibliogràfica del rang d’eficiències d’eliminació d’un indicador (químic i microbiològic) per un tractament.
+            </li>
+            <li>
+                - 4 valors de reducció logarítmica per a un indicador microbiològic com a màxim per tractament.
+            </li>
+            <li>
+                - Valors de reducció logarítmica determinats mitjançant mètodes de monitoratge en línia (valors menors que els que es poden determinar amb anàlisis de microorganismes). 
+            </li>
+        </ul>
+        <p>Si es disposen de mesures, les eficiències dels tractaments definides per defecte al SAD es poden modificar a la Secció 2.2.</p>
+      </div>
+    </details>
+
+    <details class="seccio" close>
+      <summary class="seccio">(opcional) 2.2. Modificació dels tractaments</summary>
       <div>
         <button style="margin-bottom: 10px;" @click="restaurarTractaments()">Restaurar valors per defecte</button>
         <div>
@@ -624,7 +754,7 @@
                           <th>min (%)</th>
                           <th>max (%)</th>
                         </tr>
-                        <tr v-for="(obj, id) in pre" :key="id+'_'+nom_tra+'_'+nom_pre">
+                        <tr v-for="(obj, id) in filterPh(pre)" :key="id+'_'+nom_tra+'_'+nom_pre">
                           <td style="font-family: monospace">
                               {{ id }}
                               <div v-if="Info_indicadors[id] ? !Info_indicadors[id].type.startsWith('3. ') && (nom_tra === 'DP' || nom_pre === 'DP') : false" class="tooltip">
@@ -670,6 +800,7 @@
     <details class="seccio" open>
       <summary class="seccio">3. Avaluació multicriteri dels trens viables</summary>
       <div style="text-align: left">
+        <p>A la Fase 3, el SAD permet ordenar i prioritzar els trens de tractament avaluats prèviament segons la seva capacitat de reduir la concentració dels indicadors químics i microbiològics.</p>
         <p><b>Considerar trens viables a partir de: </b>
             <input
                 class="viables"
@@ -955,6 +1086,7 @@
     <details class="seccio" open>
       <summary class="seccio">4. Monitoratge d'un tren de tractament</summary>
       <div>
+          <p>A la Fase 4, el SAD fa una proposta de monitoratge de la qualitat i de cadascun dels tractaments d’un tren.</p>
           <p>Si s'ha computat la priorització de trens viables (fase 3), en aquest selector apareixeran els trens viables ponderats per puntuació.</p> 
           <p>En cas contrari, apareixeran tots els trens de tractaments considerant la infraestructura existent.</p>
           <p><b>Seleccionar tren de tractament a monitorar: </b>
@@ -977,6 +1109,7 @@
     <details class="seccio" open>
       <summary class="seccio">5. Casos similars</summary>
       <div>
+          <p>A la Fase 5, el SAD proporciona informació sobre casos de plantes existents que utilitzen trens de tractament semblants als avaluats pel SAD.</p>
           <p>Si s'ha computat la priorització de trens viables (fase 3), en aquest selector apareixeran els trens viables ponderats per puntuació.</p> 
           <p>En cas contrari, apareixeran tots els trens de tractaments considerant la infraestructura existent.</p>
           <p><b>Seleccionar tren de tractament a obtenir casos similars: </b>
@@ -1120,6 +1253,35 @@ export default {
         1: 'Mitjà (M)',
         2: 'Alt (A)',
         3: 'Molt Alt (MA)'
+      },
+    
+      // Hardcoded de la taula 7.2: Informació d'on provenen els VP a través del PT3.
+      Jerarquia_PT3: {
+        'general': {
+            '0': { text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741)", type: 'Obligatori'},
+            '1': { text: "Altres normatives basades en avaluació de riscos que s'han de complir segons l'escenari", type: 'Orientatiu'},
+            '2': { text: "Valors protectors basats en avaluació de riscos procedents de guies internacionals", type: 'Orientatiu'},
+            '3': { text: "Valors toxicològics calculats publicats", type: 'Orientatiu'},
+            '4': { text: "Valors protectors basats en avaluació quantitativa del risc i valors toxicològics calculats en el marc SUGGEREIX", type: 'Orientatiu'}
+        },
+        'ambiental': {
+            '0': { text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741)", type: 'Obligatori'},
+            '1a': { text: "Valor de la normativa de qualitat ambiental a l'aigua superficial: substàncies preferents, substàncies prioritàries i substàncies perilloses prioritàries: Directives 105/2008, 39/2013 i RD 817/2015. El consorci consensua considerar aquest nivell com a orientatiu: la normativa és aplicable al medi aquàtic (immissió).", type: 'Orientatiu'},
+            '1b': { text: "Contaminants basats en indicadors físicoquímics de l’estat ecològic i regulats als abocaments de depuradores: RD 817/2015 i Directiva 91/271/CE", type: 'Orientatiu'},
+            '2': { text: "Valors d’altres guies internacionals, sempre que se centrin exclusivament en la protecció de l’ecosistema aquàtic", type: 'Orientatiu'},
+            '3': { text: "Valors de PNEC publicats", type: 'Orientatiu'},
+            '4': { text: "Si la qualitat de les dades toxicològiques ho permet, càlcul de PNEC mitjançant la metodologia (ECHA, 2008; RD 817/2015)", type: 'Orientatiu'}
+        },
+        'prepotable': {
+            '1': { text: "Valors RD 140/2003 i nova directiva UE/2020/2184. El consorci consensua considerar aquest nivell com a orientatiu, ja que l'aigua es torna a tractar.", type: 'Orientatiu'},
+            '2': { text: "Guies sobre la qualitat de l'aigua potable (WHO) i altres guies internacionals (ex: Guies australianes), sempre que se centrin exclusivament en ingestió d’aigua i considerin toxicitat o valor substitutiu. Judici expert.", type: 'Orientatiu'},
+            '4a': { text: "Càlcul de VP a partir de valors de toxicitat sistèmics i cancerígens reconeguts.", type: 'Orientatiu'},
+            '4b': { text: "Càlcul de VP a partir de succedanis de valors de toxicitat (ex: dosi terapèutica). ", type: 'Orientatiu'}
+        },
+        'micro': {
+            '0': { text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741).", type: 'Obligatori'},
+            '4': { text: "Càlcul de valors de reducció logarítmica aplicant una avaluació quantitativa del risc (simplificada).", type: 'Orientatiu'}
+        }
       }
     }
   },
@@ -1167,6 +1329,14 @@ export default {
     
   },
   methods:{
+    // Retorna objecte sense l'indicador del PH.
+    filterPh(indTractaments){
+        const new_indTractaments = {};
+        for(const [key, value] of Object.entries(indTractaments)){
+            if(key !== 'I1') new_indTractaments[key] = value;
+        }
+        return new_indTractaments;
+    },
     // Funció que restaura els valors per defecte dels tractaments.
     restaurarTractaments(){
         const _this = this;
@@ -1424,7 +1594,8 @@ export default {
                 else{
                     if(key === 'seleccionat') usuari[param][key][indicador_code] = false;
                     for(const [ind, value2] of Object.entries(_this.user[param][key])){
-                        usuari[param][key][ind] = value2;
+                        if(ind === indicador_code && key === 'qualitat' && param === 'corrent') usuari[param][key][ind] = {min: 0, max: 0};
+                        else usuari[param][key][ind] = value2;
                     }
                 }
             }
@@ -1607,6 +1778,7 @@ export default {
                 data_to_save[key] = value;
             }
         }
+        data_to_save['versio'] = '1.5.0';
 
         // 2. Crear el nom del fitxer a descarregar.
         let date = new Date();
@@ -1636,7 +1808,7 @@ export default {
             try{
                 const data = JSON.parse(evt.target.result);
                 for(const [key,value] of Object.entries(data)){
-                    if(key !== "user") _this[key] = value;
+                    if(key !== "user" && key !== 'versio') _this[key] = value;
                 }
                 await new Promise(r => setTimeout(r, 500));
                 if(data.tren_monitoratge) _this.tren_monitoratge = data.tren_monitoratge;
@@ -1650,6 +1822,22 @@ export default {
                     usuari.corrent_objectiu[key] = value;
                 }
                 _this.user = usuari;
+                // Per a versions antigues de dades guardades. 
+                for(const [trac, value] of Object.entries(_this.Tractaments_info)){
+                    if(!_this.Tractaments_info_sc[trac]) _this.Tractaments_info_sc[trac] = {};
+                    for(const [pre, value2] of Object.entries(value)){
+                        if(!_this.Tractaments_info_sc[trac][pre]) _this.Tractaments_info_sc[trac][pre] = {};
+                        for(const [ind, ind_value] of Object.entries(value2)){
+                            if(!_this.Tractaments_info_sc[trac][pre][ind]) _this.Tractaments_info_sc[trac][pre][ind] = ind_value;  
+                        }
+                    }
+                }
+                if(!data.versio || data.versio !== '1.5.0'){
+                    alert("Fitxer de dades carregat correctament. ATENCIÓ: El fitxer carregat correspon a versions antigues del SAD Suggereix. Algunes funcionalitats com afegir nous indicadors poden causar errors. Es recomana refer el fitxer de dades amb la nova versió.")
+                }
+                else{
+                    alert("Fitxer de dades carregat correctament.")
+                }
             } catch(err){
                 alert("Error al llegir el fitxer.");
                 return;
@@ -1712,7 +1900,7 @@ export default {
             } catch(err){
                 // prova re-llegirnt excel 'tractaments'
                 alert("ERROR: És possible que la taula de tractaments estigui desactualitzada. No s'han pogut avaluar els trens, però s'han restaurat els nous valors per defecte de la taula de tractaments. Torni a provar l'avaluació per a veure si s'ha solucionat el problema.");
-                restaurarTractaments();
+                _this.restaurarTractaments();
                 throw new Error(err);
             }
             //l'avaluació es fa en base als valors de concentració màxims i mínims comparats als valors protectors segons els usos.

@@ -231,7 +231,7 @@ export default {
                     const VP = _this.user.corrent_objectiu.qualitat[indicador];
                     const QRs = concentracio / VP;
                     const QR = QRs;
-                    dict_freq[indicador].qr = isNaN(QR) ? '--' : QR.toExponential(1);
+                    dict_freq[indicador].qr = isNaN(QR) || !full_indicador.type.startsWith("2.") ? '--' : QR.toExponential(1);
                     dict_freq[indicador].regulat = _this.user.corrent_objectiu.regulat[indicador];
                 }
             }

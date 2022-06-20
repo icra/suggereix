@@ -17,7 +17,7 @@
                 <th>Prioritat <button v-on:click="reset_pes_criteris">Reset</button></th>
                 <th>Avaluar <button v-on:click="reset_criteris_a_considerar">Reset</button></th>
             </tr>
-            <template v-for="(cri,id) in DICT_CRI_NOMS">
+            <template v-for="(cri,id) in filtrarCriteris(DICT_CRI_NOMS)">
                 <tr :key="id+'_selec_weights'">
                     <td>{{cri}}</td>
                     <td class="doubletd">
@@ -103,6 +103,13 @@ export default {
     });
   },
   methods:{
+    filtrarCriteris(criteris){
+        const new_criteris = {};
+        for(const [key, value] of Object.entries(criteris)){
+            if(key !== 'eliminacio_quimics' && key !== 'eliminacio_microbiologics') new_criteris[key] = value;
+        }
+        return new_criteris;
+    },
     reset_criteris_a_considerar(){
         this.criteris_a_considerar = JSON.parse(JSON.stringify(DICT_CRITERIS_A_CONSIDERAR));
     },

@@ -171,8 +171,8 @@ function llegir_tractaments(binaryData) {
                 const max = valor_nom(worksheet.getCell('F' + i.toString()).value);
 
                 treatments[name][pretreatment][key] = {
-                    min: isNaN(min) ? 0 : min,
-                    max: isNaN(max) ? 0 : max
+                    min: isNaN(min) ? (min === 'ne' ? 'ne' : 0) : min,
+                    max: isNaN(max) ? (max === 'ne' ? 'ne' : 0) : max
                 }
                 i++;
             }
@@ -184,8 +184,8 @@ function llegir_tractaments(binaryData) {
 
 function read_excel_value(value){
     if (typeof value === 'string') return 0;
-    else if (typeof value === 'object') return value.result;
-    else return value;
+    else if (typeof value === 'object') return Math.round((value.result + Number.EPSILON) * 1000) / 1000;
+    else return Math.round((value + Number.EPSILON) * 1000) / 1000;;
 }
 
 // llegeix excel d'avaluació multicriteri.
