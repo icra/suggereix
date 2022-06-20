@@ -285,13 +285,13 @@
         <tr style="background-color: #d4e9fd;">
             <th>Nivell</th>
             <th class="doubletd3">VP Jerarquia general</th>
-            <th>Obligatori/Orientatiu</th>
+            <th class="doubletd2">Obligatori/Orientatiu</th>
         </tr>
         <tbody>
-            <tr v-for="nivell in Object.keys(Jerarquia_PT3.general)" :key="nivell">
-                <td>{{nivell}}</td>
-                <td>{{Jerarquia_PT3.general[nivell].text}}</td>
-                <td>{{Jerarquia_PT3.general[nivell].type}}</td>
+            <tr v-for="obj in Jerarquia_PT3.general" :key="obj.nivell">
+                <td>{{obj.nivell}}</td>
+                <td>{{obj.text}}</td>
+                <td>{{obj.type}}</td>
             </tr>
         </tbody>
       </table>
@@ -300,13 +300,13 @@
         <tr style="background-color: #d4e9fd;">
             <th>Nivell</th>
             <th class="doubletd3">VP escenari ambiental</th>
-            <th>Obligatori/Orientatiu</th>
+            <th class="doubletd2">Obligatori/Orientatiu</th>
         </tr>
         <tbody>
-            <tr v-for="nivell in Object.keys(Jerarquia_PT3.ambiental)" :key="nivell">
-                <td>{{nivell}}</td>
-                <td>{{Jerarquia_PT3.ambiental[nivell].text}}</td>
-                <td>{{Jerarquia_PT3.ambiental[nivell].type}}</td>
+            <tr v-for="obj in Jerarquia_PT3.ambiental" :key="obj.nivell">
+                <td>{{obj.nivell}}</td>
+                <td>{{obj.text}}</td>
+                <td>{{obj.type}}</td>
             </tr>
         </tbody>
       </table>
@@ -315,13 +315,13 @@
         <tr style="background-color: #d4e9fd;">
             <th>Nivell</th>
             <th class="doubletd3">VP escenari potable</th>
-            <th>Obligatori/Orientatiu</th>
+            <th class="doubletd2">Obligatori/Orientatiu</th>
         </tr>
         <tbody>
-            <tr v-for="nivell in Object.keys(Jerarquia_PT3.prepotable)" :key="nivell">
-                <td>{{nivell}}</td>
-                <td>{{Jerarquia_PT3.prepotable[nivell].text}}</td>
-                <td>{{Jerarquia_PT3.prepotable[nivell].type}}</td>
+            <tr v-for="obj in Jerarquia_PT3.prepotable" :key="obj.nivell">
+                <td>{{obj.nivell}}</td>
+                <td>{{obj.text}}</td>
+                <td>{{obj.type}}</td>
             </tr>
         </tbody>
       </table>
@@ -337,13 +337,13 @@
         <tr style="background-color: #d4e9fd;">
             <th>Nivell</th>
             <th class="doubletd3">VP Jerarquia general</th>
-            <th>Obligatori/Orientatiu</th>
+            <th class="doubletd2">Obligatori/Orientatiu</th>
         </tr>
         <tbody>
-            <tr v-for="nivell in Object.keys(Jerarquia_PT3.micro)" :key="nivell">
-                <td>{{nivell}}</td>
-                <td>{{Jerarquia_PT3.micro[nivell].text}}</td>
-                <td>{{Jerarquia_PT3.micro[nivell].type}}</td>
+            <tr v-for="obj in Jerarquia_PT3.micro" :key="obj.nivell">
+                <td>{{obj.nivell}}</td>
+                <td>{{obj.text}}</td>
+                <td>{{obj.type}}</td>
             </tr>
         </tbody>
       </table>
@@ -711,7 +711,7 @@
                 - 4 valors de reducció logarítmica per a un indicador microbiològic com a màxim per tractament.
             </li>
             <li>
-                - Valors de reducció logarítmica determinats mitjançant mètodes de monitoratge en línia (valors menors que els que es poden determinar amb anàlisis de microorganismes). 
+                - Valors de reducció logarítmica determinats mitjançant mètodes de monitoratge en línia (segons els mètodes de monitoratge en línia, els valors quantificats poden ser menors que els que es poden determinar amb anàlisis de microorganismes).
             </li>
         </ul>
         <p>Si es disposen de mesures, les eficiències dels tractaments definides per defecte al SAD es poden modificar a la Secció 2.2.</p>
@@ -1256,32 +1256,32 @@ export default {
       },
     
       // Hardcoded de la taula 7.2: Informació d'on provenen els VP a través del PT3.
-      Jerarquia_PT3: {
-        'general': {
-            '0': { text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741)", type: 'Obligatori'},
-            '1': { text: "Altres normatives basades en avaluació de riscos que s'han de complir segons l'escenari", type: 'Orientatiu'},
-            '2': { text: "Valors protectors basats en avaluació de riscos procedents de guies internacionals", type: 'Orientatiu'},
-            '3': { text: "Valors toxicològics calculats publicats", type: 'Orientatiu'},
-            '4': { text: "Valors protectors basats en avaluació quantitativa del risc i valors toxicològics calculats en el marc SUGGEREIX", type: 'Orientatiu'}
-        },
-        'ambiental': {
-            '0': { text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741)", type: 'Obligatori'},
-            '1a': { text: "Valor de la normativa de qualitat ambiental a l'aigua superficial: substàncies preferents, substàncies prioritàries i substàncies perilloses prioritàries: Directives 105/2008, 39/2013 i RD 817/2015. El consorci consensua considerar aquest nivell com a orientatiu: la normativa és aplicable al medi aquàtic (immissió).", type: 'Orientatiu'},
-            '1b': { text: "Contaminants basats en indicadors físicoquímics de l’estat ecològic i regulats als abocaments de depuradores: RD 817/2015 i Directiva 91/271/CE", type: 'Orientatiu'},
-            '2': { text: "Valors d’altres guies internacionals, sempre que se centrin exclusivament en la protecció de l’ecosistema aquàtic", type: 'Orientatiu'},
-            '3': { text: "Valors de PNEC publicats", type: 'Orientatiu'},
-            '4': { text: "Si la qualitat de les dades toxicològiques ho permet, càlcul de PNEC mitjançant la metodologia (ECHA, 2008; RD 817/2015)", type: 'Orientatiu'}
-        },
-        'prepotable': {
-            '1': { text: "Valors RD 140/2003 i nova directiva UE/2020/2184. El consorci consensua considerar aquest nivell com a orientatiu, ja que l'aigua es torna a tractar.", type: 'Orientatiu'},
-            '2': { text: "Guies sobre la qualitat de l'aigua potable (WHO) i altres guies internacionals (ex: Guies australianes), sempre que se centrin exclusivament en ingestió d’aigua i considerin toxicitat o valor substitutiu. Judici expert.", type: 'Orientatiu'},
-            '4a': { text: "Càlcul de VP a partir de valors de toxicitat sistèmics i cancerígens reconeguts.", type: 'Orientatiu'},
-            '4b': { text: "Càlcul de VP a partir de succedanis de valors de toxicitat (ex: dosi terapèutica). ", type: 'Orientatiu'}
-        },
-        'micro': {
-            '0': { text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741).", type: 'Obligatori'},
-            '4': { text: "Càlcul de valors de reducció logarítmica aplicant una avaluació quantitativa del risc (simplificada).", type: 'Orientatiu'}
-        }
+      Jerarquia_PT3: { 
+        'general': [
+            {nivell: '0', text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741)", type: 'Obligatori'},
+            {nivell: '1', text: "Altres normatives basades en avaluació de riscos que s'han de complir segons l'escenari", type: 'Obligatori segons l\'escenari/Orientatiu'},
+            {nivell: '2', text: "Valors protectors basats en avaluació de riscos procedents de guies internacionals", type: 'Orientatiu'},
+            {nivell: '3', text: "Valors toxicològics calculats publicats", type: 'Orientatiu'},
+            {nivell: '4', text: "Valors protectors basats en avaluació quantitativa del risc i valors toxicològics calculats en el marc SUGGEREIX", type: 'Orientatiu'}
+        ],
+        'ambiental': [
+            {nivell: '0', text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741)", type: 'Obligatori'},
+            {nivell: '1a', text: "Valor de la normativa de qualitat ambiental a l'aigua superficial: substàncies preferents, substàncies prioritàries i substàncies perilloses prioritàries: Directives 105/2008, 39/2013 i RD 817/2015. El consorci consensua considerar aquest nivell com a orientatiu: la normativa és aplicable al medi aquàtic (immissió).", type: 'Obligatori al medi aquàtic receptor considerant factors de dilució'},
+            {nivell: '1b', text: "Contaminants basats en indicadors físicoquímics de l’estat ecològic i regulats als abocaments de depuradores: RD 817/2015 i Directiva 91/271/CE", type: 'Obligatori al medi aquàtic receptor considerant factors de dilució'},
+            {nivell: '2',  text: "Valors d’altres guies internacionals, sempre que se centrin exclusivament en la protecció de l’ecosistema aquàtic", type: 'Orientatiu'},
+            {nivell: '3',  text: "Valors de PNEC publicats", type: 'Orientatiu'},
+            {nivell: '4',  text: "Si la qualitat de les dades toxicològiques ho permet, càlcul de PNEC mitjançant la metodologia (ECHA, 2008; RD 817/2015)", type: 'Orientatiu'}
+        ],
+        'prepotable': [
+            {nivell: '1',  text: "Valors RD 140/2003 i nova directiva UE/2020/2184. El consorci consensua considerar aquest nivell com a orientatiu, ja que l'aigua es torna a tractar.", type: 'Obligatori al punt final d\'una planta potabilitzadora'},
+            {nivell: '2',  text: "Guies sobre la qualitat de l'aigua potable (WHO) i altres guies internacionals (ex: Guies australianes), sempre que se centrin exclusivament en ingestió d’aigua i considerin toxicitat o valor substitutiu. Judici expert.", type: 'Orientatiu'},
+            {nivell: '4a',  text: "Càlcul de VP a partir de valors de toxicitat sistèmics i cancerígens reconeguts.", type: 'Orientatiu'},
+            {nivell: '4b',  text: "Càlcul de VP a partir de succedanis de valors de toxicitat (ex: dosi terapèutica). ", type: 'Orientatiu'}
+        ],
+        'micro': [
+            {nivell: '0',  text: "Normatives de reutilització (RD 1620/2007 i Reglament 2020/741).", type: 'Obligatori'},
+            {nivell: '4',  text: "Càlcul de valors de reducció logarítmica aplicant una avaluació quantitativa del risc (simplificada).", type: 'Orientatiu'}
+        ]
       }
     }
   },
