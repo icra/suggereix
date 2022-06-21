@@ -976,8 +976,7 @@
     </details>
 
     <details class="seccio" close >
-      <summary class="seccio">(opcional) 3.1. Modificació dels rangs de consum i valors dels criteris de cada tractament
-        
+      <summary class="seccio">(opcional) 3.1. Modificació dels rangs de cabal i valors dels criteris de cada tractament
       </summary>
       <p>Per cada tractament es disposa de 4 rangs qualitatius (Baix (B), Mitjà (M), Alt (A) i Molt Alt (MA)) de consum amb determinats valors de criteris. Els valors dels rangs de consum i els valors corresponents dels criteris es poden modificar en aquesta taula.</p>
       <p><b>S'assumeix un temps d'operació de la planta general de: </b>
