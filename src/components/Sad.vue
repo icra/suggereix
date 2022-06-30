@@ -1685,7 +1685,7 @@ export default {
         else if(event.target.id === 'avaluacio_multicriteri') _this.visio_multicriteri = 2;
     },
 	show_sc_not(value){
-		if(value === undefined || isNaN(value)) return '';
+		if(value === null || value === undefined || isNaN(value)) return '';
 		else return value.toExponential(1);
 	},
     read_file(filename, type){

@@ -146,6 +146,18 @@ const obtenirCriterisTractament = (tractament, info_multicriteris) => {
     return info_multicriteris[tractament];
 }
 
+//I found this function here : https://www.tutorialspoint.com/decimal-count-of-a-number-in-javascript
+const decimalCount = num => {
+    // Convert to String
+    const numStr = String(num);
+    // String Contains Decimal
+    if (numStr.includes('.')) {
+       return numStr.split('.')[1].length;
+    };
+    // String Does Not Contain Decimal
+    return 0;
+}
+
 // Obté la variable de capacitat com a input de la fuzzificació.
 const getFuzzyInput = (tractament_criteris) => {
     return {
@@ -163,12 +175,44 @@ const applyFuzzy = (capacitat, tractament_criteris, criteri) => {
 
     // Obtenir les variables d'entrada i la variable de sortida a partir del criteri.
     const inputs = getFuzzyInput(tractament_criteris);
+    let criteri_3 = tractament_criteris[3][criteri];
+    let criteri_2 = tractament_criteris[2][criteri];
+    let criteri_1 = tractament_criteris[1][criteri];
+    let criteri_0 = tractament_criteris[0][criteri];
+    if(criteri_3 === criteri_2){
+        console.log(criteri_2)
+        let count = decimalCount(criteri_2)+1;
+        console.log(count)
+        let criteri_2_new = ((criteri_2 * 10 ** count) + 1) / 10 ** count;
+        if(criteri_2_new === criteri_2){
+            count--;
+            criteri_2_new = ((criteri_2 * 10 ** count) + 1) / 10 ** count;
+        }
+        criteri_2 = criteri_2_new;
+        console.log(criteri_2)
+        console.log('---------------------------')
+    }
+    if(criteri_1 === criteri_0){
+        console.log(criteri_0)
+        let count = decimalCount(criteri_0)+1;
+        console.log(count)
+        let criteri_0_new = ((criteri_0 * 10 ** count) + 1) / 10 ** count;
+        if(criteri_0_new === criteri_0){
+            count--;
+            criteri_0_new = ((criteri_0 * 10 ** count) + 1) / 10 ** count;
+        }
+        criteri_0 = criteri_0_new;
+        console.log(criteri_0)
+        console.log('---------------------------')
+    }
+
+
     const outputs = {
-        [criteri]: variable([tractament_criteris[3][criteri], tractament_criteris[0][criteri]], {
-            low: triangle(tractament_criteris[3][criteri], tractament_criteris[3][criteri], tractament_criteris[2][criteri]),
-            medium: triangle(tractament_criteris[3][criteri], tractament_criteris[2][criteri], tractament_criteris[1][criteri]),
-            high: triangle(tractament_criteris[2][criteri], tractament_criteris[1][criteri], tractament_criteris[0][criteri]),
-            very_high: triangle(tractament_criteris[1][criteri], tractament_criteris[0][criteri], tractament_criteris[0][criteri])
+        [criteri]: variable([criteri_3, criteri_0], {
+            low: triangle(criteri_3, criteri_3, criteri_2),
+            medium: triangle(criteri_3, criteri_2, criteri_1),
+            high: triangle(criteri_2, criteri_1, criteri_0),
+            very_high: triangle(criteri_1, criteri_0, criteri_0)
         }),
     };
 
@@ -197,13 +241,14 @@ const applyFuzzy = (capacitat, tractament_criteris, criteri) => {
     ];
 
     // Execució i retorn de la defuzzificació.
-    return defuzz(
+    const value = defuzz(
         inputs,
         outputs,
         rules,
         // input values
         { capacity: capacitat },
     )[criteri];
+    return value;
 }
 
 // Aquesta funció calcula el cost total (mínim o màxim depenent de 'type') del tren.
