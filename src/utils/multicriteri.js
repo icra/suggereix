@@ -179,31 +179,20 @@ const applyFuzzy = (capacitat, tractament_criteris, criteri) => {
     let criteri_2 = tractament_criteris[2][criteri];
     let criteri_1 = tractament_criteris[1][criteri];
     let criteri_0 = tractament_criteris[0][criteri];
+    // La llibreria topsis dona problemes si el criteri_3 i 2 i el criteri_1 i 0 són iguals, cal incrementar artificialment un decimal si són iguals.
     if(criteri_3 === criteri_2){
-        console.log(criteri_2)
         let count = decimalCount(criteri_2)+1;
-        console.log(count)
-        let criteri_2_new = ((criteri_2 * 10 ** count) + 1) / 10 ** count;
-        if(criteri_2_new === criteri_2){
-            count--;
-            criteri_2_new = ((criteri_2 * 10 ** count) + 1) / 10 ** count;
-        }
+        // Per alguna raó més 5 decimals no detecta el nombre com a diferent, així que màxim s'ha d'incrementar el decimal 5è, encara que el nombre sigui més gran.
+        if(count > 5) count = 5;
+        let criteri_2_new = criteri_2 + (10 ** -count)
         criteri_2 = criteri_2_new;
-        console.log(criteri_2)
-        console.log('---------------------------')
     }
     if(criteri_1 === criteri_0){
-        console.log(criteri_0)
         let count = decimalCount(criteri_0)+1;
-        console.log(count)
-        let criteri_0_new = ((criteri_0 * 10 ** count) + 1) / 10 ** count;
-        if(criteri_0_new === criteri_0){
-            count--;
-            criteri_0_new = ((criteri_0 * 10 ** count) + 1) / 10 ** count;
-        }
+        // Per alguna raó més 5 decimals no detecta el nombre com a diferent, així que màxim s'ha d'incrementar el decimal 5è, encara que el nombre sigui més gran.
+        if(count > 5) count = 5;
+        let criteri_0_new = criteri_0 + (10 ** -count)
         criteri_0 = criteri_0_new;
-        console.log(criteri_0)
-        console.log('---------------------------')
     }
 
 
