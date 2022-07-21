@@ -16,6 +16,7 @@
     "jointjs": "^3.5.4",
     "postcss-prefix-selector": "^1.13.0",
     "vue": "^2.6.11",
+    "vue-multiselect": "^2.1.6",
     "vuetify": "^2.5.6",
     "xlsx": "^0.17.0"
   },

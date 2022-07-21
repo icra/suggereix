@@ -1,8 +1,9 @@
 <template data-vuetify>
   <div id="intro">
     <a id="downloadAnchorElem" style="display:none"></a>
+    <p> - Guia d'usuari: <a href="/SUGGEREIX_GuiaUsuariSAD_20220719.pdf" download>Descarregar</a></p> 
     <details class="seccio">
-        <summary class="seccio">0. Gestió de dades (descarregar, carregar, gestionar indicadors) </summary>
+        <summary class="seccio">0. Gestió de dades (descarregar, carregar, gestionar indicadors, afegir casos similars) </summary>
         <div>
             <p><b>A. Descarregar l'estat actual</b></p> 
             <button @click="descarregar_estat">Descarregar</button>
@@ -73,6 +74,47 @@
             </table>
             <p></p>
             <button @click="afegirIndicador">Afegir Indicador</button>
+            <p><b>D. Afegir Casos Similars</b></p> 
+            <p> - Per a <b>afegir</b> un nou cas similar, cal omplir les següents dades i prémer el botó 'Afegir Cas Similar'.</p>
+            <p><b> - Nom de la planta existent (*): </b>
+                <input v-model="nova_planta.nom_planta" placeholder="p.ex.: EDAR Golf La Roca" />
+            </p>
+            <p><b> - Emplaçament (*): </b>
+                <input v-model="nova_planta.emplacament" placeholder="p.ex.: La Roca del Vallès" />
+            </p>
+            <p><b> - País (*): </b>
+                <input v-model="nova_planta.pais" placeholder="p.ex.: Espanya" />
+            </p>
+            <p><b> - Latitud: </b>
+                <input v-model="nova_planta.latitud" placeholder="p.ex.: 41.62" />
+            </p>
+            <p><b> - Longitud: </b>
+                <input v-model="nova_planta.longitud" placeholder="p.ex.: 2.36" />
+            </p>
+            <p><b> - Entitat gestora: </b>
+                <input v-model="nova_planta.entitat_gestora" placeholder="p.ex.: Companyia General d'Aigües de Catalunya S.A." />
+            </p>
+            <p><b> - Any de posada en marxa: </b>
+                <input v-model="nova_planta.any_inici" placeholder="p.ex.: 2014" />
+            </p>
+            <p><b> - Cabal de disseny (m<sup>3</sup>): </b>
+                <input v-model="nova_planta.cabal" placeholder="p.ex.: 1920" />
+            </p>
+            <p><b> - Tren de tractament: </b>
+                <input v-model="nova_planta.tecnologies" placeholder="p.ex.: FS_UV_Cl2" />
+            </p>
+            <div>
+                <b> - Vincular trens existents al SAD (*): </b><div class="tooltip">
+                    <i class="fa-regular fa-circle-question"></i>
+                    <span class="tooltiptext2">En aquest apartat cal seleccionar en el selector múltiple tots els trens que es vulguin interpretar com a casos similars del cas d'ús entrat.</span>
+                </div>
+                <multiselect v-model="nova_planta_vinculacio_value" :options="Object.values(Trens_info)"  :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Seleccionar trens similars" label="nom" track-by="nom" style="max-width: 500px" selectLabel="Tecla intro per seleccionar" selectedLabel="Seleccionat" deselectLabel="Tecla intro per eliminar">
+                    <template slot="selection" slot-scope="{ values, search, isOpen }"><span class="multiselect__single" v-if="values.length &amp;&amp; !isOpen">{{ values.length }} {{values.length > 1 ? 'opcions seleccionades' : 'opció seleccionada'}}</span></template>
+                </multiselect>
+                <p v-for="nom in nova_planta_vinculacio_value.map(nova_planta => nova_planta.nom)" :key="nom+'_novaplanta'">{{' - '+nom}}</p>
+            </div>
+            <p></p>
+            <button @click="afegirCasSimilar">Afegir Cas Similar</button>
         </div>
     </details>
     <details class="seccio" open>
@@ -1141,10 +1183,10 @@
                         </td>
                         <td style="text-align: center; padding: 5px;">
                             {{obtenirEmplacament(Casos_us[ref])}}
-                            <a target="_blank" class="btn" :href="'https://www.google.com/maps/place/'+Casos_us[ref].latitud+','+Casos_us[ref].longitud"><i class="fa-solid fa-map-location-dot"></i></a>
+                            <a target="_blank" class="btn" :href="(Casos_us[ref].latitud && Casos_us[ref].longitud) ? 'https://www.google.com/maps/place/'+Casos_us[ref].latitud+','+Casos_us[ref].longitud : 'https://www.google.com/maps/place/'+((Casos_us[ref].emplacament && Casos_us[ref].pais) ? (Casos_us[ref].emplacament+', '+Casos_us[ref].pais) : Casos_us[ref].emplacament || Casos_us[ref].pais)"><i class="fa-solid fa-map-location-dot"></i></a>
                         </td>
                         <td style="text-align: center; padding: 5px;">
-                            <div v-html="Casos_us[ref].entitat_gestora" />
+                            <div v-html="!Casos_us[ref].entitat_gestora ? no_definida : Casos_us[ref].entitat_gestora" />
                         </td>
                         <td style="text-align: center; padding: 5px;">
                             <div v-html="(!Casos_us[ref].any_inici || Casos_us[ref].any_inici === 'n.a.' ? no_definit : Casos_us[ref].any_inici)" />
@@ -1153,7 +1195,7 @@
                             <div v-html="(!Casos_us[ref].cabal || Casos_us[ref].cabal === 'n.a.') ? no_definit : Casos_us[ref].cabal" />
                         </td>
                         <td style="text-align: center; padding: 5px;">
-                            <div v-html="Casos_us[ref].tecnologies" />
+                            <div v-html="!Casos_us[ref].tecnologies ? no_definit : Casos_us[ref].tecnologies" />
                         </td>
                     </tr>
                 </template>
@@ -1178,10 +1220,11 @@ import {avaluar_multicriteris, normalitzaCriteris, obtenirExtremCriteris, agrega
 import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
 import Monitoratge from './Monitoratge.vue';
+import Multiselect from 'vue-multiselect';
 
 export default {
   name: 'Sad',
-  components: { Graph, Avaluacio, Monitoratge },
+  components: { Graph, Avaluacio, Monitoratge, Multiselect },
   data: function(){
     return {
       user: new Usuari({}),       //objecte
@@ -1203,6 +1246,7 @@ export default {
       tren_casos: "",           //tren de casos similars seleccionat.
       llest_monitoratge: false, //variable per saber si el monitoratge està llest.
       no_definit: '<i style="color:red">No definit</i>',
+      no_definida: '<i style="color:red">No definida</i>',
       ne_dict: {},              //diccionari de trens i els seus indicadors per a saber si algun pot ser 'ne'.
       tractaments_sec: {},      //corrents per defecte de la infraestructura existent.
 
@@ -1216,6 +1260,21 @@ export default {
       new_ind_type: "",
       new_ind_units: "",
       ind_afegits: [],  //diccionari amb els indicadors afegits per l'usuari.
+
+      // gestió per a afegir casos d'ús.
+      nova_planta: {
+        nom_planta: "",
+        pais: "",
+        emplacament: "",
+        latitud: "",
+        longitud: "",
+        entitat_gestora: "",
+        any_inici: "",
+        cabal: "",
+        usos_sad: "",
+        tecnologies: ""
+      },
+      nova_planta_vinculacio_value: [],
 
       // Variables inicials en còpia (per a un posterior reseteig a defaults).
       Tractaments_info_sc: {},
@@ -1622,6 +1681,49 @@ export default {
         alert("Indicador afegit correctament. ATENCIÓ: Per defecte, aquest nou indicador té tots els seus valors protectors i eficiències d'eliminació a 0. Per editar-les, cal fer-ho des de les seccions opcionals.");
 
     },
+    // Funcio que afegeix un nou cas similar a la llista de casos similars. També afegeix les referències dels trens entrats en el SAD com a similars.
+    afegirCasSimilar(){
+        const _this = this;
+
+        // Primer cal comprovar que l'usuari hagi introduït dades suficients.
+        if(!_this.nova_planta.nom_planta || !_this.nova_planta.emplacament || !_this.nova_planta.pais || !_this.nova_planta_vinculacio_value.length){
+            alert('Falten dades: Cal introduïr tots els camps obligatoris marcats amb asterisc "*"')
+            return;
+        }
+
+        // Obtenir la nova referència del cas d'ús entrat.
+        const cas_us_codi = Math.max(...Object.keys(_this.Casos_us))+1;
+
+        // Obtenir els IDs dels trens que l'usuari ha entrat com a similars del cas d'ús.
+        const trens_similars_ids = _this.nova_planta_vinculacio_value.map(nova_planta => nova_planta.codi);
+        // Per a cada ID, insereix la referència del cas d'ús entrat.
+        for(const tren_similar_id of trens_similars_ids){
+            _this.Trens_info[tren_similar_id].referencies.push(cas_us_codi);
+        }
+
+        // Afegir el cas d'us a la DB.
+        if(!isNaN(_this.nova_planta.latitud)) _this.nova_planta.latitud = Number(_this.nova_planta.latitud);
+        if(!isNaN(_this.nova_planta.longitud)) _this.nova_planta.longitud = Number(_this.nova_planta.longitud);
+        _this.Casos_us[cas_us_codi] = _this.nova_planta;
+
+        // Resetejar els valors d'entrada.
+        _this.nova_planta = {
+            nom_planta: "",
+            pais: "",
+            emplacament: "",
+            latitud: "",
+            longitud: "",
+            entitat_gestora: "",
+            any_inici: "",
+            cabal: "",
+            usos_sad: "",
+            tecnologies: ""
+        };
+        _this.nova_planta_vinculacio_value = [];
+
+        // Mostrar alerta a l'usuari.
+        alert("El casos similars s'han afegit correctament.")
+    },
     obtenirEmplacament (cas_us){
         let text = cas_us.emplacament && cas_us.pais ? cas_us.emplacament+", "+cas_us.pais : cas_us.emplacament || cas_us.pais;
         text += " (Lat: " + Math.round((cas_us.latitud + Number.EPSILON) * 100) / 100 + ', Long: ' + Math.round((cas_us.longitud + Number.EPSILON) * 100) / 100 + ")";
@@ -1770,7 +1872,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Tractaments_info_sc", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge", "tractaments_sec", "ind_afegits", "Ind_to_code", "Mon_code_to_ind"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Tractaments_info_sc", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge", "tractaments_sec", "ind_afegits", "Ind_to_code", "Mon_code_to_ind", "Trens_info", "Casos_us"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){
@@ -2263,6 +2365,8 @@ export default {
   }
 }
 </script>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
