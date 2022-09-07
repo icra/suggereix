@@ -115,6 +115,9 @@
             </div>
             <p></p>
             <button @click="afegirCasSimilar">Afegir Cas Similar</button>
+            <p><b>E. Informe de resultats Excel</b></p> 
+            <button @click="descarregar_excel">Descarregar</button>
+            <p>Descarrega la definició del projecte de reutilització i els resultats obtinguts.</p>
         </div>
     </details>
     <details class="seccio" open>
@@ -1008,10 +1011,10 @@
             </div>
           </div>
           <div v-else-if="this.visio_multicriteri === 1">
-              <Graph v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info"/>
+              <Graph v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info" @sendPng="processPng"/>
           </div>
           <div v-else-if="this.visio_multicriteri === 2">
-              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info" @resultats="resultatAvaluacio" v-bind:prop_pes_criteris="av_pes_criteris" v-bind:prop_criteris_a_considerar="av_criteris_a_considerar" v-bind:prop_metode="av_metode" @changeData="avChangeData" />
+              <Avaluacio v-bind:trens_multicriteris="trens_multicriteris" v-bind:trens_info="Trens_info" @resultats="resultatAvaluacio" v-bind:prop_pes_criteris="av_pes_criteris" v-bind:prop_criteris_a_considerar="av_criteris_a_considerar" v-bind:prop_metode="av_metode" @changeData="avChangeData" @sendPng="processPngAvaluacio" />
           </div>
         </div>
       </div>
@@ -1221,6 +1224,9 @@ import Graph from './Graph.vue';
 import Avaluacio from './Avaluacio.vue';
 import Monitoratge from './Monitoratge.vue';
 import Multiselect from 'vue-multiselect';
+import ExcelJS from "exceljs";
+import saveAs from "file-saver";
+import {DICT_CRI_NOMS} from "../utils/multicriteri";
 
 export default {
   name: 'Sad',
@@ -1249,6 +1255,9 @@ export default {
       no_definida: '<i style="color:red">No definida</i>',
       ne_dict: {},              //diccionari de trens i els seus indicadors per a saber si algun pot ser 'ne'.
       tractaments_sec: {},      //corrents per defecte de la infraestructura existent.
+
+      png_multicriteri: undefined,
+      png_avaluacio: undefined,
 
       av_criteris_a_considerar: undefined,
       av_pes_criteris: undefined,
@@ -1869,10 +1878,291 @@ export default {
 
     },
 
+    processPng: function (pngBase64){
+        this.png_multicriteri = pngBase64;
+    },
+
+    processPngAvaluacio: function (pngBase64){
+        this.png_avaluacio = pngBase64;
+    },
+
+
+    saveExcel: function (workbook, fileName) {
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            saveAs(new Blob([buffer], { type: "application/octet-stream" }), fileName + ".xlsx");
+        });
+    },
+
+    getSpreadSheetCellNumber: function (row, column) {
+        let result = '';
+
+        // Get spreadsheet column letter
+        let n = column;
+        while (n >= 0) {
+            result = String.fromCharCode(n % 26 + 65) + result;
+            n = Math.floor(n / 26) - 1;
+        }
+
+        // Get spreadsheet row number
+        result += `${row + 1}`;
+
+        return result;
+    },
+
+    firstSheet: function(workbook){
+        const sheet = workbook.addWorksheet('Definició projecte');
+        sheet.getColumn(1).width = 40;
+        sheet.getColumn(2).width = 12;
+        sheet.getColumn(3).width = 12;
+        sheet.getColumn(4).width = 12;
+        sheet.getCell('A1').value = "Resultats obtinguts amb el SAD SUGGEREIX: sistema d'ajuda a la decisió per a la implementació i gestió de la reutilització";
+        sheet.getCell('A1').style = { font: { name: 'calibri', bold: true, size: 16 } };
+        sheet.getCell('A3').value = "Definició del projecte de reutilització i requeriments de qualitat";
+        sheet.getCell('A3').style = { font: { name: 'calibri', bold: true, size: 14 } };
+        sheet.getCell('A5').value = "Descripció infraestructura existent";
+        sheet.getCell('A5').style = { font: { name: 'calibri', bold: true, size: 12 } };
+
+        sheet.getCell('A6').value = "Capacitat tractament avançat (m3/d):";
+        sheet.getCell('A6').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('A7').value = "Factor sobre la capacitat de tractament (%):";
+        sheet.getCell('A7').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('A8').value = "Selecciona la infraestructura existent:";
+        sheet.getCell('A8').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('B6').value = this.user.corrent.Q;
+        sheet.getCell('B7').value = this.user.corrent.F;
+        sheet.getCell('B8').value = this.tractament_secundari ? this.tractaments_sec[this.tractament_secundari].nom || 'n.d.' : 'n.d.';
+        
+        
+        sheet.getCell('A10').value = "Indicadors de qualitat";
+        sheet.getCell('A10').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('B11').value = "min";
+        sheet.getCell('C11').value = "max";
+        let current_row = 12;
+        const indicadors = Object.keys(this.user.corrent.seleccionat).filter(key => key === 'I1' || this.user.corrent.seleccionat[key] === true);
+        for(const indicador of indicadors){
+            sheet.getCell('A'+current_row).value = this.Info_indicadors[indicador].name;
+            sheet.getCell('B'+current_row).value = this.user.corrent.qualitat[indicador].min;
+            sheet.getCell('C'+current_row).value = this.user.corrent.qualitat[indicador].max;
+            sheet.getCell('D'+current_row).value = this.Info_indicadors[indicador].unitats;
+            current_row += 1;
+        }
+        current_row += 1;
+
+        sheet.getCell('A'+current_row).value = "Ús d'aigua regenerada";
+        sheet.getCell('A'+current_row).style = { font: { name: 'calibri', bold: true } };
+        current_row += 1;
+        for(const us of this.usos_seleccionats){
+            sheet.getCell('A'+current_row).value = this.Usos_info[us].nom;
+            current_row += 1;
+        }
+        current_row += 1;
+
+        sheet.getCell('A'+current_row).value = "Valors objectius de qualitat (VP)";
+        sheet.getCell('A'+current_row).style = { font: { name: 'calibri', bold: true } };
+        current_row += 1;
+        for(const indicador of indicadors){
+            const valor = this.user.corrent_objectiu.qualitat[indicador];
+            if(indicador !== 'I1' && valor && valor !== 'nd'){
+                sheet.getCell('A'+current_row).value = this.Info_indicadors[indicador].name;
+                sheet.getCell('B'+current_row).value = valor;
+                current_row += 1;
+            }
+        }
+    },
+
+    secondSheet: function(workbook){
+        const sheet = workbook.addWorksheet('Selecció trens viables');
+        sheet.getColumn(1).width = 20;
+        sheet.getColumn(2).width = 40;
+        sheet.getColumn(3).width = 10;
+        sheet.getColumn(4).width = 15;
+        sheet.getColumn(5).width = 10;
+        sheet.getCell('A1').value = "Resultats obtinguts amb el SAD SUGGEREIX: sistema d'ajuda a la decisió per a la implementació i gestió de la reutilització";
+        sheet.getCell('A1').style = { font: { name: 'calibri', bold: true, size: 16 } };
+        sheet.getCell('A3').value = "Selecció dels trens de tractament viables (avaluant el compliment dels VPs per tots els contaminants)";
+        sheet.getCell('A3').style = { font: { name: 'calibri', bold: true, size: 14 } };
+
+        sheet.getCell('A5').value = "Trens viables";
+        sheet.getCell('A5').style = { font: { name: 'calibri', bold: true, size: 12 } };
+        sheet.getCell('B6').value = "Tren";
+        sheet.getCell('B6').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('C6').value = "id";
+        sheet.getCell('C6').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('D6').value = "Compliment (%)";
+        sheet.getCell('D6').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('F6').value = "Valors/concentracions dels paràmetres/indicadors";
+        sheet.getCell('F6').style = { font: { name: 'calibri', bold: true } };
+
+        const indicadors = Object.keys(this.user.corrent.seleccionat).filter(key => key === 'I1' || this.user.corrent.seleccionat[key] === true);
+        let column_start = 6;
+        for(const indicador of indicadors){
+            sheet.getColumn(column_start).width = 12;
+            sheet.getCell(this.getSpreadSheetCellNumber(6, column_start-1)).value = indicador;
+            sheet.getCell(this.getSpreadSheetCellNumber(6, column_start-1)).style = { font: { name: 'calibri', bold: true } };
+            sheet.getCell(this.getSpreadSheetCellNumber(7, column_start-1)).value = this.Info_indicadors[indicador].unitats;
+            sheet.getCell(this.getSpreadSheetCellNumber(7, column_start-1)).style = { font: { name: 'calibri', bold: true } };
+            column_start += 1;
+        }
+
+        let row_start = 9;
+        let counter = 1;
+        for(const tren of this.ranquing_trens){
+            if(tren.puntuacio < this.treshold_viables) break;
+            sheet.getCell('A'+row_start).value = counter;
+            sheet.getCell('B'+row_start).value = this.Trens_info[tren.id].nom;
+            sheet.getCell('C'+row_start).value = tren.id;
+            sheet.getCell('D'+row_start).value = tren.puntuacio;
+            sheet.getCell('E'+row_start).value = 'min';
+            sheet.getCell('E'+(row_start+1)).value = 'max';
+            column_start = 5;
+            for(const indicador of indicadors){
+                if(indicador !== 'I1'){
+                    sheet.getCell(this.getSpreadSheetCellNumber(row_start-1, column_start)).value = this.show_sc_not(tren.concentracio.min.qualitat[indicador]);
+                    sheet.getCell(this.getSpreadSheetCellNumber(row_start, column_start)).value = this.show_sc_not(tren.concentracio.max.qualitat[indicador]);
+                    column_start += 1;
+                }
+            }
+            row_start += 2;
+            counter += 2;
+        }
+    },
+
+    thirdSheet: function(workbook){
+        const sheet = workbook.addWorksheet('Avaluació multicriteri');
+        sheet.getColumn(1).width = 40;
+        sheet.getColumn(2).width = 40;
+        sheet.getColumn(4).width = 15;
+
+        sheet.getCell('A1').value = "Resultats obtinguts amb el SAD SUGGEREIX: sistema d'ajuda a la decisió per a la implementació i gestió de la reutilització";
+        sheet.getCell('A1').style = { font: { name: 'calibri', bold: true, size: 16 } };
+        sheet.getCell('A3').value = "Avaluació multicriteri dels trens viables";
+        sheet.getCell('A3').style = { font: { name: 'calibri', bold: true, size: 14 } };
+
+        sheet.getCell('A5').value = "Considerar trens viables a partir de % de compliment";
+        sheet.getCell('A5').style = { font: { name: 'calibri', bold: true, size: 12 } };
+        sheet.getCell('B5').value = this.treshold_viables;
+
+        sheet.getCell('A7').value = "Taula de criteris inicial";
+        sheet.getCell('A7').style = { font: { name: 'calibri', bold: true, size: 12 } };
+
+        sheet.getCell('B8').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('B8').value = "Tren";
+        sheet.getCell('C8').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('C8').value = "id";
+        sheet.getCell('D8').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('D8').value = "Compliment (%)";
+        sheet.getCell('E8').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('E8').value = "Criteris";
+        sheet.getCell('E10').value = "Cost total (€/d)";
+        sheet.getColumn(5).width = 30;
+        sheet.getCell('E10').style = { font: { name: 'calibri', bold: true } };
+        sheet.getCell('F10').value = "Consum energètic mitjà (kWh/d)";
+        sheet.getCell('F10').style = { font: { name: 'calibri', bold: true } };
+        sheet.getColumn(6).width = 30;
+        sheet.getCell('G10').value = "Petjada de carboni (kg CO2 eq./d)";
+        sheet.getCell('G10').style = { font: { name: 'calibri', bold: true } };
+        sheet.getColumn(7).width = 30;
+        sheet.getCell('H10').value = "Petjada hídrica (L eq./d)";
+        sheet.getCell('H10').style = { font: { name: 'calibri', bold: true } };
+        sheet.getColumn(8).width = 30;
+        sheet.getCell('I10').value = "Espai ocupat (m2)";
+        sheet.getCell('I10').style = { font: { name: 'calibri', bold: true } };
+        sheet.getColumn(9).width = 30;
+
+        let counter = 1;
+        let row = 11;
+        for(const tren of this.trens_multicriteris){
+            sheet.getCell('A'+row).value = counter;
+            sheet.getCell('B'+row).value = this.Trens_info[tren.id].nom;
+            sheet.getCell('C'+row).value = tren.id;
+            sheet.getCell('D'+row).value = this.ranquing_trens[counter-1].puntuacio;
+            sheet.getCell('E'+row).value = this.show_sc_not(tren.criteris.cost_total_min) + ' - ' + this.show_sc_not(tren.criteris.cost_total_max);
+            sheet.getCell('F'+row).value = this.show_sc_not(tren.criteris.cons_ene_mitja);
+            sheet.getCell('G'+row).value = this.show_sc_not(tren.criteris.hc);
+            sheet.getCell('H'+row).value = this.show_sc_not(tren.criteris.hh);
+            sheet.getCell('I'+row).value = this.show_sc_not(tren.criteris.espai_ocupat);
+            counter += 1;
+            row += 1;
+        }
+        row += 1;
+
+        sheet.getCell('A'+row).value = "Visualització dels criteris normalitzats";
+        sheet.getCell('A'+row).style = { font: { name: 'calibri', bold: true, size: 12 } };
+        row += 1;
+        if(this.png_multicriteri){
+            const imageMulticriteri = workbook.addImage({
+                base64: this.png_multicriteri,
+                extension: 'png',
+            });
+            sheet.addImage(imageMulticriteri, {
+                tl: { col: 1, row: row },
+                ext: { width: 900, height: 520 }
+            });
+            row += 25;
+        }
+        else sheet.getCell('A'+row).value = " - No s'ha generat el gràfic a l'interfície web";
+        row += 1;
+
+        sheet.getCell('A'+row).value = "Priorització dels trens viables";
+        sheet.getCell('A'+row).style = { font: { name: 'calibri', bold: true, size: 12 } };
+        row += 2;
+        if(this.av_pes_criteris && this.av_criteris_a_considerar){
+            sheet.getCell('A'+row).value = "Mètode de priorització: ";
+            sheet.getCell('B'+row).value = this.av_metode ? (this.av_metode === 'agregar' ? 'Agregació i normalització' : 'IA: Lògica Fuzzy') : 'n.d.';
+            row += 2;
+
+            sheet.getCell('A'+row).value = "Criteri";
+            sheet.getCell('B'+row).value = "Prioritat";
+            row += 1;
+
+            const pes_criteris_info = {
+                'VL': 'Molt baixa (MB)',
+                'L': 'Baixa (B)',
+                'M': 'Mitjana (M)',
+                'H': 'Alta (A)',
+                'VH': 'Molt alta (MA)'
+            };
+            for(const criteri of Object.keys(this.av_criteris_a_considerar).filter(criteri => this.av_criteris_a_considerar[criteri])){
+                sheet.getCell('A'+row).value = DICT_CRI_NOMS[criteri];
+                sheet.getCell('B'+row).value = pes_criteris_info[this.av_pes_criteris[criteri]];
+                row += 1;
+            }
+            if(this.png_avaluacio){
+                const imageAvaluacio = workbook.addImage({
+                base64: this.png_avaluacio,
+                extension: 'png',
+            });
+            sheet.addImage(imageAvaluacio, {
+                tl: { col: 1, row: row },
+                ext: { width: 900, height: 520 }
+            });
+            row += 25;
+            }
+        }
+        else sheet.getCell('A'+row).value = " - No s'ha generat el gràfic a l'interfície web";
+        row += 1;
+
+    },
+
+    // funcio per a descarregar l'informe del projecte de reutilització.
+    descarregar_excel: function() {
+        const workbook = new ExcelJS.Workbook();
+
+        this.firstSheet(workbook);
+        this.secondSheet(workbook);
+        this.thirdSheet(workbook);
+
+        let date = new Date();
+        date = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toJSON().slice(0,16);
+        date = date.replace(":","-");
+        const nom_fitxer = "suggereix_informe_"+date;
+        this.saveExcel(workbook, nom_fitxer) //Download the excel
+    },
+
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Tractaments_info_sc", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge", "tractaments_sec", "ind_afegits", "Ind_to_code", "Mon_code_to_ind", "Trens_info", "Casos_us"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Tractaments_info_sc", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge", "tractaments_sec", "ind_afegits", "Ind_to_code", "Mon_code_to_ind", "Trens_info", "Casos_us", "png_multicriteri", "png_avaluacio"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){

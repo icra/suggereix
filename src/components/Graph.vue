@@ -48,6 +48,10 @@ export default {
             };
             if(vm.ctx_chart) vm.ctx_chart.destroy();
             vm.ctx_chart = new Chart(ctx, config);
+
+            setTimeout(() => {
+                vm.$emit('sendPng', document.getElementById('multicriteri_chart').toDataURL());
+            }, 100);
         }
     }
   }

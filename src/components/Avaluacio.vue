@@ -334,6 +334,12 @@ export default {
         handler: function(newVal, oldVal) {
             // Mostra el graph de priorització.
             this.chart = this.metode === 'fuzzy' ? this.obtenirDadesGraphTrens() : this.obtenirDadesGraphTrens2();
+            setTimeout(() => {
+                this.$emit('sendPng', document.getElementById('avaluacio_multicriteri_chart').toDataURL());
+                this.$emit('changeData', 'av_pes_criteris', this.pes_criteris);
+                this.$emit('changeData', 'av_metode', this.metode);
+                this.$emit('changeData', 'av_criteris_a_considerar', this.criteris_a_considerar);
+            }, 100);
         },
         deep: true
     }
