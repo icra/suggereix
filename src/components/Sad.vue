@@ -1146,7 +1146,7 @@
           </p>
           <div v-if="tren_monitoratge">
               <Monitoratge v-bind:tren_monitoratge="tren_monitoratge" v-bind:tractament_secundari="tractament_secundari" 
-              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" v-bind:capacitat="user.corrent.Q * user.corrent.F / 100" v-bind:mon_code_to_ind="Mon_code_to_ind" v-bind:mon_per_ind_micro="Mon_per_ind_micro" v-bind:qualitat_microbiologica="Qualitat_microbiologica" v-bind:prop_visio_monitoratge="mon_visio_monitoratge" @changeData="avChangeData" />
+              v-bind:info_monitoratge="Info_monitoratge" v-bind:metodes_monitoratge="Metodes_monitoratge" v-bind:info_rich="Info_rich" v-bind:indicadors_seleccionats="user.corrent.seleccionat" v-bind:ind_to_code="Ind_to_code" v-bind:abreviacions_met_mon="Abrevicions_met_mon" v-bind:info_indicadors="Info_indicadors" v-bind:tractaments_info="Tractaments_info" v-bind:user="user" v-bind:usos_seleccionats="usos_seleccionats" v-bind:mon_per_ind_quim="Mon_per_ind_quim" v-bind:capacitat="user.corrent.Q * user.corrent.F / 100" v-bind:mon_code_to_ind="Mon_code_to_ind" v-bind:mon_per_ind_micro="Mon_per_ind_micro" v-bind:qualitat_microbiologica="Qualitat_microbiologica" v-bind:prop_visio_monitoratge="mon_visio_monitoratge" @changeData="avChangeData" @sendPngDiagram="processPngDiagram" />
           </div>
       </div>
     </details>
@@ -1258,6 +1258,7 @@ export default {
 
       png_multicriteri: undefined,
       png_avaluacio: undefined,
+      png_diagram: undefined,
 
       av_criteris_a_considerar: undefined,
       av_pes_criteris: undefined,
@@ -1886,6 +1887,9 @@ export default {
         this.png_avaluacio = pngBase64;
     },
 
+    processPngDiagram: function (pngBase64){
+        this.png_diagram = pngBase64;
+    },
 
     saveExcel: function (workbook, fileName) {
         workbook.xlsx.writeBuffer().then((buffer) => {
@@ -2144,6 +2148,162 @@ export default {
 
     },
 
+    fourthSheet: function(workbook){
+        const sheet = workbook.addWorksheet('Monitoratge dels trens');
+        sheet.getColumn(1).width = 40;
+        sheet.getColumn(2).width = 40;
+        sheet.getColumn(4).width = 15;
+
+        sheet.getCell('A1').value = "Resultats obtinguts amb el SAD SUGGEREIX: sistema d'ajuda a la decisió per a la implementació i gestió de la reutilització";
+        sheet.getCell('A1').style = { font: { name: 'calibri', bold: true, size: 16 } };
+        sheet.getCell('A3').value = "Monitoratge dels trens de tractament";
+        sheet.getCell('A3').style = { font: { name: 'calibri', bold: true, size: 14 } };
+
+        let row = 5;
+
+        for(const tren_a_monitorar of this.selector_monitoratge){
+            sheet.getCell('A'+row).style = { font: { bold: true, size: 12 } };
+            sheet.getCell('A'+row).value = tren_a_monitorar.nom;
+            sheet.getCell('A'+(row+1)).value = " - A continuació es mostra el diagrama del tren de tractaments a monitorar. Els nombres a la part inferior indiquen punts de monitoratge de cada tractament i els nombres a la part superior indiquen els punts d'entrada a la planta, sortida del tractament secundari i sortida de la planta.";
+            row += 2;
+
+            let current_circle = 1;
+            let current_romb = 1;
+
+            sheet.getColumn(1).width = 12;
+            sheet.getCell(this.getSpreadSheetCellNumber(row, 1)).value = current_romb;
+            sheet.getCell(this.getSpreadSheetCellNumber(row, 1)).alignment = { vertical: 'middle', horizontal: 'center' };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 1)).value = "->"
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 1)).style = { font: { bold: true } };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 1)).alignment = { vertical: 'middle', horizontal: 'center' };
+
+            sheet.getCell(this.getSpreadSheetCellNumber(row+2, 1)).value = current_circle;
+            sheet.getCell(this.getSpreadSheetCellNumber(row+2, 1)).alignment = { vertical: 'middle', horizontal: 'center' };
+            current_circle += 1;
+            current_romb += 1;
+
+            sheet.getColumn(2).width = 3;
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 2)).value = "DP"
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 2)).style = { font: { bold: true } };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 2)).alignment = { vertical: 'middle', horizontal: 'center' };
+
+            sheet.getColumn(3).width = 12;
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 3)).value = "->"
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 3)).style = { font: { bold: true } };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 3)).alignment = { vertical: 'middle', horizontal: 'center' };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+2, 3)).value = current_circle;
+            sheet.getCell(this.getSpreadSheetCellNumber(row+2, 3)).alignment = { vertical: 'middle', horizontal: 'center' };
+            current_circle += 1;
+
+            sheet.getColumn(4).width = 3;
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 4)).value = this.tractament_secundari;
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 4)).style = { font: { bold: true } };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 4)).alignment = { vertical: 'middle', horizontal: 'center' };
+
+            sheet.getColumn(5).width = 12;
+            sheet.getCell(this.getSpreadSheetCellNumber(row, 5)).value = current_romb;
+            sheet.getCell(this.getSpreadSheetCellNumber(row, 5)).alignment = { vertical: 'middle', horizontal: 'center' };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 5)).value = "->"
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 5)).style = { font: { bold: true } };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+1, 5)).alignment = { vertical: 'middle', horizontal: 'center' };
+            sheet.getCell(this.getSpreadSheetCellNumber(row+2, 5)).value = current_circle;
+            sheet.getCell(this.getSpreadSheetCellNumber(row+2, 5)).alignment = { vertical: 'middle', horizontal: 'center' };
+            current_circle += 1;
+            current_romb += 1;
+
+            const array_tractaments = tren_a_monitorar.array_tractaments;
+            let current_col = 6;
+            for(const tractament of array_tractaments){
+                sheet.getColumn(current_col).width = 3;
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).value = tractament;
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).style = { font: { bold: true } };
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).alignment = { vertical: 'middle', horizontal: 'center' };
+                current_col += 1;
+
+                sheet.getColumn(current_col).width = 12;
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).value = "->";
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).style = { font: { bold: true } };
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getCell(this.getSpreadSheetCellNumber(row+2, current_col)).value = current_circle;
+                sheet.getCell(this.getSpreadSheetCellNumber(row+2, current_col)).alignment = { vertical: 'middle', horizontal: 'center' };
+                current_circle += 1;
+                current_col += 1;
+            }
+
+            sheet.getCell(this.getSpreadSheetCellNumber(row, current_col-1)).value = current_romb;
+            sheet.getCell(this.getSpreadSheetCellNumber(row, current_col-1)).alignment = { vertical: 'middle', horizontal: 'center' };
+            row += 5;
+
+        }
+
+    },
+
+    fifthSheet: function(workbook){
+        const sheet = workbook.addWorksheet('Casos similars');
+        sheet.getCell('A1').value = "Resultats obtinguts amb el SAD SUGGEREIX: sistema d'ajuda a la decisió per a la implementació i gestió de la reutilització";
+        sheet.getCell('A1').style = { font: { name: 'calibri', bold: true, size: 16 } };
+        sheet.getCell('A3').value = "Casos similars";
+        sheet.getCell('A3').style = { font: { name: 'calibri', bold: true, size: 14 } };
+
+        let row = 5;
+
+        for(const tren_a_monitorar of this.selector_monitoratge){
+            sheet.getCell('A'+row).style = { font: { bold: true, size: 12 } };
+            sheet.getCell('A'+row).value = tren_a_monitorar.nom;
+            row += 2;
+
+            if(!tren_a_monitorar.referencies || !tren_a_monitorar.referencies.length){
+                sheet.getColumn(2).width = 30;
+                sheet.getCell('B'+row).value = " - El tren seleccionat no disposa de casos similars.";
+                row += 2;
+            }
+            else{
+                sheet.getColumn(2).width = 30;
+                sheet.getCell('B'+row).style = { font: { bold: true, size: 12 } };
+                sheet.getCell('B'+row).value = "Nom de la planta existent";
+                sheet.getCell('B'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getColumn(3).width = 40;
+                sheet.getCell('C'+row).style = { font: { bold: true, size: 12 } };
+                sheet.getCell('C'+row).value = "Localització";
+                sheet.getCell('C'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getColumn(4).width = 25;
+                sheet.getCell('D'+row).style = { font: { bold: true, size: 12 } };
+                sheet.getCell('D'+row).value = "Entitat Gestora";
+                sheet.getCell('D'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getColumn(5).width = 30;
+                sheet.getCell('E'+row).style = { font: { bold: true, size: 12 } };
+                sheet.getCell('E'+row).value = "Any de posada en marxa";
+                sheet.getCell('E'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getColumn(6).width = 30;
+                sheet.getCell('F'+row).style = { font: { bold: true, size: 12 } };
+                sheet.getCell('F'+row).value = "Cabal de disseny (m3)";
+                sheet.getCell('F'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getColumn(7).width = 30;
+                sheet.getCell('G'+row).style = { font: { bold: true, size: 12 } };
+                sheet.getCell('G'+row).value = "Tren de tractament";
+                sheet.getCell('G'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                row += 1;
+
+                for(const ref of tren_a_monitorar.referencies){
+                    sheet.getCell('B'+row).value = this.Casos_us[ref].nom_planta;
+                    sheet.getCell('B'+row).alignment = { vertical: 'middle', horizontal: 'right' };
+                    sheet.getCell('C'+row).value = this.obtenirEmplacament(this.Casos_us[ref]);
+                    sheet.getCell('C'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                    sheet.getCell('D'+row).value = !this.Casos_us[ref].entitat_gestora ? "No definida" : this.Casos_us[ref].entitat_gestora
+                    sheet.getCell('D'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                    sheet.getCell('E'+row).value = (!this.Casos_us[ref].any_inici || this.Casos_us[ref].any_inici === 'n.a.' ? "No definit" : this.Casos_us[ref].any_inici)
+                    sheet.getCell('E'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                    sheet.getCell('F'+row).value = (!this.Casos_us[ref].cabal || this.Casos_us[ref].cabal === 'n.a.') ? "No definit" : this.Casos_us[ref].cabal;
+                    sheet.getCell('F'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                    sheet.getCell('G'+row).value = !this.Casos_us[ref].tecnologies ? "No definit" : this.Casos_us[ref].tecnologies;
+                    sheet.getCell('G'+row).alignment = { vertical: 'middle', horizontal: 'center' };
+                }
+                row += 2;
+            }
+
+        }
+    },
+
     // funcio per a descarregar l'informe del projecte de reutilització.
     descarregar_excel: function() {
         const workbook = new ExcelJS.Workbook();
@@ -2151,6 +2311,8 @@ export default {
         this.firstSheet(workbook);
         this.secondSheet(workbook);
         this.thirdSheet(workbook);
+        this.fourthSheet(workbook);
+        this.fifthSheet(workbook);
 
         let date = new Date();
         date = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toJSON().slice(0,16);
@@ -2162,7 +2324,7 @@ export default {
     // funcio per a descarregar l'estat actual de la pàgina.
     descarregar_estat: function () {
         // 1. guardar les variables d'estat que ens interessen (les que estan a la llista).
-        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Tractaments_info_sc", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge", "tractaments_sec", "ind_afegits", "Ind_to_code", "Mon_code_to_ind", "Trens_info", "Casos_us", "png_multicriteri", "png_avaluacio"];
+        const to_save = ["grau_informacio", "tractament_secundari", "ranquing_trens", "usos_seleccionats", "trens_multicriteris", "visio_multicriteri", "modify_vp_open", "mod_ind_vps", "treshold_viables", "multicriteri_order", "anys_operacio", "ind_seleccionats", "selector_monitoratge", "tren_monitoratge", "tren_casos", "llest_monitoratge", "Usos_info", "Multicriteri_info", "user", "Tractaments_info", "Tractaments_info_sc", "Qualitat_microbiologica", "Multicriteri_info", "Info_indicadors", "Info_indicadors_types", "Info_monitoratge", "Info_rich", "Metodes_monitoratge","ne_dict","av_criteris_a_considerar","av_pes_criteris","mon_visio_monitoratge", "tractaments_sec", "ind_afegits", "Ind_to_code", "Mon_code_to_ind", "Trens_info", "Casos_us", "png_multicriteri", "png_avaluacio", "png_diagram"];
         const data_to_save = {};
         for(const [key, value] of Object.entries(this._data)){
             if(to_save.includes(key)){

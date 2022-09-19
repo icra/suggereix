@@ -18,7 +18,7 @@
       >
           Monitoratge de la qualitat de l'aigua
       </div>
-      <div v-if="this.visio_monitoratge === 0">
+      <div id="monTra" v-if="this.visio_monitoratge === 0">
         <div class="sticky">
             <table class="sticky extraborder" border="1">
               <tr>
@@ -66,7 +66,7 @@
             </table>
         </div>
       </div>
-      <div v-if="visio_monitoratge === 1 && usos_seleccionats.length">
+      <div id="monQua" v-if="visio_monitoratge === 1 && usos_seleccionats.length">
           <p><b>Indicadors químics:</b> El quocient de risc (QR) i la freqüència de monitoratge es calculen en funció dels valors objectius de qualitat (VP) introduïts en la primera fase.</p>
           <img src="/img/qr.png" alt="Equació del càlcul del QR" class="center" style="margin-top:10px;width: 200px;"> 
           <p><b>Indicadors microbiològics:</b> La freqüència de monitoratge s'estableix en funció dels valors de reducció log<sub>10</sub> introduïts en la primera fase. </p>
@@ -129,6 +129,7 @@
 <script>
 
 import * as joint from 'jointjs';
+import html2canvas from 'html2canvas';
 window.joint = joint;
 
 export default {
@@ -544,6 +545,12 @@ export default {
         link.addTo(graph);
         pre_rect = last_rect;
 
+        const _this = this;
+
+        html2canvas(document.getElementById("graph")).then((canvas) => {
+                const img = canvas.toDataURL();
+                _this.$emit('sendPngDiagram', img);
+        });
     },
     getFrequencia: function(tractament,parameter) {
         return this.info_monitoratge[tractament][parameter].frequencia || '<i style="color:red">No definida</i>'
