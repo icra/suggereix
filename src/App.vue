@@ -7,7 +7,7 @@
     <div style="height: auto; margin: 1rem 0rem 2rem 0rem">
       <img src="img/logo_suggereix.png" alt="Suggereix" style="width: 250px; height: auto; display: inline-block; vertical-align: middle">
       <h2 style="display: inline-block; margin: 0rem 0rem 0rem 1rem; vertical-align: middle">
-        Sistema d'ajuda a la decisió per a la implementació i gestió de la reutilització (v1.6.0)
+        Sistema d'ajuda a la decisió per a la implementació i gestió de la reutilització (v1.6.1)
       </h2>
     </div>
     <HelloWorld/>
