@@ -118,6 +118,7 @@
             <p><b>E. Informe de resultats Excel</b></p> 
             <button @click="descarregar_excel">Descarregar</button>
             <p>Descarrega la definició del projecte de reutilització i els resultats obtinguts.</p>
+            <p v-if="control_excel"><b style='color:red;'> - S'està generant l'arxiu de sortida. Si us plau, esperi ...</b></p>
         </div>
     </details>
     <details class="seccio" open>
@@ -1289,6 +1290,9 @@ export default {
       // Variables inicials en còpia (per a un posterior reseteig a defaults).
       Tractaments_info_sc: {},
 
+      // Control mentre es descarrega l'excel.
+      control_excel: false,
+
       //backend
       Usuari,                   //classe
       Corrent,                  //classe
@@ -2162,9 +2166,18 @@ export default {
         let row = 5;
 
         for(const tren_a_monitorar of this.selector_monitoratge){
-            sheet.getCell('A'+row).style = { font: { bold: true, size: 12 } };
-            sheet.getCell('A'+row).value = tren_a_monitorar.nom;
+            sheet.getCell('A'+row).style = { font: { bold: true, size: 12 },  };
+            sheet.getCell('A'+row).value = tren_a_monitorar.nom || this.Trens_info[Number(tren_a_monitorar.codi)].nom;
             sheet.getCell('A'+(row+1)).value = " - A continuació es mostra el diagrama del tren de tractaments a monitorar. Els nombres a la part inferior indiquen punts de monitoratge de cada tractament i els nombres a la part superior indiquen els punts d'entrada a la planta, sortida del tractament secundari i sortida de la planta.";
+            for(const item of ['A'+row,'B'+row,'C'+row,'D'+row,'E'+row,'F'+row,'G'+row,'H'+row,'I'+row,'J'+row,'K'+row,'L'+row,'M'+row,'N'+row,'O'+row,'P'+row,'Q'+row,'R'+row,'S'+row,'T'+row,'U'+row,'V'+row,'W'+row,'X'+row,'Y'+row,'Z'+row]){
+                sheet.getCell(item).fill = {
+                    type: 'pattern',
+                    pattern:'solid',
+                    fgColor: {argb:'cccccc'},
+                    bgColor: {argb:'cccccc'}
+                };
+            }
+            
             row += 2;
 
             let current_circle = 1;
@@ -2211,6 +2224,18 @@ export default {
             current_circle += 1;
             current_romb += 1;
 
+            // Obtenir mètodes dels tractaments.
+            const metodes_qualitat = {};
+            for(const [parametre,metodes] of Object.entries(this.Metodes_monitoratge)){
+                const metodes_array = [];
+                for(const metodes_freq_array of Object.values(metodes)){
+                    for(const metode of metodes_freq_array){
+                        metodes_array.push(metode);
+                    }
+                }
+                metodes_qualitat[parametre] = metodes_array;
+            }
+
             const array_tractaments = tren_a_monitorar.array_tractaments;
             let current_col = 6;
             for(const tractament of array_tractaments){
@@ -2234,6 +2259,187 @@ export default {
             sheet.getCell(this.getSpreadSheetCellNumber(row, current_col-1)).alignment = { vertical: 'middle', horizontal: 'center' };
             row += 5;
 
+            sheet.getCell('A'+row).value = " - A continuació es mostra el monitoratge dels taractaments";
+            row += 2;
+
+            // Calcula l'array de tractaments complet.
+            const array_tractaments_new = ['DP'];
+            current_circle = 1;
+            current_col = 1;
+            if (this.tractament_secundari !== 'DP') array_tractaments_new.push(this.tractament_secundari);
+            for(const tractament of tren_a_monitorar.array_tractaments){
+                if(!this.tractament_secundari.includes('BRM') || tractament !== "BRM") array_tractaments_new.push(tractament)
+            }
+            array_tractaments_new = array_tractaments_new.map(tractament => tractament === 'BRM' ? 'BRM1' : tractament);
+
+            for(const tractament of array_tractaments_new){
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).value = "->";
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).style = { font: { bold: true } };
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).value = current_circle;
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).alignment = { vertical: 'middle', horizontal: 'center' };
+                current_circle += 1;
+                current_col += 1;
+
+                sheet.mergeCells(row, current_col, row, current_col+2);
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col-1)).value = "TRACTAMENT";
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col-1)).style = { font: { bold: true } };
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col-1)).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).value = tractament;
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).style = { font: { bold: true, italic: true } };
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).alignment = { vertical: 'middle', horizontal: 'center' };
+                current_col += 1;
+
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).value = "->";
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).style = { font: { bold: true } };
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).alignment = { vertical: 'middle', horizontal: 'center' };
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).value = current_circle;
+                sheet.getCell(this.getSpreadSheetCellNumber(row+1, current_col)).alignment = { vertical: 'middle', horizontal: 'center' };
+                current_col += 1;
+
+                // Títols de la taula.
+                sheet.mergeCells(row, current_col+1, row, current_col+4);
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col)).value = "Paràmetre/Indicador";
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col)).style = { font: { bold: true } };
+                sheet.mergeCells(row, current_col+5, row, current_col+8);
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+4)).value = "Punt monitoratge";
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+4)).style = { font: { bold: true } };
+                sheet.mergeCells(row, current_col+9, row, current_col+12);
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+8)).value = "Freqüència";
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+8)).style = { font: { bold: true } };
+                sheet.mergeCells(row, current_col+13, row, current_col+16);
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+12)).value = "Mètode(s)";
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+12)).style = { font: { bold: true } };
+
+                for(const parameter of Object.keys(this.Info_monitoratge[tractament]).filter(key => this.Info_monitoratge[tractament][key].llocs.length && (this.Ind_to_code[key] ? this.user.corrent.seleccionat[this.Ind_to_code[key]] : true))){
+
+                    // Paràmetre
+                    sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).value = parameter;
+
+                    // Llocs
+                    let llocs_string = "";
+                    const llocs = this.Info_monitoratge[tractament][parameter].llocs;
+                    for(const lloc of llocs){
+                        if(lloc === 'Entrada') llocs_string += llocs_string ? ", "+(current_circle-1) : (current_circle-1);
+                        else if(lloc === 'Sortida') llocs_string += llocs_string ? ", "+(current_circle) : (current_circle);
+                        else if(lloc === 'Tractament') llocs_string += llocs_string ? ", "+(tractament) : (tractament);
+                    }
+                    sheet.getCell(this.getSpreadSheetCellNumber(row, current_col+4)).value = llocs_string;
+
+                    // Freqüència
+                    sheet.getCell(this.getSpreadSheetCellNumber(row, current_col+8)).value = this.Info_monitoratge[tractament][parameter].frequencia || 'No definida';
+
+                    // Mètodes
+                    let counter = 1;
+                    let string = "";
+                    for(const metode of metodes_qualitat[parameter]){
+                        string += this.getMetode(metode, counter) + ". ";
+                        counter += 1;
+                    }
+                    sheet.getCell(this.getSpreadSheetCellNumber(row, current_col+12)).value = string;
+                    
+
+                    row += 1;
+
+                }
+
+                row += 2;
+                current_col = 1;
+
+            }
+
+            sheet.getCell('A'+row).value = " - A continuació es mostra el monitoratge de la qualitat de l'aigua";
+            row += 2;
+            current_col += 1;
+            
+            // Calcula el QR i freqüència.
+
+
+            // Títols de la taula.
+            sheet.mergeCells(row, current_col+1, row, current_col+4);
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col)).value = "Paràmetre/Indicador";
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col)).style = { font: { bold: true } };
+            sheet.mergeCells(row, current_col+5, row, current_col+8);
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+4)).value = "Punt monitoratge";
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+4)).style = { font: { bold: true } };
+            sheet.mergeCells(row, current_col+9, row, current_col+12);
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+8)).value = "QR";
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+8)).style = { font: { bold: true } };
+            sheet.mergeCells(row, current_col+13, row, current_col+16);
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+12)).value = "Freqüència";
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+12)).style = { font: { bold: true } };
+            sheet.mergeCells(row, current_col+17, row, current_col+20);
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+16)).value = "Mètode(s)";
+            sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col+16)).style = { font: { bold: true } };
+            row += 1;
+
+            const indicadors_qualitat = this.indicadors_qualitat(tren_a_monitorar)
+
+            // Obtenir la qualitat de l'aigua als punts de entrades i sortida.
+            const qualitat_punts = {}
+            for(const indicador of indicadors_qualitat){
+                const type = this.Info_indicadors[indicador].type;
+                if(indicador === 'Cabal') qualitat_punts[indicador] = ['entrada1','entrada2','sortida'];
+                else if(type.includes("1.1. ") || type.includes("2.1. ") || type.includes("2.2. ") || type.includes("2.3. ")){
+                    // Monitoratge continu, Nutrients, Metalls, Compostos orgànics.
+                    qualitat_punts[indicador] = ['entrada2','sortida'];
+                }
+                else if(type.includes("2.4. ")){
+                    // Productes d'oxidació.
+                    qualitat_punts[indicador] = ['sortida'];
+                }
+                else if(type.includes("3. ")){
+                    // Indicadors microbiològics.
+                    qualitat_punts[indicador] = ['entrada1','sortida'];
+                }
+                else qualitat_punts[indicador] = [];
+            }
+
+            const indicador_punt_freq_v = this.indicador_punt_freq(tren_a_monitorar, indicadors_qualitat);
+
+            for(const indicador of indicadors_qualitat){
+                current_col = 2;
+
+                // Nom
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col)).value = this.Info_indicadors[indicador].name;
+                current_col += 4;
+
+                // Punts
+                const punts_qualitat = qualitat_punts[indicador];
+                let string = "";
+                for(const punt of punts_qualitat){
+                    if(punt === 'entrada1') string += string ? ", 1" : "1";
+                    else if(punt === 'entrada2') string += string ? ", 2" : "2";
+                    else if(punt === 'sortida') string += string ? ", 3" : "3";
+                }
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col)).value = string;
+                current_col += 4;
+                
+
+                // QR.
+                const string1 = (indicador_punt_freq_v && indicador_punt_freq_v[indicador]) ? indicador_punt_freq_v[indicador].qr || '--' : '--';
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col)).value = string1;
+                current_col += 4;
+
+                // Freq.
+                const string2 = indicador_punt_freq_v && indicador_punt_freq_v[indicador] ? indicador_punt_freq_v[indicador].freq : '';
+                sheet.getCell(this.getSpreadSheetCellNumber(row-1, current_col)).value = string2;
+                current_col += 4;
+
+                // Metodes.
+                let counter = 1;
+                let string3 = "";
+                for(const metode of metodes_qualitat[this.Mon_code_to_ind[indicador]]){
+                    string3 += this.getMetode(metode, counter) + ". ";
+                    counter += 1;
+                }
+                sheet.getCell(this.getSpreadSheetCellNumber(row, current_col)).value = string3;
+
+                row += 1;
+            }
+
+            row += 2;
+
         }
 
     },
@@ -2249,7 +2455,15 @@ export default {
 
         for(const tren_a_monitorar of this.selector_monitoratge){
             sheet.getCell('A'+row).style = { font: { bold: true, size: 12 } };
-            sheet.getCell('A'+row).value = tren_a_monitorar.nom;
+            sheet.getCell('A'+row).value = tren_a_monitorar.nom || this.Trens_info[Number(tren_a_monitorar.codi)].nom;
+            for(const item of ['A'+row,'B'+row,'C'+row,'D'+row,'E'+row,'F'+row,'G'+row,'H'+row,'I'+row,'J'+row,'K'+row,'L'+row,'M'+row,'N'+row,'O'+row,'P'+row,'Q'+row,'R'+row,'S'+row,'T'+row,'U'+row,'V'+row,'W'+row,'X'+row,'Y'+row,'Z'+row]){
+                sheet.getCell(item).fill = {
+                    type: 'pattern',
+                    pattern:'solid',
+                    fgColor: {argb:'cccccc'},
+                    bgColor: {argb:'cccccc'}
+                };
+            }
             row += 2;
 
             if(!tren_a_monitorar.referencies || !tren_a_monitorar.referencies.length){
@@ -2306,6 +2520,15 @@ export default {
 
     // funcio per a descarregar l'informe del projecte de reutilització.
     descarregar_excel: function() {
+
+        if(!this.usos_seleccionats || !this.usos_seleccionats.length || !this.tractament_secundari){
+            alert("Falta definir l'efluent secundari o seleccionar l'ús (o usos) d'aigua regenerada.");
+            return;
+        }
+
+        // Marcar carregant.
+        this.control_excel = true;
+
         const workbook = new ExcelJS.Workbook();
 
         this.firstSheet(workbook);
@@ -2314,11 +2537,166 @@ export default {
         this.fourthSheet(workbook);
         this.fifthSheet(workbook);
 
+        // Marcar finalitzat.
+        this.control_excel = false;
+
         let date = new Date();
         date = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toJSON().slice(0,16);
         date = date.replace(":","-");
         const nom_fitxer = "suggereix_informe_"+date;
         this.saveExcel(workbook, nom_fitxer) //Download the excel
+    },
+
+    getMetode: function(metode, ind){
+        if(!metode) return 'No definit';
+        let value_res = metode.desc_enriquit;
+        if(metode.ref_enriquit !== "nd"){
+            value_res += " ("+metode.ref_enriquit;
+            if(metode.type === 2) value_res += "; Mètode estàndard";
+            else if(metode.type === 1) value_res += "; Mètode desenvolupat no estàndard)";
+            else value_res += ")";
+        }
+        return ind+'. '+value_res;
+    },
+
+    // Diccionari que conté la freqüència per a cada indicador i punt.
+    indicador_punt_freq: function(tren, indicadors_qualitat) {
+        const _this = this;
+        const dict_freq = {};
+        const array_tractaments = tren['array_tractaments'];
+        const [min_max,] = _this.user.corrent.aplica_tren_tractaments(_this.Info_indicadors, array_tractaments, _this.Tractaments_info, _this.tractament_secundari,tren.codi);
+        for(const indicador of indicadors_qualitat){
+            dict_freq[indicador] = {};
+            const full_indicador = _this.Info_indicadors[indicador];
+            if(full_indicador.type.startsWith("1.1. ")){
+                if(indicador === "I5") dict_freq[indicador].freq = "Continu o periòdic";
+                else dict_freq[indicador].freq = "Continu";
+                if(indicador !== "I1" && indicador !== "Cabal"){
+                    const concentracio = min_max.max.qualitat[indicador];
+                    const VP = _this.user.corrent_objectiu.qualitat[indicador];
+                    const QRs = concentracio / VP;
+                    const QR = QRs;
+                    dict_freq[indicador].qr = isNaN(QR) || !full_indicador.type.startsWith("2.") ? '--' : QR.toExponential(1);
+                    dict_freq[indicador].regulat = _this.user.corrent_objectiu.regulat[indicador];
+                }
+            }
+            else if(full_indicador.type.startsWith("2.")){
+                if(full_indicador.type.startsWith("2.4.")) dict_freq[indicador].freq = 'Periòdic en funció del QR';
+                else{
+                    const concentracio = min_max.max.qualitat[indicador];
+                    const VP = _this.user.corrent_objectiu.qualitat[indicador];
+                    const QRs = concentracio / VP;
+                    //const QRe = QRs / (1-min_max.max.eliminacio[indicador]);
+                    const QR = QRs;
+                    dict_freq[indicador].qr = isNaN(QR) ? '--' : QR.toExponential(1);
+                    const tipus_vp = Number(_this.user.corrent_objectiu.tipus_vp[indicador]);
+                    dict_freq[indicador].regulat = _this.user.corrent_objectiu.regulat[indicador];
+
+                    // Depenent del rang i del QR obtingut, es posa el resultat que toca.
+                    for(const rang of _this.Mon_per_ind_quim[tipus_vp]){
+                        if(rang.mes_gran && !rang.mes_petit){
+                            if(QR > rang.mes_gran){
+                                dict_freq[indicador].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                dict_freq[indicador].ref = rang.ref;
+                            }
+                        }
+                        else if(rang.mes_gran && rang.mes_petit){
+                            if(QR > rang.mes_gran && QR < rang.mes_petit){
+                                dict_freq[indicador].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                dict_freq[indicador].ref = rang.ref;
+                            }
+                        }
+                        else{
+                            if(QR < rang.mes_petit){
+                                dict_freq[indicador].freq = full_indicador.type.startsWith("2.1.") ? rang.text_nutrients : rang.text;
+                                dict_freq[indicador].ref = rang.ref;
+                            }
+                        }
+                    }
+                }
+
+            }
+            else if(full_indicador.type.startsWith("3. ")){
+                // Segons Mercè, no calculem QR dels indicadors microbiològics.
+                dict_freq[indicador].qr = '--';
+
+                // Ara obté la reducció logarítmica de qualitat microbiològica per a l'indicador i compara amb els valors de l'excel.
+                let reduccio_requerida = 0;
+                for (let usage of _this.usos_seleccionats) {
+                    if(!usage.startsWith('Dummy')) usage = 'Dummy'+usage;
+                    if (_this.Qualitat_microbiologica[usage][indicador][1] > reduccio_requerida) reduccio_requerida = _this.Qualitat_microbiologica[usage][indicador][1];
+                }
+                for(const rang of _this.Mon_per_ind_micro[indicador]){
+                    if(rang.mes_gran && !rang.mes_petit){
+                        if(reduccio_requerida > rang.mes_gran){
+                            dict_freq[indicador].freq = rang.freq;
+                            dict_freq[indicador].ref = rang.ref;
+                        }
+                    }
+                    else if(rang.mes_gran && rang.mes_petit){
+                        if(reduccio_requerida > rang.mes_gran && reduccio_requerida < rang.mes_petit){
+                            dict_freq[indicador].freq = rang.freq;
+                            dict_freq[indicador].ref = rang.ref;
+                        }
+                    }
+                    else{
+                        if(reduccio_requerida < rang.mes_petit){
+                            dict_freq[indicador].freq = rang.freq;
+                            dict_freq[indicador].ref = rang.ref;
+                        }
+                    }
+                }
+            }
+            else dict_freq[indicador].freq = 'No definida';
+
+            // En el cas de no trobar coincidència.
+            if(!dict_freq[indicador].freq) dict_freq[indicador].freq = 'No definida';
+            // Afegir la referència (si té).
+            else if(dict_freq[indicador].ref) dict_freq[indicador].freq += " (" + dict_freq[indicador].ref + ")";
+
+            // En cas que sigui en funció de l'aigua produïda.
+            const capacitat = _this.user.corrent.Q * _this.user.corrent.F / 100;
+            if(dict_freq[indicador].freq.includes("segons el volum d'aigua produïda") || (full_indicador.type.startsWith("3. ") && _this.usos_seleccionats.includes("Dummy15"))){
+                let extra_info = ". Nombre anual de mostres requerides (segons el volum d'aigua produïda): ";
+                if(capacitat < 10) extra_info += "1.";
+                else if(capacitat <= 100) extra_info += "2.";
+                else if(capacitat <= 1000) extra_info += "4.";
+                else{
+                    // Equació 12 (veure taula C4).
+                    const n = 4 + (3*Math.ceil((capacitat-1000)/1000));
+                    extra_info += n.toString()+".";
+                }
+                dict_freq[indicador].freq += extra_info;
+            }
+        }
+        return dict_freq;
+    },
+
+    indicadors_qualitat: function(tren){
+        const indicadors = Object.keys(this.Info_indicadors).filter(indicador => indicador !== 'I4' && (indicador === 'I1' || (Object.keys(this.user.corrent.seleccionat).includes(indicador) ? this.user.corrent.seleccionat[indicador] : true))); 
+        let triclorometa = false;
+        let NDMA = false;
+        let clorat = false;
+        let clorit = false;
+        let bromat = false;
+        for(let tractament of tren.array_tractaments){
+            if(tractament.includes("FAC_DS")) tractament = this.tractament_secundari;
+            if(tractament.includes("BRM")) tractament = this.tractament_secundari;
+
+            if(this.Info_monitoratge[tractament]['Triclorometà']) triclorometa = true;
+            if(this.Info_monitoratge[tractament]['N-nitrosodimetilamina (NDMA)']) NDMA = true;
+            if(this.Info_monitoratge[tractament]['Clorat']) clorat = true;
+            if(this.Info_monitoratge[tractament]['Clorit']) clorit = true;
+            if(this.Info_monitoratge[tractament]['Bromat']) bromat = true;
+        }
+        return indicadors.filter(indicador => {
+            if(indicador === 'OT1' && !NDMA) return false;
+            else if(indicador === 'OT2' && !triclorometa) return false;
+            else if(indicador === 'OT3' && !clorat) return false;
+            else if(indicador === 'OT4' && !clorit) return false;
+            else if(indicador === 'OT5' && !bromat) return false;
+            else return true;
+        });
     },
 
     // funcio per a descarregar l'estat actual de la pàgina.

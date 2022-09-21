@@ -105,7 +105,7 @@
                       <td class="smalltd"><div style="height:30px;overflow:hidden" class="smalltd">
                           <div class="smalltd" :ref="'punts_qualitat_'+indicador" /></div>
                       </td>
-                      <td :style="'text-align: center; background: '+getColor(indicador)+';'">{{indicador_punt_freq &&  indicador_punt_freq[indicador] ? indicador_punt_freq[indicador].qr || '--' : '--'}}</td>
+                      <td :style="'text-align: center; background: '+getColor(indicador)+';'">{{indicador_punt_freq && indicador_punt_freq[indicador] ? indicador_punt_freq[indicador].qr || '--' : '--'}}</td>
                       <td><div v-html="indicador_punt_freq && indicador_punt_freq[indicador] ? indicador_punt_freq[indicador].freq : ''"></div></td>
                       <td>
                           <div v-for="metode, ind in metodes_qualitat[mon_code_to_ind[indicador]]" :key="'_'+ind+'_freq_qual'">
