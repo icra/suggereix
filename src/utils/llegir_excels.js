@@ -430,7 +430,7 @@ function llegir_monitoratge(binaryData) {
                 if(!monitoratge_tractaments[tractament]) monitoratge_tractaments[tractament] = {};
 
                 // Crea un array on es posaran les freqüències de monitoratge de l'indicador per el tractament.
-                const frequencia = undefined;
+                let frequencia;
                 for(let i = 0; i < llocs_on_potser_cal_monitorar.length; i++){
                     const a_considerar = worksheet.getRow(start_row).getCell(header_column + i).value;
                     if(a_considerar) frequencia = valor_nom(a_considerar);

@@ -2271,7 +2271,7 @@ export default {
             row += 2;
 
             // Calcula l'array de tractaments complet.
-            const array_tractaments_new = ['DP'];
+            let array_tractaments_new = ['DP'];
             current_circle = 1;
             current_col = 1;
             if (this.tractament_secundari !== 'DP') array_tractaments_new.push(this.tractament_secundari);
