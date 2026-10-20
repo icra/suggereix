@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <AutoTranslate/>
     <div style="height: auto; margin-bottom: 1rem">
       <img src="img/logos.png" alt="collaborators" style="width: auto; height: 100px; display: inline-block; vertical-align: middle">
     </div>
@@ -16,11 +17,13 @@
 
 <script>
 import HelloWorld from './components/Sad.vue'
+import AutoTranslate from './components/AutoTranslate.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    HelloWorld,
+    AutoTranslate
   }
 }
 </script>
