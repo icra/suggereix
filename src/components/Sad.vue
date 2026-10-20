@@ -1795,10 +1795,18 @@ export default {
 		_this.selected_input = "";
 	},
     canviVisio(event){
-        let _this = this;
-		if(event.target.id === 'taula_de_criteris_inicial') _this.visio_multicriteri = 0;
-        else if(event.target.id === 'visualitzacio_de_criteris_normalitzats') _this.visio_multicriteri = 1;
-        else if(event.target.id === 'avaluacio_multicriteri') _this.visio_multicriteri = 2;
+      if (event.currentTarget.id === 'taula_de_criteris_inicial') {
+          this.visio_multicriteri = 0;
+      } else if (
+          event.currentTarget.id ===
+          'visualitzacio_de_criteris_normalitzats'
+      ) {
+          this.visio_multicriteri = 1;
+      } else if (
+          event.currentTarget.id === 'avaluacio_multicriteri'
+      ) {
+          this.visio_multicriteri = 2;
+      }
     },
 	show_sc_not(value){
 		if(value === null || value === undefined || isNaN(value)) return '';
@@ -3405,10 +3413,13 @@ input[type="number"] {
 .my-legend ul.legend-labels li  .legend {
     display: block;
     float: left;
-    height: 16px;
     width: 150px;
+    min-height: 16px;
+    height: auto;
     margin-right: 5px;
     margin-left: 0;
+    line-height: 18px;
+    white-space: normal;
 }
 
 .my-legend a {

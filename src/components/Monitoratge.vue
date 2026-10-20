@@ -400,9 +400,11 @@ export default {
   },
   methods: {
     canviVisio(event){
-        let _this = this;
-		    if(event.target.id === 'monitoratge_tractaments') _this.visio_monitoratge = 0;
-        else if(event.target.id === 'monitoratge_qualitats') _this.visio_monitoratge = 1;
+        if (event.currentTarget.id === 'monitoratge_tractaments') {
+            this.visio_monitoratge = 0;
+        } else if (event.currentTarget.id === 'monitoratge_qualitats') {
+            this.visio_monitoratge = 1;
+        }
     },
     getColor(indicador){
         const _this = this;
