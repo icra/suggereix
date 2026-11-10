@@ -190,7 +190,14 @@
                   :key="key"
                   v-model="usos_seleccionats"
                 />
-                <label :for="key" :key="key+'_'+obj.nom">{{ obj.nom }}</label>
+                <label
+                  :for="key"
+                  :key="key + '_' + obj.nom"
+                  :class="{ notranslate: obj.nom === 'Prepotable' }"
+                  :translate="obj.nom === 'Prepotable' ? 'no' : null"
+                >
+                  {{ nomUsTraduit(obj.nom) }}
+                </label>
                 <br :key="key+'_'+obj.codi+obj.nom"/>
               </template>
             </td>
@@ -1401,6 +1408,21 @@ export default {
     
   },
   methods:{
+    // Retorna el nom correcte de l’ús prepotable segons l’idioma seleccionat.
+    nomUsTraduit(nom) {
+      if (nom !== 'Prepotable') {
+        return nom;
+      }
+
+      const cookie = decodeURIComponent(document.cookie);
+      const idioma = cookie.match(
+        /(?:^|;\s*)googtrans=\/ca\/(ca|es|en)/
+      );
+
+      return idioma && idioma[1] === 'en'
+        ? 'Pre-potable'
+        : 'Prepotable';
+    },
     // Retorna objecte sense l'indicador del PH.
     filterPh(indTractaments){
         const new_indTractaments = {};
